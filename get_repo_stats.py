@@ -1,45 +1,11 @@
 import datetime
+import json
 import os
 import pandas as pd
 import requests
 import time
 from datetime import datetime
 from dotenv import load_dotenv
-
-# List of GitHub repositories in the format 'owner/repo'
-repos = [
-    "ggerganov/llama.cpp",
-    "ollama/ollama",
-    "open-webui/open-webui",
-    "ollama-webui/ollama-webui",
-    "LostRuins/koboldcpp",
-    "janhq/jan",
-    "nat/openplayground",
-    "Mozilla-Ocho/llamafile",
-    "nomic-ai/gpt4all",
-    "oobabooga/text-generation-webui",
-    "psugihara/FreeChat",
-    "cztomsik/ava",
-    "withcatai/catai",
-    "Mobile-Artificial-Intelligence/maid",
-    "mudler/LocalAI",
-    "ptsochantaris/emeltal",
-    "pythops/tenere",
-    "semperai/amica",
-    "guinmoon/LLMFarm",
-    "h2oai/h2ogpt",
-    "imartinez/privateGPT",
-    "huggingface/chat-ui",
-    "ParisNeo/lollms-webui",
-    "SillyTavern/SillyTavern",
-    "NimbleBoxAI/ChainFury",
-    "lobehub/lobe-chat",
-    "turboderp/exui",
-    "PromtEngineer/localGPT",
-    "shinomakoi/AI-Messenger",
-    "Mintplex-Labs/anything-llm",
-    "iohub/collama",
-]
 
 
 def fetch_repo_info(repo):
@@ -104,6 +70,10 @@ if __name__ == "__main__":
     load_dotenv()
     api_token = os.getenv("API_TOKEN")
     headers = {"Authorization": f"token {api_token}"}
+
+    # Load the list of repositories from the repos.json file
+    with open("repos.json", "r") as f:
+        repos = json.load(f)
 
     repo_info_list = []
     for repo in repos:
