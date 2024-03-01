@@ -90,7 +90,7 @@ if __name__ == "__main__":
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-    current_datetime = datetime.datetime.now().strftime("%Y-%m-%d_%H%M")
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
     csv_filename = f"{dir_name}{current_datetime}_repo_stats.csv"
     df.to_csv(csv_filename, index=False)
 
