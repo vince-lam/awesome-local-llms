@@ -6,9 +6,10 @@ import requests
 import time
 from datetime import datetime
 from dotenv import load_dotenv
+from typing import Dict, List, Union
 
 
-def fetch_repo_info(repo):
+def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
     base_url = f"https://api.github.com/repos/{repo}"
     try:
         repo_response = requests.get(base_url, headers=headers)
@@ -41,7 +42,7 @@ def fetch_repo_info(repo):
         else:
             license_info = "No license"
 
-        stats = {
+        stats: Dict[str, Union[str, int]] = {
             "Repository Name": repo_data["name"],
             "Stars": repo_data["stargazers_count"],
             "Forks": repo_data["forks_count"],
@@ -73,9 +74,9 @@ if __name__ == "__main__":
 
     # Load the list of repositories from the repos.json file
     with open("repos.json", "r") as f:
-        repos = json.load(f)
+        repos: List[str] = json.load(f)
 
-    repo_info_list = []
+    repo_info_list: List[Dict[str, Union[str, int]]] = []
     for repo in repos:
         info = fetch_repo_info(repo)
         if info:  # Ensure info is not None
