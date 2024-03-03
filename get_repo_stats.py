@@ -10,6 +10,22 @@ from typing import Dict, List, Union
 
 
 def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
+    """
+    Fetches information about a GitHub repository.
+
+    Args:
+        repo (str): The repository name in the format "owner/repo".
+
+    Returns:
+        Dict[str, Union[str, int]]: A dictionary containing various information about the repository,
+        including the repository name, stars count, forks count, contributors count, open issues count,
+        watchers count, releases count, last commit date, license information, repository description,
+        and the languages used in the repository.
+
+    Raises:
+        requests.exceptions.HTTPError: If an HTTP error occurs during the API request.
+        Exception: If any other error occurs during the API request.
+    """
     base_url = f"https://api.github.com/repos/{repo}"
     try:
         repo_response = requests.get(base_url, headers=headers)
@@ -59,11 +75,11 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         return stats
 
     except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")  # Specific HTTP related error
+        print(f"HTTP error occurred: {http_err}")
     except Exception as err:
-        print(f"An error occurred: {err}")  # Any other error
+        print(f"An error occurred: {err}")
     finally:
-        time.sleep(1)  # Delay between requests to avoid rate limiting
+        time.sleep(1)
 
 
 if __name__ == "__main__":
