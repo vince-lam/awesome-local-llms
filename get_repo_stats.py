@@ -49,8 +49,13 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         last_commit = repo_data["pushed_at"]
         # Parse the datetime string into a datetime object
         last_commit_datetime = datetime.strptime(last_commit, "%Y-%m-%dT%H:%M:%SZ")
-        # Format the datetime object into a more readable string
-        last_commit_readable = last_commit_datetime.strftime("%B %d, %Y, %H:%M:%S")
+        # Calculate the time since the last commit
+        time_since_last_commit = datetime.now() - last_commit_datetime
+
+        # Convert the time since the last commit to days, hours, and minutes
+        days, remainder = divmod(time_since_last_commit.total_seconds(), 86400)
+        hours, remainder = divmod(remainder, 3600)
+        minutes, _ = divmod(remainder, 60)
 
         # License information check
         if "license" in repo_data and repo_data["license"]:
@@ -66,7 +71,7 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
             "Issues": repo_data["open_issues_count"],
             "Watchers": repo_data["subscribers_count"],
             "Releases": releases_count,
-            "Last Commit": last_commit_readable,
+            "Time Since Last Commit": f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins",
             "License": license_info,
             "About": repo_data["description"],
             "Languages": ", ".join(languages),
