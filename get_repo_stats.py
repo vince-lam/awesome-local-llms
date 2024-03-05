@@ -31,6 +31,9 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         repo_response = requests.get(base_url, headers=headers)
         repo_data = repo_response.json()
 
+        owner = repo.split("/")[0]
+        repo_name = repo.split("/")[1]
+
         # Fetch contributors count (simplified)
         contributors_url = f"{base_url}/contributors?per_page=100"
         contributors_response = requests.get(contributors_url, headers=headers)
@@ -64,7 +67,8 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
             license_info = "No license"
 
         stats: Dict[str, Union[str, int]] = {
-            "Repository Name": repo_data["name"],
+            "Repository Name": repo_name,
+            "Owner": owner,
             "Stars": repo_data["stargazers_count"],
             "Forks": repo_data["forks_count"],
             "Contributors": contributors_count,
