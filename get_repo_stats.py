@@ -49,9 +49,16 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         languages = languages_response.json().keys()
 
         # Fetch releases count
-        releases_url = f"{base_url}/releases"
-        releases_response = requests.get(releases_url, headers=headers)
-        releases_count = len(releases_response.json())
+        releases_count = 0
+        page = 1
+        while True:
+            releases_url = f"{base_url}/releases?page={page}&per_page=100"
+            releases_response = requests.get(releases_url, headers=headers)
+            releases = releases_response.json()
+            if not releases:
+                break
+            releases_count += len(releases)
+            page += 1
 
         last_commit = repo_data["pushed_at"]
         # Parse the datetime string into a datetime object
