@@ -121,6 +121,7 @@ if __name__ == "__main__":
 
     # Create a DataFrame and export to CSV
     df = pd.DataFrame(repo_info_list)
+    df = df.drop_duplicates()
     df = df.sort_values(by="Stars", ascending=False)
     dir_name = "outputs/"
 
