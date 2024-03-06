@@ -31,13 +31,17 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         repo_response = requests.get(base_url, headers=headers)
         repo_data = repo_response.json()
 
-        owner = repo.split("/")[0]
-        repo_name = repo.split("/")[1]
-
-        # Fetch contributors count (simplified)
-        contributors_url = f"{base_url}/contributors?per_page=100"
-        contributors_response = requests.get(contributors_url, headers=headers)
-        contributors_count = len(contributors_response.json())
+        # Fetch contributors count
+        contributors_count = 0
+        page = 1
+        while True:
+            contributors_url = f"{base_url}/contributors?page={page}&per_page=100"
+            contributors_response = requests.get(contributors_url, headers=headers)
+            contributors = contributors_response.json()
+            if not contributors:
+                break
+            contributors_count += len(contributors)
+            page += 1
 
         # Fetch languages
         languages_url = f"{base_url}/languages"
@@ -67,18 +71,19 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
             license_info = "No license"
 
         stats: Dict[str, Union[str, int]] = {
-            "Repository Name": repo_name,
-            "Owner": owner,
+            "Owner": repo.split("/")[0],
+            "Repository Name": repo.split("/")[1],
             "Stars": repo_data["stargazers_count"],
             "Forks": repo_data["forks_count"],
             "Contributors": contributors_count,
             "Issues": repo_data["open_issues_count"],
-            "Watchers": repo_data["subscribers_count"],
             "Releases": releases_count,
             "Time Since Last Commit": f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins",
+            "Watchers": repo_data["subscribers_count"],
             "License": license_info,
             "About": repo_data["description"],
             "Languages": ", ".join(languages),
+            "URL": f"https://github.com/{repo}",
         }
         print(stats)
         return stats
