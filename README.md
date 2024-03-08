@@ -2,7 +2,7 @@
 
 There are many ways of hosting open-source LLMs locally for inference: from the command line (CLI) tools to full GUI desktop applications. This repo aims to curate all possible options for running local LLMs. These projects can overlap in scope and may split into different components of inference backend server and UI.
 
-GitHub repository metrics have been collected as a proxy for popularity and active maintenance. For full table with all metrics go to this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing). For my thoughts: <https://vinlam.com/posts/local-llm-options/>
+New features are constantly being added so I have chosen not to manually label features and support of each project. GitHub repository metrics have been collected as a proxy for popularity and active maintenance. For full table with all metrics go to this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing). For my thoughts: <https://vinlam.com/posts/local-llm-options/>
 
 ## Open-Source Local LLM Projects
 
