@@ -1,4 +1,4 @@
-# Awesome Local LLMs
+# 👋 Awesome Local LLMs
 
 There are many ways of hosting open-source LLMs locally for inference: from the command line (CLI) tools to full GUI desktop applications. This repo aims to curate all possible options for running local LLMs. These projects can overlap in scope and may split into different components of inference backend server and UI.
 
