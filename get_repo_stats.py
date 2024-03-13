@@ -131,6 +131,12 @@ if __name__ == "__main__":
 
     # Sort the DataFrame and export to CSV
     df = df.sort_values(by="Stars", ascending=False)
+
+    # Add comma for every 3 digits for numerical columns
+    for col in df.columns:
+        if pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = df[col].apply(lambda x: "{:,}".format(x))
+
     dir_name = "outputs/"
 
     # create path if it doesnt exist
