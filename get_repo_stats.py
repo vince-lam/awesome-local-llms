@@ -115,38 +115,21 @@ def fetch_all_repo_info(repos: List[str], headers: Dict[str, str]) -> pd.DataFra
     # Create a DataFrame and remove duplicates
     df = pd.DataFrame(repo_info_list)
     df = df.drop_duplicates()
-
-    return df
-
-
-if __name__ == "__main__":
-    start_time = time.time()
-    load_dotenv()
-    api_token = os.getenv("API_TOKEN")
-    headers = {"Authorization": f"token {api_token}"}
-
-    dir_name = "outputs/"
-
-    # create path if it doesnt exist
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)
-
-    # Load the list of repositories from the repos.json file
-    with open("repos.json", "r") as f:
-        repos: List[str] = json.load(f)
-
-    # Create table for Google Sheets
-    df = fetch_all_repo_info(repos, headers)
     df = df.sort_values(by="Stars", ascending=False)
-    # Add comma for every 3 digits for numerical columns
     for col in df.columns:
         if pd.api.types.is_numeric_dtype(df[col]):
             df[col] = df[col].apply(lambda x: "{:,}".format(x))
-    current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
+    return df
+
+
+def output_to_csv(df: pd.DataFrame, dir_name: str, current_datetime: str) -> None:
     csv_filename = f"{dir_name}{current_datetime}_repo_stats.csv"
     df.to_csv(csv_filename, index=False)
 
-    # Create markdown file for README
+
+def create_markdown_file(
+    df: pd.DataFrame, dir_name: str, current_datetime: str
+) -> None:
     df["Repo"] = df.apply(
         lambda row: f'[{row["Repository Name"]}](https://github.com/{row["Owner"]}/{row["Repository Name"]})',
         axis=1,
@@ -172,6 +155,26 @@ if __name__ == "__main__":
 
     with open(markdown_filename, "w") as f:
         f.write(condensed_markdown_table)
+
+
+if __name__ == "__main__":
+    start_time = time.time()
+    current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
+    load_dotenv()
+    api_token = os.getenv("API_TOKEN")
+    headers = {"Authorization": f"token {api_token}"}
+
+    dir_name = "outputs/"
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)
+
+    # Load the list of repositories from repos.json
+    with open("repos.json", "r") as f:
+        repos: List[str] = json.load(f)
+
+    df = fetch_all_repo_info(repos, headers)
+    output_to_csv(df, dir_name, current_datetime)
+    create_markdown_file(df, dir_name, current_datetime)
 
     end_time = time.time()
     duration = end_time - start_time
