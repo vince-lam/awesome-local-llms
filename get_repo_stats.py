@@ -80,15 +80,15 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         stats: Dict[str, Union[str, int]] = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
+            "About": repo_data["description"],
             "Stars": repo_data["stargazers_count"],
             "Forks": repo_data["forks_count"],
-            "Contributors": contributors_count,
             "Issues": repo_data["open_issues_count"],
+            "Contributors": contributors_count,
             "Releases": releases_count,
-            "Time Since Last Commit": f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins",
             "Watchers": repo_data["subscribers_count"],
+            "Time Since Last Commit": f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins",
             "License": license_info,
-            "About": repo_data["description"],
             "Languages": ", ".join(languages),
             "URL": f"https://github.com/{repo}",
         }
