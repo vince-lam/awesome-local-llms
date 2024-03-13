@@ -2,10 +2,12 @@ import datetime
 import json
 import os
 import pandas as pd
+import re
 import requests
 import time
 from datetime import datetime
 from dotenv import load_dotenv
+from tabulate import tabulate
 from typing import Dict, List, Union
 
 
@@ -123,33 +125,56 @@ if __name__ == "__main__":
     api_token = os.getenv("API_TOKEN")
     headers = {"Authorization": f"token {api_token}"}
 
-    # Load the list of repositories from the repos.json file
-    with open("repos.json", "r") as f:
-        repos: List[str] = json.load(f)
-
-    df = fetch_all_repo_info(repos, headers)
-
-    # Sort the DataFrame and export to CSV
-    df = df.sort_values(by="Stars", ascending=False)
-
-    # Add comma for every 3 digits for numerical columns
-    for col in df.columns:
-        if pd.api.types.is_numeric_dtype(df[col]):
-            df[col] = df[col].apply(lambda x: "{:,}".format(x))
-
     dir_name = "outputs/"
 
     # create path if it doesnt exist
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
+    # Load the list of repositories from the repos.json file
+    with open("repos.json", "r") as f:
+        repos: List[str] = json.load(f)
+
+    # Create table for Google Sheets
+    df = fetch_all_repo_info(repos, headers)
+    df = df.sort_values(by="Stars", ascending=False)
+    # Add comma for every 3 digits for numerical columns
+    for col in df.columns:
+        if pd.api.types.is_numeric_dtype(df[col]):
+            df[col] = df[col].apply(lambda x: "{:,}".format(x))
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
     csv_filename = f"{dir_name}{current_datetime}_repo_stats.csv"
     df.to_csv(csv_filename, index=False)
+
+    # Create markdown file for README
+    df["Repo"] = df.apply(
+        lambda row: f'[{row["Repository Name"]}](https://github.com/{row["Owner"]}/{row["Repository Name"]})',
+        axis=1,
+    )
+    df["#"] = df.index + 1
+    col_order = [
+        "#",
+        "Repo",
+        "About",
+        "Stars",
+        "Forks",
+        "Issues",
+        "Contributors",
+        "Releases",
+        "Time Since Last Commit",
+        "License",
+    ]
+    df = df[col_order]
+    markdown_table = tabulate(df, headers="keys", tablefmt="github", showindex=False)
+    condensed_markdown_table = re.sub(r" {3,}", "  ", markdown_table)
+    condensed_markdown_table = re.sub(r"-{4,}", "----------", condensed_markdown_table)
+    markdown_filename = f"{dir_name}{current_datetime}_repo_stats.md"
+
+    with open(markdown_filename, "w") as f:
+        f.write(condensed_markdown_table)
 
     end_time = time.time()
     duration = end_time - start_time
     minutes, seconds = divmod(duration, 60)
 
-    print(f"Data exported: {csv_filename}")
     print(f"Duration: {int(minutes)} minutes and {int(seconds)} seconds")
