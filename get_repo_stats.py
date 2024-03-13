@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from typing import Dict, List, Union
 
 
-def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
+def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, int]]:
     """
     Fetches information about a GitHub repository.
 
@@ -103,6 +103,20 @@ def fetch_repo_info(repo: str) -> Dict[str, Union[str, int]]:
         time.sleep(1)
 
 
+def fetch_all_repo_info(repos: List[str], headers: Dict[str, str]) -> pd.DataFrame:
+    repo_info_list: List[Dict[str, Union[str, int]]] = []
+    for repo in repos:
+        info = fetch_repo_info(repo, headers)
+        if info:  # Ensure info is not None
+            repo_info_list.append(info)
+
+    # Create a DataFrame and remove duplicates
+    df = pd.DataFrame(repo_info_list)
+    df = df.drop_duplicates()
+
+    return df
+
+
 if __name__ == "__main__":
     start_time = time.time()
     load_dotenv()
@@ -113,15 +127,9 @@ if __name__ == "__main__":
     with open("repos.json", "r") as f:
         repos: List[str] = json.load(f)
 
-    repo_info_list: List[Dict[str, Union[str, int]]] = []
-    for repo in repos:
-        info = fetch_repo_info(repo)
-        if info:  # Ensure info is not None
-            repo_info_list.append(info)
+    df = fetch_all_repo_info(repos, headers)
 
-    # Create a DataFrame and export to CSV
-    df = pd.DataFrame(repo_info_list)
-    df = df.drop_duplicates()
+    # Sort the DataFrame and export to CSV
     df = df.sort_values(by="Stars", ascending=False)
     dir_name = "outputs/"
 
