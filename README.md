@@ -18,7 +18,7 @@ For my thoughts on local LLM tooling: <https://vinlam.com/posts/local-llm-option
 
 ## Open-Source Local LLM Projects
 
-*Last Updated: 12/03/2024*
+*Last Updated: 14/03/2024*
 
 |  # | Repo  | About  | Stars  | Forks  | Issues  |  Contributors | Releases  | Time Since Last Commit  | License  |
 |----------|----------|----------|----------|----------|----------|----------|----------|----------|----------|
