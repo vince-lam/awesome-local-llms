@@ -145,8 +145,8 @@ def create_markdown_file(
         "Issues",
         "Contributors",
         "Releases",
-        "Time Since Last Commit",
         "License",
+        "Time Since Last Commit",
     ]
     df = df[col_order]
     markdown_table = tabulate(df, headers="keys", tablefmt="github", showindex=False)
