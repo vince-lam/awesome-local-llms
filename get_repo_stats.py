@@ -134,6 +134,7 @@ def create_markdown_file(
         lambda row: f'[{row["Repository Name"]}](https://github.com/{row["Owner"]}/{row["Repository Name"]})',
         axis=1,
     )
+    df = df.reset_index()
     df["#"] = df.index + 1
     col_order = [
         "#",
