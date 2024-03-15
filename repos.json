@@ -51,5 +51,19 @@
     "Bin-Huang/chatbox",
     "danny-avila/LibreChat",
     "minimaxir/simpleaichat",
-    "SciSharp/LLamaSharp"
+    "SciSharp/LLamaSharp",
+    "xtekky/gpt4free",
+    "FMInference/FlexGen",
+    "deep-diver/LLM-As-Chatbot",
+    "GaiZhenbiao/ChuanhuChatGPT",
+    "chathub-dev/chathub",
+    "mlc-ai/web-llm",
+    "bentoml/OpenLLM",
+    "binary-husky/gpt_academic",
+    "triton-inference-server/server",
+    "huggingface/text-generation-inference",
+    "xorbitsai/inference",
+    "elgatopanzon/gatogpt",
+    "Vali-98/ChatterUI",
+    "dbddv01/GPT-Sequencer"
 ]
