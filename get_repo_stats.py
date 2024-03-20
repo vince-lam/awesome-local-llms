@@ -158,7 +158,7 @@ def create_markdown_file(
         f.write(condensed_markdown_table)
 
 
-if __name__ == "__main__":
+def main():
     start_time = time.time()
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
     load_dotenv()
@@ -182,3 +182,7 @@ if __name__ == "__main__":
     minutes, seconds = divmod(duration, 60)
 
     print(f"Duration: {int(minutes)} minutes and {int(seconds)} seconds")
+
+
+if __name__ == "__main__":
+    main()
