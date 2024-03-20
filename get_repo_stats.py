@@ -130,7 +130,15 @@ def output_to_csv(df: pd.DataFrame, dir_name: str, current_datetime: str) -> Non
 def create_markdown_file(
     df: pd.DataFrame, dir_name: str, current_datetime: str
 ) -> None:
-    df = df[df["Stars"] > 100]
+    # Filter out repos with less than 100 stars
+    df["stars_int"] = df["Stars"].str.replace(",", "").astype(int)
+    df = df[df["stars_int"] > 100]
+    # Filter out repos that have not been updated in the last 60 days
+    df["Days Since Commit"] = (
+        df["Time Since Last Commit"].str.extract("(\d+)").astype(int)
+    )
+    df = df[df["Days Since Commit"] <= 60]
+
     df["Repo"] = df.apply(
         lambda row: f'[{row["Repository Name"]}](https://github.com/{row["Owner"]}/{row["Repository Name"]})',
         axis=1,
