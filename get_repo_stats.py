@@ -130,6 +130,7 @@ def output_to_csv(df: pd.DataFrame, dir_name: str, current_datetime: str) -> Non
 def create_markdown_file(
     df: pd.DataFrame, dir_name: str, current_datetime: str
 ) -> None:
+    df = df[df["Stars"] > 100]
     df["Repo"] = df.apply(
         lambda row: f'[{row["Repository Name"]}](https://github.com/{row["Owner"]}/{row["Repository Name"]})',
         axis=1,
