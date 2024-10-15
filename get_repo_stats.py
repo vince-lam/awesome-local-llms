@@ -17,12 +17,10 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
 
     Args:
         repo (str): The repository name in the format "owner/repo".
+        headers (Dict[str, str]): The headers for the API request.
 
     Returns:
-        Dict[str, Union[str, int]]: A dictionary containing various information about the repository,
-        including the repository name, stars count, forks count, contributors count, open issues count,
-        watchers count, releases count, last commit date, license information, repository description,
-        and the languages used in the repository.
+        Dict[str, Union[str, int]]: A dictionary containing various information about the repository.
 
     Raises:
         requests.exceptions.HTTPError: If an HTTP error occurs during the API request.
@@ -31,6 +29,7 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
     base_url = f"https://api.github.com/repos/{repo}"
     try:
         repo_response = requests.get(base_url, headers=headers)
+        repo_response.raise_for_status()  # Raise an exception for bad status codes
         repo_data = repo_response.json()
 
         # Fetch contributors count
@@ -82,13 +81,13 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
         stats: Dict[str, Union[str, int]] = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
-            "About": repo_data["description"],
-            "Stars": repo_data["stargazers_count"],
-            "Forks": repo_data["forks_count"],
-            "Issues": repo_data["open_issues_count"],
+            "About": repo_data.get("description", "No description available"),
+            "Stars": repo_data.get("stargazers_count", 0),
+            "Forks": repo_data.get("forks_count", 0),
+            "Issues": repo_data.get("open_issues_count", 0),
             "Contributors": contributors_count,
             "Releases": releases_count,
-            "Watchers": repo_data["subscribers_count"],
+            "Watchers": repo_data.get("subscribers_count", 0),
             "Time Since Last Commit": f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins",
             "License": license_info,
             "Languages": ", ".join(languages),
@@ -98,28 +97,34 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
         return stats
 
     except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
+        print(f"HTTP error occurred for repo {repo}: {http_err}")
+    except KeyError as key_err:
+        print(f"Key error occurred for repo {repo}: {key_err}")
     except Exception as err:
-        print(f"An error occurred: {err}")
-    finally:
-        time.sleep(1)
+        print(f"An error occurred for repo {repo}: {err}")
+
+    return None  # Return None if there was an error
 
 
 def fetch_all_repo_info(repos: List[str], headers: Dict[str, str]) -> pd.DataFrame:
     repo_info_list: List[Dict[str, Union[str, int]]] = []
     for repo in repos:
         info = fetch_repo_info(repo, headers)
-        if info:  # Ensure info is not None
+        if info is not None:  # Only append if info is not None
             repo_info_list.append(info)
 
     # Create a DataFrame and remove duplicates
-    df = pd.DataFrame(repo_info_list)
-    df = df.drop_duplicates()
-    df = df.sort_values(by="Stars", ascending=False)
-    for col in df.columns:
-        if pd.api.types.is_numeric_dtype(df[col]):
-            df[col] = df[col].apply(lambda x: "{:,}".format(x))
-    return df
+    if repo_info_list:  # Only create DataFrame if list is not empty
+        df = pd.DataFrame(repo_info_list)
+        df = df.drop_duplicates()
+        df = df.sort_values(by="Stars", ascending=False)
+        for col in df.columns:
+            if pd.api.types.is_numeric_dtype(df[col]):
+                df[col] = df[col].apply(lambda x: "{:,}".format(x))
+        return df
+    else:
+        print("No valid repository data found.")
+        return pd.DataFrame()  # Return an empty DataFrame if no data
 
 
 def output_to_csv(df: pd.DataFrame, dir_name: str, current_datetime: str) -> None:
