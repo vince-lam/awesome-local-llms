@@ -11,6 +11,32 @@ from tabulate import tabulate
 from typing import Dict, List, Union
 
 
+def check_api_token(headers: Dict[str, str]) -> bool:
+    """
+    Check if the API token is valid by making a test request to the GitHub API.
+
+    Args:
+        headers (Dict[str, str]): The headers containing the API token.
+
+    Returns:
+        bool: True if the token is valid, False otherwise.
+    """
+    test_url = "https://api.github.com/user"
+    try:
+        response = requests.get(test_url, headers=headers)
+        response.raise_for_status()
+        return True
+    except requests.exceptions.HTTPError as http_err:
+        if response.status_code == 401:
+            print("Error: Invalid or expired API token. Please check your .env file.")
+        else:
+            print(f"HTTP error occurred: {http_err}")
+        return False
+    except Exception as err:
+        print(f"An error occurred while checking the API token: {err}")
+        return False
+
+
 def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, int]]:
     """
     Fetches information about a GitHub repository.
@@ -176,8 +202,20 @@ def main():
     start_time = time.time()
     current_datetime = datetime.now().strftime("%Y-%m-%d_%H%M")
     load_dotenv()
-    api_token = os.getenv("API_TOKEN")
+    api_token = os.getenv(
+        "GITHUB_API_TOKEN"
+    )  # Changed from API_TOKEN to GITHUB_API_TOKEN
+
+    if not api_token:
+        print(
+            "Error: GITHUB_API_TOKEN not found in .env file. Please add it and try again."
+        )
+        return
+
     headers = {"Authorization": f"token {api_token}"}
+
+    if not check_api_token(headers):
+        return
 
     dir_name = "outputs/"
     if not os.path.exists(dir_name):
