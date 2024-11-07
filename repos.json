@@ -68,5 +68,7 @@
     "dbddv01/GPT-Sequencer",
     "n4ze3m/page-assist",
     "mlc-ai/web-llm-chat",
-    "janhq/cortex.cpp"
+    "janhq/cortex.cpp",
+    "a-ghorbani/pocketpal-ai",
+    "run-llama/chat-ui"
 ]
