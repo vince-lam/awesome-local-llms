@@ -37,21 +37,19 @@ def check_api_token(headers: Dict[str, str]) -> bool:
         return False
 
 
-def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, int]]:
+def fetch_repo_info(
+    repo_entry: Dict[str, Union[str, List[str]]], headers: Dict[str, str]
+) -> Dict[str, Union[str, int]]:
     """
     Fetches information about a GitHub repository.
 
     Args:
-        repo (str): The repository name in the format "owner/repo".
+        repo_entry (Dict[str, Union[str, List[str]]]): Dictionary containing repo name and categories.
         headers (Dict[str, str]): The headers for the API request.
-
-    Returns:
-        Dict[str, Union[str, int]]: A dictionary containing various information about the repository.
-
-    Raises:
-        requests.exceptions.HTTPError: If an HTTP error occurs during the API request.
-        Exception: If any other error occurs during the API request.
     """
+    repo = repo_entry["repo"]
+    categories = repo_entry["categories"]
+
     base_url = f"https://api.github.com/repos/{repo}"
     try:
         repo_response = requests.get(base_url, headers=headers)
@@ -107,6 +105,7 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
         stats: Dict[str, Union[str, int]] = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
+            "Categories": ", ".join(categories),
             "About": repo_data.get("description", "No description available"),
             "Stars": repo_data.get("stargazers_count", 0),
             "Forks": repo_data.get("forks_count", 0),
@@ -132,10 +131,12 @@ def fetch_repo_info(repo: str, headers: Dict[str, str]) -> Dict[str, Union[str, 
     return None  # Return None if there was an error
 
 
-def fetch_all_repo_info(repos: List[str], headers: Dict[str, str]) -> pd.DataFrame:
+def fetch_all_repo_info(
+    repos: List[Dict[str, Union[str, List[str]]]], headers: Dict[str, str]
+) -> pd.DataFrame:
     repo_info_list: List[Dict[str, Union[str, int]]] = []
-    for repo in repos:
-        info = fetch_repo_info(repo, headers)
+    for repo_entry in repos:
+        info = fetch_repo_info(repo_entry, headers)
         if info is not None:  # Only append if info is not None
             repo_info_list.append(info)
 
@@ -184,13 +185,14 @@ def create_markdown_file(
         "#",
         "Repo",
         "About",
+        "Categories",
         "Stars",
         "Forks",
         "Issues",
         "Contributors",
+        "Time Since Last Commit",
         "Releases",
         "License",
-        "Time Since Last Commit",
     ]
     df = df[col_order]
     markdown_table = tabulate(df, headers="keys", tablefmt="github", showindex=False)
@@ -227,7 +229,7 @@ def main():
 
     # Load the list of repositories from repos.json
     with open("agents.json", "r") as f:
-        repos: List[str] = json.load(f)
+        repos: List[Dict[str, Union[str, List[str]]]] = json.load(f)
 
     df = fetch_all_repo_info(repos, headers)
     output_to_csv(df, dir_name, current_datetime)

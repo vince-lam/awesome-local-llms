@@ -1,61 +1,722 @@
 [
-    "meta-llama/llama-stack-apps",
-    "run-llama/llama_index",
-    "langchain-ai/langchain",
-    "botpress/botpress",
-    "deepset-ai/haystack",
-    "microsoft/semantic-kernel",
-    "Josh-XT/AGiXT",
-    "mpaepper/llm_agents",
-    "e2b-dev/e2b",
-    "dust-tt/dust",
-    "geekan/MetaGPT",
-    "simonmesmith/agentflow",
-    "InternLM/lagent",
-    "microsoft/autogen",
-    "openbmb/agentverse",
-    "Doriandarko/maestro",
-    "modelscope/agentscope",
-    "crewAIInc/crewAI",
-    "openai/swarm",
-    "VRSEN/agency-swarm",
-    "simbianai/taskgen",
-    "tanchongmin/agentjo",
-    "Pythagora-io/gpt-pilot",
-    "stanfordnlp/dspy",
-    "alaeddine-13/thinkgpt",
-    "chakkaradeep/pyCodeAGI",
-    "TransformerOptimus/SuperAGI",
-    "plandex-ai/plandex",
-    "semanser/codel",
-    "csunny/DB-GPT",
-    "neurocult/agency",
-    "microsoft/TaskWeaver",
-    "aymenfurter/microagents",
-    "princeton-nlp/swe-agent",
-    "Jonathan-Adly/AgentRun",
-    "Doriandarko/claude-engineer",
-    "landing-ai/vision-agent",
-    "TrafficGuard/nous",
-    "assafelovic/gpt-researcher",
-    "blockpipe/blockagi",
-    "Technion-Kishony-lab/data-to-paper",
-    "SakanaAI/AI-Scientist",
-    "stanford-oval/storm",
-    "hpcaitech/ColossalAI",
-    "paulpierre/RasaGPT",
-    "homanp/superagent",
-    "miurla/babyagi-ui",
-    "kreneskyp/ix",
-    "kristoferlund/duet-gpt",
-    "steamship-packages/langchain-agent-production-starter",
-    "stepanogil/autonomous-hr-chatbot",
-    "Maximilian-Winter/llama-cpp-agent",
-    "cpacker/memgpt",
-    "reworkd/AgentGPT",
-    "langchain-ai/langgraph",
-    "ComposioHQ/composio",
-    "phidatahq/phidata",
-    "ErikBjare/gptme",
-    "awslabs/multi-agent-orchestrator"
+    {
+        "repo": "meta-llama/llama-stack-apps",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "run-llama/llama_index",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "langchain-ai/langchain",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "botpress/botpress",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "deepset-ai/haystack",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "microsoft/semantic-kernel",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "Josh-XT/AGiXT",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "mpaepper/llm_agents",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "e2b-dev/e2b",
+        "categories": [
+            "runtime"
+        ]
+    },
+    {
+        "repo": "dust-tt/dust",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "geekan/MetaGPT",
+        "categories": [
+            "coding",
+            "framework"
+        ]
+    },
+    {
+        "repo": "simonmesmith/agentflow",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "InternLM/lagent",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "microsoft/autogen",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "openbmb/agentverse",
+        "categories": [
+            "framework",
+            "general"
+        ]
+    },
+    {
+        "repo": "Doriandarko/maestro",
+        "categories": [
+            "framework",
+            "automation"
+        ]
+    },
+    {
+        "repo": "modelscope/agentscope",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "crewAIInc/crewAI",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "openai/swarm",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "VRSEN/agency-swarm",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "simbianai/taskgen",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "tanchongmin/agentjo",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "Pythagora-io/gpt-pilot",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "stanfordnlp/dspy",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "alaeddine-13/thinkgpt",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "chakkaradeep/pyCodeAGI",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "TransformerOptimus/SuperAGI",
+        "categories": [
+            "coding",
+            "framework"
+        ]
+    },
+    {
+        "repo": "plandex-ai/plandex",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "semanser/codel",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "csunny/DB-GPT",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "neurocult/agency",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "microsoft/TaskWeaver",
+        "categories": [
+            "coding",
+            "data-analysis"
+        ]
+    },
+    {
+        "repo": "aymenfurter/microagents",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "princeton-nlp/swe-agent",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "Jonathan-Adly/AgentRun",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "Doriandarko/claude-engineer",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "landing-ai/vision-agent",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "TrafficGuard/nous",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "assafelovic/gpt-researcher",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "blockpipe/blockagi",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "Technion-Kishony-lab/data-to-paper",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "SakanaAI/AI-Scientist",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "stanford-oval/storm",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "hpcaitech/ColossalAI",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "paulpierre/RasaGPT",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "homanp/superagent",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "miurla/babyagi-ui",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "kreneskyp/ix",
+        "categories": [
+            "chat",
+            "framework"
+        ]
+    },
+    {
+        "repo": "kristoferlund/duet-gpt",
+        "categories": [
+            "chat",
+            "coding"
+        ]
+    },
+    {
+        "repo": "steamship-packages/langchain-agent-production-starter",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "stepanogil/autonomous-hr-chatbot",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "Maximilian-Winter/llama-cpp-agent",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "cpacker/memgpt",
+        "categories": [
+            "chat"
+        ]
+    },
+    {
+        "repo": "reworkd/AgentGPT",
+        "categories": [
+            "browser",
+            "framework"
+        ]
+    },
+    {
+        "repo": "langchain-ai/langgraph",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "ComposioHQ/composio",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "phidatahq/phidata",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "ErikBjare/gptme",
+        "categories": [
+            "general",
+            "research",
+            "coding"
+        ]
+    },
+    {
+        "repo": "awslabs/multi-agent-orchestrator",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "sourcegraph/cody",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "xlang-ai/OpenAgents",
+        "categories": [
+            "browser",
+            "framework"
+        ]
+    },
+    {
+        "repo": "Aider-AI/aider",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "All-Hands-AI/OpenHands",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "stitionai/devika",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "OpenBMB/RepoAgent",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "SamurAIGPT/GPT-Agent",
+        "categories": [
+            "gaming"
+        ]
+    },
+    {
+        "repo": "litanlitudan/skyagi",
+        "categories": [
+            "gaming"
+        ]
+    },
+    {
+        "repo": "MineDojo/Voyager",
+        "categories": [
+            "gaming"
+        ]
+    },
+    {
+        "repo": "melih-unsal/DemoGPT",
+        "categories": [
+            "automation",
+            "coding"
+        ]
+    },
+    {
+        "repo": "Yifan-Song793/RestGPT",
+        "categories": [
+            "automation"
+        ]
+    },
+    {
+        "repo": "OpenBMB/XAgent",
+        "categories": [
+            "automation",
+            "general"
+        ]
+    },
+    {
+        "repo": "fetchai/uAgents",
+        "categories": [
+            "automation",
+            "framework"
+        ]
+    },
+    {
+        "repo": "mikekelly/AgentK",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "OpenInterpreter/open-interpreter",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "team-openpm/workgpt",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "Canner/WrenAI",
+        "categories": [
+            "data analysis"
+        ]
+    },
+    {
+        "repo": "vanna-ai/vanna",
+        "categories": [
+            "data analysis"
+        ]
+    },
+    {
+        "repo": "WecoAI/aideml",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "smol-ai/developer",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "continuedev/continue",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "joshpxyne/gpt-migrate",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "gpt-engineer-org/gpt-engineer",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "eylonmiz/react-agent",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "uilicious/english-compiler",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "irgolic/AutoPR",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "LehengTHU/Agent4Rec",
+        "categories": [
+            "research"
+        ]
+    },
+    {
+        "repo": "myshell-ai/AIlice",
+        "categories": [
+            "general",
+            "framework"
+        ]
+    },
+    {
+        "repo": "topoteretes/PromethAI-Backend",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "trypromptly/LLMStack",
+        "categories": [
+            "framework",
+            "general"
+        ]
+    },
+    {
+        "repo": "Significant-Gravitas/AutoGPT",
+        "categories": [
+            "general",
+            "research"
+        ]
+    },
+    {
+        "repo": "AutoPackAI/beebot",
+        "categories": [
+            "general"
+        ]
+    },
+    {
+        "repo": "yoheinakajima/babyagi",
+        "categories": [
+            "general"
+        ]
+    },
+    {
+        "repo": "Farama-Foundation/chatarena",
+        "categories": [
+            "gaming"
+        ]
+    },
+    {
+        "repo": "Kav-K/GPTDiscord",
+        "categories": [
+            "conversational"
+        ]
+    },
+    {
+        "repo": "agentcoinorg/evo.ninja",
+        "categories": [
+            "general",
+            "data analysis",
+            "coding"
+        ]
+    },
+    {
+        "repo": "muellerberndt/mini-agi",
+        "categories": [
+            "general",
+            "coding"
+        ]
+    },
+    {
+        "repo": "sidhq/Multi-GPT",
+        "categories": [
+            "general"
+        ]
+    },
+    {
+        "repo": "letta-ai/letta",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "superagent-ai/superagent",
+        "categories": [
+            "coding",
+            "framework"
+        ]
+    },
+    {
+        "repo": "abi/screenshot-to-code",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "OpenBMB/ChatDev",
+        "categories": [
+            "coding",
+            "framework"
+        ]
+    },
+    {
+        "repo": "krohling/bondai",
+        "categories": [
+            "general"
+        ]
+    },
+    {
+        "repo": "FlowiseAI/Flowise",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "HumanSignal/Adala",
+        "categories": [
+            "data analysis"
+        ]
+    },
+    {
+        "repo": "bexta/AgentPilot",
+        "categories": [
+            "general",
+            "coding"
+        ]
+    },
+    {
+        "repo": "airtai/fastagency",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "DataBassGit/AgentForge",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "corbt/agent.exe",
+        "categories": [
+            "gui",
+            "general"
+        ]
+    },
+    {
+        "repo": "ennucore/clippinator",
+        "categories": [
+            "coding"
+        ]
+    },
+    {
+        "repo": "langroid/langroid",
+        "categories": [
+            "framework"
+        ]
+    },
+    {
+        "repo": "frdel/agent-zero",
+        "categories": [
+            "coding",
+            "gui"
+        ]
+    },
+    {
+        "repo": "langgenius/dify",
+        "categories": [
+            "framework",
+            "gui",
+            "no/low code"
+        ]
+    },
+    {
+        "repo": "trypear/pearai-app",
+        "categories": [
+            "coding",
+            "gui"
+        ]
+    },
+    {
+        "repo": "yoheinakajima/babyagi-2o",
+        "categories": [
+            "framework",
+            "general"
+        ]
+    },
+    {
+        "repo": "elizaOS/eliza",
+        "categories": [
+            "framework",
+            "general"
+        ]
+    }
 ]
