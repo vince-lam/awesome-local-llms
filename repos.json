@@ -71,5 +71,6 @@
     "janhq/cortex.cpp",
     "a-ghorbani/pocketpal-ai",
     "run-llama/chat-ui",
-    "exo-explore/exo"
+    "exo-explore/exo",
+    "Jeffser/Alpaca"
 ]
