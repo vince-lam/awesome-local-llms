@@ -12,6 +12,12 @@ GitHub repository metrics, like number of stars, contributors, issues, releases,
 
 **Contributions are welcome!** Feel free to suggest open-source repos that I have missed either in the Issues of this repo or run the script in the [script](https://github.com/vince-lam/awesome-local-llms/tree/script) branch and update the README and make a pull request.
 
+## Suggested Addition
+
+**[Shimmy](https://github.com/ptsochantaris/shimmy)** - Self-hosted AI inference server with OpenAI API compatibility. Fast, lightweight, supports multiple model formats (GGUF, Core ML, etc.) with built-in streaming and multimodal capabilities. 3,041 stars, MIT license, actively maintained.
+
+*This suggestion meets the criteria: >100 stars (3,041 stars) and recent commits (active within 60 days). Shimmy provides local LLM inference with OpenAI compatibility, making it an excellent addition to this curated list.*
+
 For full table with all metrics go to this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing) or [Airtable](https://airtable.com/apparaKqezkq2LECD/shrE26kWFaVU1cvgb).
 
 For my thoughts on local LLM tooling: <https://vinlam.com/posts/local-llm-options/>
