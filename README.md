@@ -14,7 +14,7 @@ GitHub repository metrics, like number of stars, contributors, issues, releases,
 
 ## Suggested Addition
 
-**[Shimmy](https://github.com/ptsochantaris/shimmy)** - Self-hosted AI inference server with OpenAI API compatibility. Fast, lightweight, supports multiple model formats (GGUF, Core ML, etc.) with built-in streaming and multimodal capabilities. 3,041 stars, MIT license, actively maintained.
+**[Shimmy](https://github.com/Michael-A-Kuykendall/shimmy)** - Self-hosted AI inference server with OpenAI API compatibility. Fast, lightweight, supports multiple model formats (GGUF, Core ML, etc.) with built-in streaming and multimodal capabilities. 3,041 stars, MIT license, actively maintained.
 
 *This suggestion meets the criteria: >100 stars (3,041 stars) and recent commits (active within 60 days). Shimmy provides local LLM inference with OpenAI compatibility, making it an excellent addition to this curated list.*
 
