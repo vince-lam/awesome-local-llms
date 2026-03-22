@@ -76,6 +76,7 @@ Note the condensed table below has two filters applied:
 |  47 | [ava](https://github.com/cztomsik/ava)  | All-in-one desktop app for running LLMs locally.  | 457  | 17  | 4  |  3 | 0  | Other  | 6 days, 2 hrs, 3 mins  |
 |  48 | [emeltal](https://github.com/ptsochantaris/emeltal)  | Local ML voice chat using high-end models.  | 175  | 13  | 0  |  1 | 0  | MIT License  | 16 days, 17 hrs, 27 mins |
 |  49 | [lite.koboldai.net](https://github.com/LostRuins/lite.koboldai.net)  | A zero dependency web UI for any LLM backend, including KoboldCpp, OpenAI and AI Horde  | 135  | 68  | 15  |  30 | 0  | GNU Affero General Public License v3.0  | 0 days, 8 hrs, 17 mins  |
+|  50 | [Rapid-MLX](https://github.com/raullenchai/Rapid-MLX)  | OpenAI-compatible local LLM inference server for Apple Silicon, 2-4x faster than Ollama  | -  | -  | -  |  - | -  | Apache License 2.0  | -  |
 
 ## Inspired By
 
