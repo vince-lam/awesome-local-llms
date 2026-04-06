@@ -21,6 +21,7 @@ Note the condensed table below has two filters applied:
 1. Repositories need more than 100 stars
 2. Repositories require a commit within the last 60 days
 
+- [guardian-agent-prompts](https://github.com/milkomida77/guardian-agent-prompts) - 49 production-tested AI agent system prompts for multi-agent orchestration. Model-agnostic, works with local and cloud LLMs. MIT licensed.
 ## Open-Source Local LLM Projects
 
 *Last Updated: 08/09/2025*
