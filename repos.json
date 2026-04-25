@@ -73,5 +73,6 @@
     "run-llama/chat-ui",
     "exo-explore/exo",
     "Jeffser/Alpaca",
-    "sigoden/aichat"
+    "sigoden/aichat",
+    "TabbyML/tabby"
 ]
