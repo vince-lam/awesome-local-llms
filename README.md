@@ -77,6 +77,14 @@ Note the condensed table below has two filters applied:
 |  48 | [emeltal](https://github.com/ptsochantaris/emeltal)  | Local ML voice chat using high-end models.  | 175  | 13  | 0  |  1 | 0  | MIT License  | 16 days, 17 hrs, 27 mins |
 |  49 | [lite.koboldai.net](https://github.com/LostRuins/lite.koboldai.net)  | A zero dependency web UI for any LLM backend, including KoboldCpp, OpenAI and AI Horde  | 135  | 68  | 15  |  30 | 0  | GNU Affero General Public License v3.0  | 0 days, 8 hrs, 17 mins  |
 
+## Notable Projects — Local LLM for Edge / Bare-Metal
+
+Projects below are curated additions that don't yet meet the 100-star threshold but are architecturally noteworthy.
+
+| Repo | About | License |
+|------|-------|---------|
+| [AgentBoot](https://github.com/Agnuxo1/AgentBoot-app) | Conversational AI sysadmin: detects bare-metal hardware via chat and guides OS installation. Runs Qwen3 0.8B fully in-browser via wllama (zero server). PWA + Android APK + browser extension + Tauri desktop. BYOK cloud (OpenAI/Claude/Gemini). [Live](https://agentboot.pages.dev) · [HF Space](https://huggingface.co/spaces/Agnuxo/agentboot-demo) | Apache-2.0 |
+
 ## Inspired By
 
 * <https://github.com/janhq/awesome-local-ai>
