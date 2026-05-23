@@ -73,6 +73,5 @@
     "run-llama/chat-ui",
     "exo-explore/exo",
     "Jeffser/Alpaca",
-    "sigoden/aichat",
-    "lucasavila00/LmScript"
+    "sigoden/aichat"
 ]
