@@ -77,6 +77,14 @@ Note the condensed table below has two filters applied:
 |  48 | [emeltal](https://github.com/ptsochantaris/emeltal)  | Local ML voice chat using high-end models.  | 175  | 13  | 0  |  1 | 0  | MIT License  | 16 days, 17 hrs, 27 mins |
 |  49 | [lite.koboldai.net](https://github.com/LostRuins/lite.koboldai.net)  | A zero dependency web UI for any LLM backend, including KoboldCpp, OpenAI and AI Horde  | 135  | 68  | 15  |  30 | 0  | GNU Affero General Public License v3.0  | 0 days, 8 hrs, 17 mins  |
 
+
+## Related Agent Tooling & APIs
+
+Tools that complement local LLM deployments with agent infrastructure:
+
+- [TWZRD Agent Intel](https://intel.twzrd.xyz) - Trust scoring MCP server for AI agents on Solana. Verify agent wallet identity before x402 micropayments. 4 free tools (resolve_agent, score_agent, preflight_check, verify_trust_receipt) + paid signed trust receipts via HTTP 402 + USDC. Remote streamable-http — zero install. `{"mcpServers":{"twzrd-agent-intel":{"url":"https://intel.twzrd.xyz/mcp"}}}`
+
+
 ## Inspired By
 
 * <https://github.com/janhq/awesome-local-ai>
