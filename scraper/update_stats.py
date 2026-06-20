@@ -254,13 +254,30 @@ def make_session(token: str) -> requests.Session:
         "Content-Type": "application/json",
     })
     retry = Retry(
-        total=5,
-        backoff_factor=2,
+        total=10,
+        backoff_factor=4,
         status_forcelist=[500, 502, 503, 504],
         allowed_methods=["POST"],
     )
     session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
+
+
+def _post(session: requests.Session, query: str) -> Optional[requests.Response]:
+    """POST a GraphQL query, catching RetryError so a flaky batch doesn't crash the run."""
+    try:
+        return session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
+    except requests.exceptions.RetryError as exc:
+        print(f"  RetryError (likely intermittent 502s) — sleeping 90s then retrying: {exc}")
+        time.sleep(90)
+        try:
+            return session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
+        except requests.exceptions.RequestException as exc2:
+            print(f"  Batch still failing after retry — skipping: {exc2}")
+            return None
+    except requests.exceptions.RequestException as exc:
+        print(f"  Request error — skipping batch: {exc}")
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -283,14 +300,18 @@ def fetch_batch(
     taxonomy: Dict[str, Dict[str, str]],
 ) -> List[Dict]:
     query = build_query(batch)
-    resp = session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
+    resp = _post(session, query)
+    if resp is None:
+        return []
 
     if resp.status_code in (403, 429):
         reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
         wait = max(0, reset - time.time()) + 5
         print(f"  Rate limited — sleeping {wait:.0f}s")
         time.sleep(wait)
-        resp = session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
+        resp = _post(session, query)
+        if resp is None:
+            return []
 
     if not resp.ok:
         print(f"  HTTP {resp.status_code} — skipping batch")
