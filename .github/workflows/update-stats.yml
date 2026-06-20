@@ -1,0 +1,56 @@
+name: Update repo stats
+
+on:
+  schedule:
+    # Every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}
+
+# Allow the job to push the refreshed README back to the branch.
+permissions:
+  contents: write
+
+concurrency:
+  group: update-stats
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch metrics and update README
+        env:
+          # Secret must NOT be named GITHUB_*; mapped to the var the script reads.
+          GITHUB_API_TOKEN: ${{ secrets.STATS_GH_PAT }}
+        run: python update_stats.py
+
+      - name: Upload CSV artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repo-stats-csv
+          path: outputs/*.csv
+          if-no-files-found: warn
+
+      - name: Commit and push README
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update repo stats ($(date -u +'%Y-%m-%d'))"
+            git push
+          fi
