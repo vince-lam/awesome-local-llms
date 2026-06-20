@@ -1,8 +1,9 @@
 """Fetch GitHub metrics for the curated repos and refresh the README table.
 
-Reads ``repos.json`` (a list of ``{repo, category, subcategory}`` entries),
-pulls metrics from the GitHub API, writes a timestamped CSV to ``outputs/`` and
-injects a filtered, sorted Markdown table into ``README.md`` between the
+Reads ``repos.json`` (a list of ``{repo, tags}`` entries) and
+``categories.json`` (the tag taxonomy), pulls metrics from the GitHub API,
+writes a timestamped CSV to ``outputs/`` and injects a filtered, sorted
+Markdown table into ``README.md`` between the
 ``<!-- BEGIN_TABLE -->`` / ``<!-- END_TABLE -->`` markers.
 """
 
@@ -22,6 +23,7 @@ from urllib3.util.retry import Retry
 
 API_ROOT = "https://api.github.com"
 CONFIG_FILE = "repos.json"
+TAXONOMY_FILE = "categories.json"
 README_FILE = "README.md"
 OUTPUT_DIR = "outputs"
 
@@ -33,8 +35,8 @@ MAX_DAYS_SINCE_COMMIT = 60
 FULL_COLUMNS = [
     "Owner",
     "Repository Name",
-    "Category",
-    "Subcategory",
+    "Categories",
+    "Tags",
     "About",
     "Stars",
     "Forks",
@@ -52,8 +54,7 @@ FULL_COLUMNS = [
 README_COLUMNS = [
     "#",
     "Repo",
-    "Category",
-    "Subcategory",
+    "Tags",
     "About",
     "Stars",
     "Forks",
@@ -63,6 +64,17 @@ README_COLUMNS = [
     "License",
     "Time Since Last Commit",
 ]
+
+
+def load_taxonomy() -> Dict[str, Dict[str, str]]:
+    """Return a slug→{name, category} mapping from categories.json."""
+    with open(TAXONOMY_FILE, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    lookup: Dict[str, Dict[str, str]] = {}
+    for cat in data:
+        for sub in cat["subcategories"]:
+            lookup[sub["slug"]] = {"name": sub["name"], "category": cat["category"]}
+    return lookup
 
 
 def get_token() -> str:
@@ -135,10 +147,17 @@ def count_items(session: requests.Session, url: str) -> int:
 
 
 def fetch_repo_info(
-    session: requests.Session, entry: Dict[str, str]
+    session: requests.Session,
+    entry: Dict[str, object],
+    taxonomy: Dict[str, Dict[str, str]],
 ) -> Optional[Dict[str, object]]:
     """Fetch metrics for a single repo entry."""
     repo = entry["repo"]
+    slugs: List[str] = entry.get("tags", [])  # type: ignore[assignment]
+    tag_names = [taxonomy[s]["name"] for s in slugs if s in taxonomy]
+    # Deduplicate parent categories while preserving order.
+    cat_names = list(dict.fromkeys(taxonomy[s]["category"] for s in slugs if s in taxonomy))
+
     base_url = f"{API_ROOT}/repos/{repo}"
     try:
         resp = session.get(base_url)
@@ -167,8 +186,8 @@ def fetch_repo_info(
         stats = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
-            "Category": entry.get("category", ""),
-            "Subcategory": entry.get("subcategory", ""),
+            "Categories": ", ".join(cat_names),
+            "Tags": ", ".join(tag_names),
             "About": data.get("description") or "No description available",
             "Stars": data.get("stargazers_count", 0),
             "Forks": data.get("forks_count", 0),
@@ -182,7 +201,7 @@ def fetch_repo_info(
             "License": license_info,
             "Languages": languages,
             "URL": f"https://github.com/{repo}",
-            # numeric helper for sorting/filtering, dropped before output
+            # numeric helpers for sorting/filtering, dropped before output
             "_stars": data.get("stargazers_count", 0),
             "_days": int(days),
         }
@@ -195,11 +214,15 @@ def fetch_repo_info(
     return None
 
 
-def fetch_all(session: requests.Session, entries: List[Dict[str, str]]) -> pd.DataFrame:
+def fetch_all(
+    session: requests.Session,
+    entries: List[Dict[str, object]],
+    taxonomy: Dict[str, Dict[str, str]],
+) -> pd.DataFrame:
     rows = []
     for i, entry in enumerate(entries, 1):
         print(f"[{i}/{len(entries)}] {entry['repo']}")
-        info = fetch_repo_info(session, entry)
+        info = fetch_repo_info(session, entry, taxonomy)
         if info:
             rows.append(info)
     if not rows:
@@ -279,10 +302,12 @@ def main() -> None:
     if not check_token(session):
         sys.exit(1)
 
+    taxonomy = load_taxonomy()
+
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         entries = json.load(f)
 
-    df = fetch_all(session, entries)
+    df = fetch_all(session, entries, taxonomy)
     csv_path = write_csv(df)
     update_readme(build_markdown_table(df))
 
