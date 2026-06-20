@@ -1,10 +1,16 @@
-"""Fetch GitHub metrics for the curated repos and refresh the README table.
+"""Fetch GitHub metrics for curated repos → Turso database + README + CSV.
 
-Reads ``repos.json`` (a list of ``{repo, tags}`` entries) and
-``categories.json`` (the tag taxonomy), pulls metrics from the GitHub GraphQL
-API in batches of 25 repos per request, writes a timestamped CSV to
-``outputs/`` and injects a filtered, sorted Markdown table into ``README.md``
-between the ``<!-- BEGIN_TABLE -->`` / ``<!-- END_TABLE -->`` markers.
+Reads ``data/repos.json`` and ``data/categories.json``, fetches metrics via
+the GitHub GraphQL API (batches of 50 repos per request), then:
+
+  • Upserts daily snapshots into Turso (always)
+  • Refreshes the README table between <!-- BEGIN_TABLE --> markers (always)
+  • Writes a timestamped CSV to outputs/ (local runs only — skipped in CI)
+
+Environment variables:
+  STATS_GH_PAT or GITHUB_TOKEN or GITHUB_API_TOKEN
+  TURSO_DATABASE_URL   — libsql://... URL from Turso dashboard
+  TURSO_AUTH_TOKEN     — Turso auth token
 """
 
 import json
@@ -12,7 +18,7 @@ import os
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Dict, List, Optional
 
 import pandas as pd
@@ -24,8 +30,6 @@ from urllib3.util.retry import Retry
 GRAPHQL_URL = "https://api.github.com/graphql"
 BATCH_SIZE = 50
 
-# This script lives in scraper/; data sits in scraper/data/ and the README and
-# CSV outputs live at the repo root (the parent directory).
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
@@ -39,43 +43,17 @@ MIN_STARS = 100
 MAX_DAYS_SINCE_COMMIT = 60
 README_TOP_N = 100
 
-# Full column order for the CSV.
 FULL_COLUMNS = [
-    "Owner",
-    "Repository Name",
-    "Categories",
-    "Tags",
-    "Platforms",
-    "GPU Backends",
-    "About",
-    "Stars",
-    "Forks",
-    "Issues",
-    "Contributors",
-    "Releases",
-    "Watchers",
-    "Time Since Last Commit",
-    "License",
-    "Languages",
-    "URL",
+    "Owner", "Repository Name", "Categories", "Tags", "Platforms",
+    "GPU Backends", "About", "Stars", "Forks", "Issues", "Contributors",
+    "Releases", "Watchers", "Time Since Last Commit", "License", "Languages", "URL",
 ]
 
-# Column order for the condensed README table.
 README_COLUMNS = [
-    "#",
-    "Repo",
-    "Tags",
-    "About",
-    "Stars",
-    "Forks",
-    "Issues",
-    "Contributors",
-    "Releases",
-    "License",
-    "Time Since Last Commit",
+    "#", "Repo", "Tags", "About", "Stars", "Forks", "Issues",
+    "Contributors", "Releases", "License", "Time Since Last Commit",
 ]
 
-# GraphQL fragment fetched for every repo in a batch.
 REPO_FIELDS = """{
   stargazerCount
   forkCount
@@ -92,11 +70,155 @@ REPO_FIELDS = """{
 
 
 # ---------------------------------------------------------------------------
+# Turso HTTP client
+# ---------------------------------------------------------------------------
+
+def _arg(v) -> dict:
+    if v is None:
+        return {"type": "null"}
+    if isinstance(v, bool):
+        return {"type": "integer", "value": str(int(v))}
+    if isinstance(v, int):
+        return {"type": "integer", "value": str(v)}
+    if isinstance(v, float):
+        return {"type": "float", "value": str(v)}
+    return {"type": "text", "value": str(v)}
+
+
+class TursoClient:
+    def __init__(self, url: str, token: str) -> None:
+        self.base_url = url.replace("libsql://", "https://").rstrip("/")
+        self._headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+
+    def _pipeline(self, stmts: list) -> list:
+        payload = {
+            "requests": [{"type": "execute", "stmt": s} for s in stmts]
+            + [{"type": "close"}]
+        }
+        r = requests.post(
+            f"{self.base_url}/v2/pipeline",
+            json=payload,
+            headers=self._headers,
+            timeout=30,
+        )
+        r.raise_for_status()
+        results = r.json().get("results", [])
+        for res in results:
+            if res.get("type") == "error":
+                raise RuntimeError(f"Turso: {res['error']['message']}")
+        return results
+
+    def execute(self, sql: str, args: Optional[list] = None) -> dict:
+        stmt: dict = {"sql": sql}
+        if args:
+            stmt["args"] = [_arg(a) for a in args]
+        return self._pipeline([stmt])[0]
+
+    def executemany(self, statements: list) -> list:
+        stmts = []
+        for sql, args in statements:
+            stmt: dict = {"sql": sql}
+            if args:
+                stmt["args"] = [_arg(a) for a in args]
+            stmts.append(stmt)
+        return self._pipeline(stmts)
+
+
+_INIT_REPO_SQL = """
+INSERT INTO repos (full_name, owner, name, url, tags, platforms, backends)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(full_name) DO UPDATE SET
+  tags      = excluded.tags,
+  platforms = excluded.platforms,
+  backends  = excluded.backends
+"""
+
+_UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
+
+_UPSERT_SNAPSHOT_SQL = """
+INSERT INTO snapshots
+  (repo_id, scraped_date, stars, forks, issues, releases,
+   watchers, days_since_commit, license, primary_language)
+SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?
+FROM   repos WHERE full_name = ?
+ON CONFLICT(repo_id, scraped_date) DO UPDATE SET
+  stars             = excluded.stars,
+  forks             = excluded.forks,
+  issues            = excluded.issues,
+  releases          = excluded.releases,
+  watchers          = excluded.watchers,
+  days_since_commit = excluded.days_since_commit,
+  license           = excluded.license,
+  primary_language  = excluded.primary_language
+"""
+
+
+def _flush(db: TursoClient, stmts: list) -> list:
+    if stmts:
+        db.executemany(stmts)
+    return []
+
+
+def init_repos(db: TursoClient, entries: List[Dict]) -> None:
+    stmts = []
+    for e in entries:
+        owner, name = e["repo"].split("/", 1)
+        stmts.append((_INIT_REPO_SQL, [
+            e["repo"], owner, name,
+            f"https://github.com/{e['repo']}",
+            json.dumps(e.get("tags", [])),
+            json.dumps(e.get("platforms", [])),
+            json.dumps(e.get("backends", [])),
+        ]))
+        if len(stmts) >= 50:
+            stmts = _flush(db, stmts)
+    _flush(db, stmts)
+    print(f"Initialised {len(entries)} repos in Turso")
+
+
+def write_snapshots_to_db(db: TursoClient, df: pd.DataFrame) -> None:
+    today = date.today().isoformat()
+    desc_stmts, snap_stmts = [], []
+
+    for _, row in df.iterrows():
+        full_name = f"{row['Owner']}/{row['Repository Name']}"
+        description = row.get("About")
+        if description == "No description available":
+            description = None
+        license_val = row.get("License")
+        if license_val == "No license":
+            license_val = None
+
+        desc_stmts.append((_UPDATE_DESC_SQL, [description, full_name]))
+        snap_stmts.append((_UPSERT_SNAPSHOT_SQL, [
+            today,
+            int(row["Stars"]), int(row["Forks"]), int(row["Issues"]),
+            int(row.get("Releases", 0)),
+            int(row.get("Watchers", 0)),
+            int(row["_days"]),
+            license_val,
+            row.get("Languages") or None,
+            full_name,
+        ]))
+
+        if len(snap_stmts) >= 50:
+            _flush(db, desc_stmts)
+            _flush(db, snap_stmts)
+            desc_stmts, snap_stmts = [], []
+
+    _flush(db, desc_stmts)
+    _flush(db, snap_stmts)
+    print(f"Wrote {len(df)} snapshots to Turso")
+
+
+# ---------------------------------------------------------------------------
 # Config / auth
 # ---------------------------------------------------------------------------
 
 def load_taxonomy() -> Dict[str, Dict[str, str]]:
-    """Return a slug→{name, category} mapping from categories.json."""
     with open(TAXONOMY_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
     lookup: Dict[str, Dict[str, str]] = {}
@@ -231,7 +353,6 @@ def fetch_batch(
         print(f"  ok: {repo} ({row['Stars']:,} ★)")
         rows.append(row)
 
-    # Back off if running low on GraphQL point budget
     remaining = int(resp.headers.get("X-RateLimit-Remaining", 100))
     if remaining < 20:
         reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
@@ -292,7 +413,6 @@ def write_csv(df: pd.DataFrame) -> str:
 
 
 def build_markdown_table(df: pd.DataFrame) -> str:
-    """Build the condensed Markdown table for the README (top N by stars)."""
     table = df[(df["_stars"] > MIN_STARS) & (df["_days"] <= MAX_DAYS_SINCE_COMMIT)].copy()
     table = table.head(README_TOP_N).reset_index(drop=True)
     table["#"] = table.index + 1
@@ -345,6 +465,13 @@ def main() -> None:
     token = get_token()
     session = make_session(token)
 
+    turso_url = os.getenv("TURSO_DATABASE_URL")
+    turso_token = os.getenv("TURSO_AUTH_TOKEN")
+    use_db = bool(turso_url and turso_token)
+    db = TursoClient(turso_url, turso_token) if use_db else None  # type: ignore[arg-type]
+    if not use_db:
+        print("Warning: TURSO_DATABASE_URL / TURSO_AUTH_TOKEN not set — skipping DB writes")
+
     taxonomy = load_taxonomy()
 
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
@@ -354,11 +481,19 @@ def main() -> None:
           f"({-(-len(entries) // BATCH_SIZE)} GraphQL requests)...")
 
     df = fetch_all(session, entries, taxonomy)
-    csv_path = write_csv(df)
+
+    if db:
+        init_repos(db, entries)
+        write_snapshots_to_db(db, df)
+
+    # Skip CSV in CI — it's gitignored and not useful in the action runner
+    if not os.getenv("CI"):
+        write_csv(df)
+
     update_readme(build_markdown_table(df))
 
     mins, secs = divmod(time.time() - start, 60)
-    print(f"\nDone: {len(df)} repos in {int(mins)}m {int(secs)}s. CSV: {csv_path}")
+    print(f"\nDone: {len(df)} repos in {int(mins)}m {int(secs)}s")
 
 
 if __name__ == "__main__":

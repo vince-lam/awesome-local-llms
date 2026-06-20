@@ -2,11 +2,9 @@ name: Update repo stats
 
 on:
   schedule:
-    # Every Monday at 06:00 UTC
-    - cron: "0 6 * * 1"
+    - cron: "0 1 * * *"   # 01:00 UTC daily
   workflow_dispatch: {}
 
-# Allow the job to push the refreshed README back to the branch.
 permissions:
   contents: write
 
@@ -26,22 +24,17 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: scraper/requirements.txt
 
       - name: Install dependencies
         run: pip install -r scraper/requirements.txt
 
-      - name: Fetch metrics and update README
+      - name: Fetch metrics, update Turso + README
         env:
-          # Secret must NOT be named GITHUB_*; mapped to the var the script reads.
           GITHUB_API_TOKEN: ${{ secrets.STATS_GH_PAT }}
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: python scraper/update_stats.py
-
-      - name: Upload CSV artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: repo-stats-csv
-          path: outputs/*.csv
-          if-no-files-found: warn
 
       - name: Commit and push README
         run: |
