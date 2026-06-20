@@ -112,21 +112,23 @@ def check_token(session: requests.Session) -> bool:
     return resp.ok
 
 
-def count_paginated(session: requests.Session, url: str) -> int:
-    """Count items across a paginated endpoint (contributors, releases)."""
-    count = 0
-    page = 1
-    while True:
-        resp = session.get(url, params={"page": page, "per_page": 100})
-        resp.raise_for_status()
-        items = resp.json()
-        if not items:
-            break
-        count += len(items)
-        if len(items) < 100:
-            break
-        page += 1
-    return count
+def count_items(session: requests.Session, url: str) -> int:
+    """Count items on a paginated endpoint (contributors, releases) cheaply.
+
+    The GitHub repo object doesn't expose contributor/release counts, so instead
+    of walking every page we request a single item and read the ``last`` page
+    number from the ``Link`` header. With ``per_page=1`` that page number equals
+    the total count, turning N requests into one.
+    """
+    resp = session.get(url, params={"per_page": 1})
+    resp.raise_for_status()
+    if not resp.json():
+        return 0
+    last_url = resp.links.get("last", {}).get("url")
+    if not last_url:
+        return 1  # only a single item, so no "last" link
+    match = re.search(r"[?&]page=(\d+)", last_url)
+    return int(match.group(1)) if match else 1
 
 
 def fetch_repo_info(
@@ -140,8 +142,8 @@ def fetch_repo_info(
         resp.raise_for_status()
         data = resp.json()
 
-        contributors = count_paginated(session, f"{base_url}/contributors")
-        releases = count_paginated(session, f"{base_url}/releases")
+        contributors = count_items(session, f"{base_url}/contributors")
+        releases = count_items(session, f"{base_url}/releases")
 
         langs_resp = session.get(f"{base_url}/languages")
         langs_resp.raise_for_status()
