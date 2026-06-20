@@ -187,5 +187,6 @@
   { "repo": "langgenius/dify",                                  "tags": ["workflow-low-code"] },
   { "repo": "trypear/pearai-app",                               "tags": ["ide-extension"] },
   { "repo": "yoheinakajima/babyagi-2o",                         "tags": ["multi-agent-system"] },
-  { "repo": "elizaOS/eliza",                                    "tags": ["multi-agent-system"] }
+  { "repo": "elizaOS/eliza",                                    "tags": ["multi-agent-system"] },
+  { "repo": "raullenchai/Rapid-MLX",                            "tags": ["local-runtime"] }
 ]
