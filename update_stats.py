@@ -1,0 +1,289 @@
+"""Fetch GitHub metrics for the curated repos and refresh the README table.
+
+Reads ``repos.json`` (a list of ``{repo, category, subcategory}`` entries),
+pulls metrics from the GitHub API, writes a timestamped CSV to ``outputs/`` and
+injects a filtered, sorted Markdown table into ``README.md`` between the
+``<!-- BEGIN_TABLE -->`` / ``<!-- END_TABLE -->`` markers.
+"""
+
+import json
+import os
+import re
+import sys
+import time
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
+
+import pandas as pd
+import requests
+from requests.adapters import HTTPAdapter
+from tabulate import tabulate
+from urllib3.util.retry import Retry
+
+API_ROOT = "https://api.github.com"
+CONFIG_FILE = "repos.json"
+README_FILE = "README.md"
+OUTPUT_DIR = "outputs"
+
+# README table filters
+MIN_STARS = 100
+MAX_DAYS_SINCE_COMMIT = 60
+
+# Full column order for the CSV.
+FULL_COLUMNS = [
+    "Owner",
+    "Repository Name",
+    "Category",
+    "Subcategory",
+    "About",
+    "Stars",
+    "Forks",
+    "Issues",
+    "Contributors",
+    "Releases",
+    "Watchers",
+    "Time Since Last Commit",
+    "License",
+    "Languages",
+    "URL",
+]
+
+# Column order for the condensed README table.
+README_COLUMNS = [
+    "#",
+    "Repo",
+    "Category",
+    "Subcategory",
+    "About",
+    "Stars",
+    "Forks",
+    "Issues",
+    "Contributors",
+    "Releases",
+    "License",
+    "Time Since Last Commit",
+]
+
+
+def get_token() -> str:
+    """Return the GitHub token from the environment (CI or local .env)."""
+    # Load a local .env if python-dotenv is available; harmless in CI.
+    try:
+        from dotenv import load_dotenv
+
+        load_dotenv()
+    except ImportError:
+        pass
+    token = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_API_TOKEN")
+    if not token:
+        sys.exit(
+            "Error: no GitHub token found. Set GITHUB_TOKEN (CI) or "
+            "GITHUB_API_TOKEN in your .env file."
+        )
+    return token
+
+
+def make_session(token: str) -> requests.Session:
+    """Build a requests session with auth headers and retry/backoff."""
+    session = requests.Session()
+    session.headers.update(
+        {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+    )
+    retry = Retry(
+        total=5,
+        backoff_factor=2,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["GET"],
+    )
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    return session
+
+
+def check_token(session: requests.Session) -> bool:
+    """Verify the token works before scraping everything."""
+    resp = session.get(f"{API_ROOT}/user")
+    if resp.status_code == 401:
+        print("Error: invalid or expired GitHub token.")
+        return False
+    return resp.ok
+
+
+def count_paginated(session: requests.Session, url: str) -> int:
+    """Count items across a paginated endpoint (contributors, releases)."""
+    count = 0
+    page = 1
+    while True:
+        resp = session.get(url, params={"page": page, "per_page": 100})
+        resp.raise_for_status()
+        items = resp.json()
+        if not items:
+            break
+        count += len(items)
+        if len(items) < 100:
+            break
+        page += 1
+    return count
+
+
+def fetch_repo_info(
+    session: requests.Session, entry: Dict[str, str]
+) -> Optional[Dict[str, object]]:
+    """Fetch metrics for a single repo entry."""
+    repo = entry["repo"]
+    base_url = f"{API_ROOT}/repos/{repo}"
+    try:
+        resp = session.get(base_url)
+        resp.raise_for_status()
+        data = resp.json()
+
+        contributors = count_paginated(session, f"{base_url}/contributors")
+        releases = count_paginated(session, f"{base_url}/releases")
+
+        langs_resp = session.get(f"{base_url}/languages")
+        langs_resp.raise_for_status()
+        languages = ", ".join(langs_resp.json().keys())
+
+        last_commit = datetime.strptime(data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ")
+        delta = datetime.now(timezone.utc).replace(tzinfo=None) - last_commit
+        days, rem = divmod(delta.total_seconds(), 86400)
+        hours, rem = divmod(rem, 3600)
+        minutes, _ = divmod(rem, 60)
+
+        license_info = (
+            data["license"]["name"]
+            if data.get("license")
+            else "No license"
+        )
+
+        stats = {
+            "Owner": repo.split("/")[0],
+            "Repository Name": repo.split("/")[1],
+            "Category": entry.get("category", ""),
+            "Subcategory": entry.get("subcategory", ""),
+            "About": data.get("description") or "No description available",
+            "Stars": data.get("stargazers_count", 0),
+            "Forks": data.get("forks_count", 0),
+            "Issues": data.get("open_issues_count", 0),
+            "Contributors": contributors,
+            "Releases": releases,
+            "Watchers": data.get("subscribers_count", 0),
+            "Time Since Last Commit": (
+                f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins"
+            ),
+            "License": license_info,
+            "Languages": languages,
+            "URL": f"https://github.com/{repo}",
+            # numeric helper for sorting/filtering, dropped before output
+            "_stars": data.get("stargazers_count", 0),
+            "_days": int(days),
+        }
+        print(f"  ok: {repo} ({stats['Stars']} stars)")
+        return stats
+    except requests.exceptions.HTTPError as err:
+        print(f"  skip: {repo} - HTTP error: {err}")
+    except Exception as err:  # noqa: BLE001 - keep going on any single repo
+        print(f"  skip: {repo} - error: {err}")
+    return None
+
+
+def fetch_all(session: requests.Session, entries: List[Dict[str, str]]) -> pd.DataFrame:
+    rows = []
+    for i, entry in enumerate(entries, 1):
+        print(f"[{i}/{len(entries)}] {entry['repo']}")
+        info = fetch_repo_info(session, entry)
+        if info:
+            rows.append(info)
+    if not rows:
+        sys.exit("Error: no repository data fetched.")
+    df = pd.DataFrame(rows).drop_duplicates(subset=["URL"])
+    df = df.sort_values(by="_stars", ascending=False).reset_index(drop=True)
+    return df
+
+
+def format_numbers(df: pd.DataFrame) -> pd.DataFrame:
+    """Format numeric metric columns with thousands separators (as strings)."""
+    df = df.copy()
+    for col in ["Stars", "Forks", "Issues", "Contributors", "Releases", "Watchers"]:
+        df[col] = df[col].apply(lambda x: f"{int(x):,}")
+    return df
+
+
+def write_csv(df: pd.DataFrame) -> str:
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    stamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    path = os.path.join(OUTPUT_DIR, f"{stamp}_repo_stats.csv")
+    df[FULL_COLUMNS].to_csv(path, index=False)
+    print(f"Wrote {path}")
+    return path
+
+
+def build_markdown_table(df: pd.DataFrame) -> str:
+    """Build the condensed, filtered Markdown table for the README."""
+    table = df[(df["_stars"] > MIN_STARS) & (df["_days"] <= MAX_DAYS_SINCE_COMMIT)].copy()
+    table = table.reset_index(drop=True)
+    table["#"] = table.index + 1
+    table["Repo"] = table.apply(
+        lambda r: f'[{r["Repository Name"]}]({r["URL"]})', axis=1
+    )
+    table = format_numbers(table)[README_COLUMNS]
+    md = tabulate(table, headers="keys", tablefmt="github", showindex=False)
+    md = re.sub(r" {3,}", "  ", md)
+    md = re.sub(r"-{4,}", "----------", md)
+    return md
+
+
+def update_readme(markdown_table: str) -> None:
+    """Inject the table and refresh the Last Updated line in README.md."""
+    with open(README_FILE, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    today = datetime.now().strftime("%d/%m/%Y")
+    content = re.sub(
+        r"\*Last Updated:.*?\*",
+        f"*Last Updated: {today}*",
+        content,
+        count=1,
+    )
+
+    block = f"<!-- BEGIN_TABLE -->\n{markdown_table}\n<!-- END_TABLE -->"
+    if "<!-- BEGIN_TABLE -->" not in content:
+        sys.exit(
+            "Error: README.md is missing the <!-- BEGIN_TABLE --> / "
+            "<!-- END_TABLE --> markers."
+        )
+    content = re.sub(
+        r"<!-- BEGIN_TABLE -->.*?<!-- END_TABLE -->",
+        block,
+        content,
+        flags=re.DOTALL,
+    )
+
+    with open(README_FILE, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"Updated {README_FILE}")
+
+
+def main() -> None:
+    start = time.time()
+    token = get_token()
+    session = make_session(token)
+    if not check_token(session):
+        sys.exit(1)
+
+    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+        entries = json.load(f)
+
+    df = fetch_all(session, entries)
+    csv_path = write_csv(df)
+    update_readme(build_markdown_table(df))
+
+    mins, secs = divmod(time.time() - start, 60)
+    print(f"Done in {int(mins)}m {int(secs)}s. CSV: {csv_path}")
+
+
+if __name__ == "__main__":
+    main()

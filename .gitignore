@@ -1,0 +1,15 @@
+# Secrets
+.env
+*.pem
+service_account.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated outputs (timestamped CSVs)
+outputs/
+
+# macOS
+.DS_Store
