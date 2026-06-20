@@ -261,10 +261,12 @@ def write_csv(df: pd.DataFrame) -> str:
     return path
 
 
+README_TOP_N = 100
+
 def build_markdown_table(df: pd.DataFrame) -> str:
-    """Build the condensed, filtered Markdown table for the README."""
+    """Build the condensed Markdown table for the README (top N by stars)."""
     table = df[(df["_stars"] > MIN_STARS) & (df["_days"] <= MAX_DAYS_SINCE_COMMIT)].copy()
-    table = table.reset_index(drop=True)
+    table = table.head(README_TOP_N).reset_index(drop=True)
     table["#"] = table.index + 1
     table["Repo"] = table.apply(
         lambda r: f'[{r["Repository Name"]}]({r["URL"]})', axis=1
