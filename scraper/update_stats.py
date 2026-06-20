@@ -1,10 +1,10 @@
 """Fetch GitHub metrics for the curated repos and refresh the README table.
 
 Reads ``repos.json`` (a list of ``{repo, tags}`` entries) and
-``categories.json`` (the tag taxonomy), pulls metrics from the GitHub API,
-writes a timestamped CSV to ``outputs/`` and injects a filtered, sorted
-Markdown table into ``README.md`` between the
-``<!-- BEGIN_TABLE -->`` / ``<!-- END_TABLE -->`` markers.
+``categories.json`` (the tag taxonomy), pulls metrics from the GitHub GraphQL
+API in batches of 25 repos per request, writes a timestamped CSV to
+``outputs/`` and injects a filtered, sorted Markdown table into ``README.md``
+between the ``<!-- BEGIN_TABLE -->`` / ``<!-- END_TABLE -->`` markers.
 """
 
 import json
@@ -21,7 +21,8 @@ from requests.adapters import HTTPAdapter
 from tabulate import tabulate
 from urllib3.util.retry import Retry
 
-API_ROOT = "https://api.github.com"
+GRAPHQL_URL = "https://api.github.com/graphql"
+BATCH_SIZE = 25
 
 # This script lives in scraper/; data sits in scraper/data/ and the README and
 # CSV outputs live at the repo root (the parent directory).
@@ -36,6 +37,7 @@ OUTPUT_DIR = os.path.join(REPO_ROOT, "outputs")
 # README table filters
 MIN_STARS = 100
 MAX_DAYS_SINCE_COMMIT = 60
+README_TOP_N = 100
 
 # Full column order for the CSV.
 FULL_COLUMNS = [
@@ -73,6 +75,25 @@ README_COLUMNS = [
     "Time Since Last Commit",
 ]
 
+# GraphQL fragment fetched for every repo in a batch.
+REPO_FIELDS = """{
+  stargazerCount
+  forkCount
+  description
+  pushedAt
+  isArchived
+  primaryLanguage { name }
+  licenseInfo { name }
+  openIssues: issues(states: OPEN) { totalCount }
+  watchers { totalCount }
+  releases { totalCount }
+  mentionableUsers { totalCount }
+}"""
+
+
+# ---------------------------------------------------------------------------
+# Config / auth
+# ---------------------------------------------------------------------------
 
 def load_taxonomy() -> Dict[str, Dict[str, str]]:
     """Return a slug→{name, category} mapping from categories.json."""
@@ -86,166 +107,175 @@ def load_taxonomy() -> Dict[str, Dict[str, str]]:
 
 
 def get_token() -> str:
-    """Return the GitHub token from the environment (CI or local .env)."""
-    # Load a local .env if python-dotenv is available; harmless in CI.
     try:
         from dotenv import load_dotenv
-
         load_dotenv()
     except ImportError:
         pass
-    token = os.getenv("GITHUB_TOKEN") or os.getenv("GITHUB_API_TOKEN")
+    token = (
+        os.getenv("STATS_GH_PAT")
+        or os.getenv("GITHUB_TOKEN")
+        or os.getenv("GITHUB_API_TOKEN")
+    )
     if not token:
         sys.exit(
-            "Error: no GitHub token found. Set GITHUB_TOKEN (CI) or "
-            "GITHUB_API_TOKEN in your .env file."
+            "Error: no GitHub token found. Set STATS_GH_PAT / GITHUB_TOKEN / "
+            "GITHUB_API_TOKEN in your environment or .env file."
         )
     return token
 
 
 def make_session(token: str) -> requests.Session:
-    """Build a requests session with auth headers and retry/backoff."""
     session = requests.Session()
-    session.headers.update(
-        {
-            "Authorization": f"Bearer {token}",
-            "Accept": "application/vnd.github+json",
-            "X-GitHub-Api-Version": "2022-11-28",
-        }
-    )
+    session.headers.update({
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+    })
     retry = Retry(
         total=5,
         backoff_factor=2,
-        # 403 and 429 are GitHub's secondary rate-limit responses; back off and
-        # honour any Retry-After header instead of dropping the repo.
-        status_forcelist=[403, 429, 500, 502, 503, 504],
-        allowed_methods=["GET"],
-        respect_retry_after_header=True,
+        status_forcelist=[500, 502, 503, 504],
+        allowed_methods=["POST"],
     )
     session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
 
 
-def check_token(session: requests.Session) -> bool:
-    """Verify the token works before scraping everything."""
-    resp = session.get(f"{API_ROOT}/user")
-    if resp.status_code == 401:
-        print("Error: invalid or expired GitHub token.")
-        return False
-    return resp.ok
+# ---------------------------------------------------------------------------
+# GraphQL helpers
+# ---------------------------------------------------------------------------
+
+def build_query(batch: List[Dict]) -> str:
+    parts = []
+    for i, entry in enumerate(batch):
+        owner, name = entry["repo"].split("/", 1)
+        owner = owner.replace('"', "")
+        name = name.replace('"', "")
+        parts.append(f'  r{i}: repository(owner: "{owner}", name: "{name}") {REPO_FIELDS}')
+    return "query {\n" + "\n".join(parts) + "\n}"
 
 
-def count_items(session: requests.Session, url: str) -> int:
-    """Count items on a paginated endpoint (contributors, releases) cheaply.
-
-    The GitHub repo object doesn't expose contributor/release counts, so instead
-    of walking every page we request a single item and read the ``last`` page
-    number from the ``Link`` header. With ``per_page=1`` that page number equals
-    the total count, turning N requests into one.
-    """
-    resp = session.get(url, params={"per_page": 1})
-    resp.raise_for_status()
-    if not resp.json():
-        return 0
-    last_url = resp.links.get("last", {}).get("url")
-    if not last_url:
-        return 1  # only a single item, so no "last" link
-    match = re.search(r"[?&]page=(\d+)", last_url)
-    return int(match.group(1)) if match else 1
-
-
-def fetch_repo_info(
+def fetch_batch(
     session: requests.Session,
-    entry: Dict[str, object],
+    batch: List[Dict],
     taxonomy: Dict[str, Dict[str, str]],
-) -> Optional[Dict[str, object]]:
-    """Fetch metrics for a single repo entry."""
-    repo = entry["repo"]
-    slugs: List[str] = entry.get("tags", [])  # type: ignore[assignment]
-    tag_names = [taxonomy[s]["name"] for s in slugs if s in taxonomy]
-    # Deduplicate parent categories while preserving order.
-    cat_names = list(dict.fromkeys(taxonomy[s]["category"] for s in slugs if s in taxonomy))
-    platforms: List[str] = entry.get("platforms", [])  # type: ignore[assignment]
-    backends: List[str] = entry.get("backends", [])  # type: ignore[assignment]
+) -> List[Dict]:
+    query = build_query(batch)
+    resp = session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
 
-    base_url = f"{API_ROOT}/repos/{repo}"
-    try:
-        resp = session.get(base_url)
-        resp.raise_for_status()
-        data = resp.json()
+    if resp.status_code in (403, 429):
+        reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+        wait = max(0, reset - time.time()) + 5
+        print(f"  Rate limited — sleeping {wait:.0f}s")
+        time.sleep(wait)
+        resp = session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
 
-        contributors = count_items(session, f"{base_url}/contributors")
-        releases = count_items(session, f"{base_url}/releases")
+    if not resp.ok:
+        print(f"  HTTP {resp.status_code} — skipping batch")
+        return []
 
-        langs_resp = session.get(f"{base_url}/languages")
-        langs_resp.raise_for_status()
-        languages = ", ".join(langs_resp.json().keys())
+    payload = resp.json()
+    for err in payload.get("errors", []):
+        print(f"  GraphQL error: {err.get('message', err)}")
 
-        last_commit = datetime.strptime(data["pushed_at"], "%Y-%m-%dT%H:%M:%SZ")
-        delta = datetime.now(timezone.utc).replace(tzinfo=None) - last_commit
-        days, rem = divmod(delta.total_seconds(), 86400)
-        hours, rem = divmod(rem, 3600)
-        minutes, _ = divmod(rem, 60)
+    data = payload.get("data") or {}
+    rows = []
 
-        license_info = (
-            data["license"]["name"]
-            if data.get("license")
-            else "No license"
-        )
+    for i, entry in enumerate(batch):
+        node = data.get(f"r{i}")
+        if node is None:
+            print(f"  skip: {entry['repo']} — null (private/deleted/renamed?)")
+            continue
 
-        stats = {
+        repo = entry["repo"]
+        slugs: List[str] = entry.get("tags", [])
+        tag_names = [taxonomy[s]["name"] for s in slugs if s in taxonomy]
+        cat_names = list(dict.fromkeys(
+            taxonomy[s]["category"] for s in slugs if s in taxonomy
+        ))
+        platforms: List[str] = entry.get("platforms", [])
+        backends: List[str] = entry.get("backends", [])
+
+        pushed = node.get("pushedAt") or ""
+        days = hours = minutes = 0
+        if pushed:
+            dt = datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            delta = datetime.now(timezone.utc) - dt
+            days, rem = divmod(delta.total_seconds(), 86400)
+            hours, rem = divmod(rem, 3600)
+            minutes, _ = divmod(rem, 60)
+
+        row = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
             "Categories": ", ".join(cat_names),
             "Tags": ", ".join(tag_names),
             "Platforms": ", ".join(platforms),
             "GPU Backends": ", ".join(backends),
-            "About": data.get("description") or "No description available",
-            "Stars": data.get("stargazers_count", 0),
-            "Forks": data.get("forks_count", 0),
-            "Issues": data.get("open_issues_count", 0),
-            "Contributors": contributors,
-            "Releases": releases,
-            "Watchers": data.get("subscribers_count", 0),
+            "About": node.get("description") or "No description available",
+            "Stars": node.get("stargazerCount", 0),
+            "Forks": node.get("forkCount", 0),
+            "Issues": (node.get("openIssues") or {}).get("totalCount", 0),
+            "Contributors": (node.get("mentionableUsers") or {}).get("totalCount", 0),
+            "Releases": (node.get("releases") or {}).get("totalCount", 0),
+            "Watchers": (node.get("watchers") or {}).get("totalCount", 0),
             "Time Since Last Commit": (
                 f"{int(days)} days, {int(hours)} hrs, {int(minutes)} mins"
             ),
-            "License": license_info,
-            "Languages": languages,
+            "License": (node.get("licenseInfo") or {}).get("name") or "No license",
+            "Languages": (node.get("primaryLanguage") or {}).get("name") or "",
             "URL": f"https://github.com/{repo}",
-            # numeric helpers for sorting/filtering, dropped before output
-            "_stars": data.get("stargazers_count", 0),
+            "_stars": node.get("stargazerCount", 0),
             "_days": int(days),
         }
-        print(f"  ok: {repo} ({stats['Stars']} stars)")
-        return stats
-    except requests.exceptions.HTTPError as err:
-        print(f"  skip: {repo} - HTTP error: {err}")
-    except Exception as err:  # noqa: BLE001 - keep going on any single repo
-        print(f"  skip: {repo} - error: {err}")
-    return None
+        print(f"  ok: {repo} ({row['Stars']:,} ★)")
+        rows.append(row)
 
+    # Back off if running low on GraphQL point budget
+    remaining = int(resp.headers.get("X-RateLimit-Remaining", 100))
+    if remaining < 20:
+        reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+        wait = max(0, reset - time.time()) + 5
+        print(f"  Rate limit low ({remaining} left) — sleeping {wait:.0f}s")
+        time.sleep(wait)
+
+    return rows
+
+
+# ---------------------------------------------------------------------------
+# Orchestration
+# ---------------------------------------------------------------------------
 
 def fetch_all(
     session: requests.Session,
-    entries: List[Dict[str, object]],
+    entries: List[Dict],
     taxonomy: Dict[str, Dict[str, str]],
 ) -> pd.DataFrame:
-    rows = []
-    for i, entry in enumerate(entries, 1):
-        print(f"[{i}/{len(entries)}] {entry['repo']}")
-        info = fetch_repo_info(session, entry, taxonomy)
-        if info:
-            rows.append(info)
+    batches = [entries[i: i + BATCH_SIZE] for i in range(0, len(entries), BATCH_SIZE)]
+    total = len(batches)
+    rows: List[Dict] = []
+
+    for idx, batch in enumerate(batches, 1):
+        names = ", ".join(e["repo"].split("/")[1] for e in batch[:3])
+        suffix = "..." if len(batch) > 3 else ""
+        print(f"\n[Batch {idx}/{total}] {names}{suffix}")
+        rows.extend(fetch_batch(session, batch, taxonomy))
+        if idx < total:
+            time.sleep(0.5)
+
     if not rows:
         sys.exit("Error: no repository data fetched.")
+
     df = pd.DataFrame(rows).drop_duplicates(subset=["URL"])
     df = df.sort_values(by="_stars", ascending=False).reset_index(drop=True)
     return df
 
 
+# ---------------------------------------------------------------------------
+# Output
+# ---------------------------------------------------------------------------
+
 def format_numbers(df: pd.DataFrame) -> pd.DataFrame:
-    """Format numeric metric columns with thousands separators (as strings)."""
     df = df.copy()
     for col in ["Stars", "Forks", "Issues", "Contributors", "Releases", "Watchers"]:
         df[col] = df[col].apply(lambda x: f"{int(x):,}")
@@ -260,8 +290,6 @@ def write_csv(df: pd.DataFrame) -> str:
     print(f"Wrote {path}")
     return path
 
-
-README_TOP_N = 100
 
 def build_markdown_table(df: pd.DataFrame) -> str:
     """Build the condensed Markdown table for the README (top N by stars)."""
@@ -279,7 +307,6 @@ def build_markdown_table(df: pd.DataFrame) -> str:
 
 
 def update_readme(markdown_table: str) -> None:
-    """Inject the table and refresh the Last Updated line in README.md."""
     with open(README_FILE, "r", encoding="utf-8") as f:
         content = f.read()
 
@@ -309,24 +336,29 @@ def update_readme(markdown_table: str) -> None:
     print(f"Updated {README_FILE}")
 
 
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
 def main() -> None:
     start = time.time()
     token = get_token()
     session = make_session(token)
-    if not check_token(session):
-        sys.exit(1)
 
     taxonomy = load_taxonomy()
 
     with open(CONFIG_FILE, "r", encoding="utf-8") as f:
         entries = json.load(f)
 
+    print(f"Fetching {len(entries)} repos in batches of {BATCH_SIZE} "
+          f"({-(-len(entries) // BATCH_SIZE)} GraphQL requests)...")
+
     df = fetch_all(session, entries, taxonomy)
     csv_path = write_csv(df)
     update_readme(build_markdown_table(df))
 
     mins, secs = divmod(time.time() - start, 60)
-    print(f"Done in {int(mins)}m {int(secs)}s. CSV: {csv_path}")
+    print(f"\nDone: {len(df)} repos in {int(mins)}m {int(secs)}s. CSV: {csv_path}")
 
 
 if __name__ == "__main__":
