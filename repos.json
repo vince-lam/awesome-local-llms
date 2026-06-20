@@ -320,11 +320,6 @@
     "subcategory": "Inference Backend"
   },
   {
-    "repo": "elgatopanzon/gatogpt",
-    "category": "Local LLM",
-    "subcategory": "Inference Backend"
-  },
-  {
     "repo": "Vali-98/ChatterUI",
     "category": "Local LLM",
     "subcategory": "All-in-one App"
@@ -670,7 +665,7 @@
     "subcategory": "Framework"
   },
   {
-    "repo": "sourcegraph/cody",
+    "repo": "sourcegraph/cody-public-snapshot",
     "category": "Agent",
     "subcategory": "Coding"
   },
@@ -895,7 +890,7 @@
     "subcategory": "Data Analysis"
   },
   {
-    "repo": "bexta/AgentPilot",
+    "repo": "jbexta/AgentPilot",
     "category": "Agent",
     "subcategory": "General"
   },
