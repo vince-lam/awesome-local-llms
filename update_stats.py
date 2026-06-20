@@ -96,8 +96,11 @@ def make_session(token: str) -> requests.Session:
     retry = Retry(
         total=5,
         backoff_factor=2,
-        status_forcelist=[500, 502, 503, 504],
+        # 403 and 429 are GitHub's secondary rate-limit responses; back off and
+        # honour any Retry-After header instead of dropping the repo.
+        status_forcelist=[403, 429, 500, 502, 503, 504],
         allowed_methods=["GET"],
+        respect_retry_after_header=True,
     )
     session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
