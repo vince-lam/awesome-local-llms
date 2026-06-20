@@ -1442,5 +1442,721 @@
     "tags": [
       "web-app"
     ]
+  },
+  {
+    "repo": "sgl-project/sglang",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "BerriAI/litellm",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "QuantumNous/new-api",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "Portkey-AI/gateway",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "LMCache/LMCache",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "GeeeekExplorer/nano-vllm",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "lyogavin/airllm",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "kvcache-ai/ktransformers",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "alibaba/MNN",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "openvinotoolkit/openvino",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "Lightning-AI/litgpt",
+    "tags": [
+      "local-runtime",
+      "fine-tuning"
+    ]
+  },
+  {
+    "repo": "axolotl-ai-cloud/axolotl",
+    "tags": [
+      "fine-tuning"
+    ]
+  },
+  {
+    "repo": "hiyouga/LlamaFactory",
+    "tags": [
+      "fine-tuning"
+    ]
+  },
+  {
+    "repo": "unslothai/unsloth",
+    "tags": [
+      "fine-tuning"
+    ]
+  },
+  {
+    "repo": "NVIDIA-NeMo/NeMo",
+    "tags": [
+      "local-runtime",
+      "fine-tuning"
+    ]
+  },
+  {
+    "repo": "jundot/omlx",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "macOS"
+    ],
+    "backends": [
+      "Metal"
+    ]
+  },
+  {
+    "repo": "bigscience-workshop/petals",
+    "tags": [
+      "distributed-inference"
+    ]
+  },
+  {
+    "repo": "ray-project/ray",
+    "tags": [
+      "distributed-inference"
+    ]
+  },
+  {
+    "repo": "openai/openai-agents-python",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "pydantic/pydantic-ai",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "mastra-ai/mastra",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "google/adk-python",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "QwenLM/Qwen-Agent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "livekit/agents",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "The-Pocket/PocketFlow",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "VoltAgent/voltagent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "humanlayer/humanlayer",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "pathwaycom/pathway",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "TEN-framework/ten-framework",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "alibaba/spring-ai-alibaba",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "agentscope-ai/agentscope",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "camel-ai/camel",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "microsoft/agent-framework",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "langflow-ai/langflow",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "simstudioai/sim",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "coze-dev/coze-studio",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "triggerdotdev/trigger.dev",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "activepieces/activepieces",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "microsoft/promptflow",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "OpenHands/OpenHands",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "charmbracelet/crush",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "QwenLM/qwen-code",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "bytedance/trae-agent",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "langchain-ai/open-swe",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "SWE-agent/SWE-agent",
+    "tags": [
+      "repo-pr-automation"
+    ]
+  },
+  {
+    "repo": "The-PR-Agent/pr-agent",
+    "tags": [
+      "repo-pr-automation"
+    ]
+  },
+  {
+    "repo": "browser-use/browser-use",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "firecrawl/firecrawl",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "Skyvern-AI/skyvern",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "ScrapeGraphAI/Scrapegraph-ai",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "Fosowl/agenticSeek",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "microsoft/playwright-mcp",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "nanobrowser/nanobrowser",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "browseros-ai/BrowserOS",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "infiniflow/ragflow",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "QuivrHQ/quivr",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "HKUDS/LightRAG",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "onyx-dot-app/onyx",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "labring/FastGPT",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "Cinnamon/kotaemon",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "1Panel-dev/MaxKB",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "arc53/DocsGPT",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "llmware-ai/llmware",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "neuml/txtai",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "chatchat-space/Langchain-Chatchat",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "microsoft/graphrag",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "opendatalab/MinerU",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "Unstructured-IO/unstructured",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "mem0ai/mem0",
+    "tags": [
+      "memory-state"
+    ]
+  },
+  {
+    "repo": "getzep/graphiti",
+    "tags": [
+      "memory-state"
+    ]
+  },
+  {
+    "repo": "topoteretes/cognee",
+    "tags": [
+      "memory-state"
+    ]
+  },
+  {
+    "repo": "modelcontextprotocol/servers",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "github/github-mcp-server",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "PrefectHQ/fastmcp",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "a2aproject/A2A",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "googleapis/mcp-toolbox",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "GLips/Figma-Context-MCP",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "tadata-org/fastapi_mcp",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "modelcontextprotocol/inspector",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "mcp-use/mcp-use",
+    "tags": [
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "milvus-io/milvus",
+    "tags": [
+      "vector-database"
+    ]
+  },
+  {
+    "repo": "qdrant/qdrant",
+    "tags": [
+      "vector-database"
+    ]
+  },
+  {
+    "repo": "weaviate/weaviate",
+    "tags": [
+      "vector-database"
+    ]
+  },
+  {
+    "repo": "lancedb/lancedb",
+    "tags": [
+      "vector-database"
+    ]
+  },
+  {
+    "repo": "yamadashy/repomix",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "jina-ai/reader",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "langfuse/langfuse",
+    "tags": [
+      "llm-ops"
+    ]
+  },
+  {
+    "repo": "mlflow/mlflow",
+    "tags": [
+      "llm-ops"
+    ]
+  },
+  {
+    "repo": "comet-ml/opik",
+    "tags": [
+      "llm-ops"
+    ]
+  },
+  {
+    "repo": "Arize-ai/phoenix",
+    "tags": [
+      "llm-ops"
+    ]
+  },
+  {
+    "repo": "opensandbox-group/OpenSandbox",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "modelcontextprotocol/python-sdk",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "modelcontextprotocol/typescript-sdk",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "vercel/ai",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "langchain4j/langchain4j",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "CopilotKit/CopilotKit",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "dottxt-ai/outlines",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "linshenkx/prompt-optimizer",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "promptfoo/promptfoo",
+    "tags": [
+      "evaluation"
+    ]
+  },
+  {
+    "repo": "confident-ai/deepeval",
+    "tags": [
+      "evaluation"
+    ]
+  },
+  {
+    "repo": "bytedance/deer-flow",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "khoj-ai/khoj",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "Alibaba-NLP/DeepResearch",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "microsoft/RD-Agent",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "sinaptik-ai/pandas-ai",
+    "tags": [
+      "data-analysis-agent"
+    ]
+  },
+  {
+    "repo": "eosphoros-ai/DB-GPT",
+    "tags": [
+      "text-to-sql"
+    ]
+  },
+  {
+    "repo": "CherryHQ/cherry-studio",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "dyad-sh/dyad",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "browser-use/web-ui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "AstrBotDevs/AstrBot",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "Chainlit/chainlit",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "trycua/cua",
+    "tags": [
+      "desktop-gui-control"
+    ]
+  },
+  {
+    "repo": "screenpipe/screenpipe",
+    "tags": [
+      "desktop-gui-control"
+    ]
+  },
+  {
+    "repo": "simular-ai/Agent-S",
+    "tags": [
+      "desktop-gui-control"
+    ]
+  },
+  {
+    "repo": "zai-org/Open-AutoGLM",
+    "tags": [
+      "desktop-gui-control"
+    ]
+  },
+  {
+    "repo": "kortix-ai/suna",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "leon-ai/leon",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "agent0ai/agent-zero",
+    "tags": [
+      "task-automation"
+    ]
   }
 ]

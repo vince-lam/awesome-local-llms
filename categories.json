@@ -3,84 +3,200 @@
     "category": "Inference & Runtime",
     "slug": "inference-runtime",
     "subcategories": [
-      { "name": "Local Runtime",         "slug": "local-runtime" },
-      { "name": "Production Serving",    "slug": "production-serving" },
-      { "name": "Distributed Inference", "slug": "distributed-inference" },
-      { "name": "Web / Edge Runtime",    "slug": "web-edge-runtime" },
-      { "name": "Bindings & SDKs",       "slug": "bindings-sdks" }
+      {
+        "name": "Local Runtime",
+        "slug": "local-runtime"
+      },
+      {
+        "name": "Fine-Tuning",
+        "slug": "fine-tuning"
+      },
+      {
+        "name": "Production Serving",
+        "slug": "production-serving"
+      },
+      {
+        "name": "Distributed Inference",
+        "slug": "distributed-inference"
+      },
+      {
+        "name": "Web / Edge Runtime",
+        "slug": "web-edge-runtime"
+      },
+      {
+        "name": "Bindings & SDKs",
+        "slug": "bindings-sdks"
+      }
     ]
   },
   {
     "category": "Chat Interface",
     "slug": "chat-interface",
     "subcategories": [
-      { "name": "Desktop App",       "slug": "desktop-app" },
-      { "name": "Web App",           "slug": "web-app" },
-      { "name": "Mobile App",        "slug": "mobile-app" },
-      { "name": "CLI / Terminal",    "slug": "cli-terminal" },
-      { "name": "Browser Extension", "slug": "browser-extension" }
+      {
+        "name": "Desktop App",
+        "slug": "desktop-app"
+      },
+      {
+        "name": "Web App",
+        "slug": "web-app"
+      },
+      {
+        "name": "Mobile App",
+        "slug": "mobile-app"
+      },
+      {
+        "name": "CLI / Terminal",
+        "slug": "cli-terminal"
+      },
+      {
+        "name": "Browser Extension",
+        "slug": "browser-extension"
+      }
     ]
   },
   {
     "category": "Agentic Framework",
     "slug": "agentic-framework",
     "subcategories": [
-      { "name": "Orchestration",        "slug": "orchestration" },
-      { "name": "Multi-Agent System",   "slug": "multi-agent-system" },
-      { "name": "Workflow / Low-code",  "slug": "workflow-low-code" },
-      { "name": "Memory & State",       "slug": "memory-state" },
-      { "name": "Tool Integration",     "slug": "tool-integration" }
+      {
+        "name": "Orchestration",
+        "slug": "orchestration"
+      },
+      {
+        "name": "Multi-Agent System",
+        "slug": "multi-agent-system"
+      },
+      {
+        "name": "Workflow / Low-code",
+        "slug": "workflow-low-code"
+      },
+      {
+        "name": "Memory & State",
+        "slug": "memory-state"
+      },
+      {
+        "name": "MCP Server / Tool",
+        "slug": "mcp-server"
+      },
+      {
+        "name": "Vector Database",
+        "slug": "vector-database"
+      },
+      {
+        "name": "Tool Integration",
+        "slug": "tool-integration"
+      }
     ]
   },
   {
     "category": "Coding Assistant",
     "slug": "coding-assistant",
     "subcategories": [
-      { "name": "IDE Extension",        "slug": "ide-extension" },
-      { "name": "Terminal Agent",       "slug": "terminal-agent" },
-      { "name": "Code Generation",      "slug": "code-generation" },
-      { "name": "Repo & PR Automation", "slug": "repo-pr-automation" }
+      {
+        "name": "IDE Extension",
+        "slug": "ide-extension"
+      },
+      {
+        "name": "Terminal Agent",
+        "slug": "terminal-agent"
+      },
+      {
+        "name": "Code Generation",
+        "slug": "code-generation"
+      },
+      {
+        "name": "Repo & PR Automation",
+        "slug": "repo-pr-automation"
+      }
     ]
   },
   {
     "category": "Research & Knowledge",
     "slug": "research-knowledge",
     "subcategories": [
-      { "name": "Research Agent",           "slug": "research-agent" },
-      { "name": "Document Q&A / RAG",       "slug": "document-qa-rag" },
-      { "name": "Prompting & Optimization", "slug": "prompting-optimization" }
+      {
+        "name": "Research Agent",
+        "slug": "research-agent"
+      },
+      {
+        "name": "Document Q&A / RAG",
+        "slug": "document-qa-rag"
+      },
+      {
+        "name": "Prompting & Optimization",
+        "slug": "prompting-optimization"
+      }
     ]
   },
   {
     "category": "Data & Analytics",
     "slug": "data-analytics",
     "subcategories": [
-      { "name": "Text-to-SQL",         "slug": "text-to-sql" },
-      { "name": "Data Analysis Agent", "slug": "data-analysis-agent" }
+      {
+        "name": "Text-to-SQL",
+        "slug": "text-to-sql"
+      },
+      {
+        "name": "Data Analysis Agent",
+        "slug": "data-analysis-agent"
+      }
     ]
   },
   {
     "category": "Web & Browser Agent",
     "slug": "web-browser-agent",
     "subcategories": [
-      { "name": "Browser Automation", "slug": "browser-automation" },
-      { "name": "API / REST Agent",   "slug": "api-rest-agent" }
+      {
+        "name": "Browser Automation",
+        "slug": "browser-automation"
+      },
+      {
+        "name": "API / REST Agent",
+        "slug": "api-rest-agent"
+      }
     ]
   },
   {
     "category": "General Autonomous Agent",
     "slug": "general-autonomous-agent",
     "subcategories": [
-      { "name": "Task Automation",      "slug": "task-automation" },
-      { "name": "Desktop / GUI Control","slug": "desktop-gui-control" }
+      {
+        "name": "Task Automation",
+        "slug": "task-automation"
+      },
+      {
+        "name": "Desktop / GUI Control",
+        "slug": "desktop-gui-control"
+      }
     ]
   },
   {
     "category": "Gaming & Simulation",
     "slug": "gaming-simulation",
     "subcategories": [
-      { "name": "Game Agent",        "slug": "game-agent" },
-      { "name": "Social Simulation", "slug": "social-simulation" }
+      {
+        "name": "Game Agent",
+        "slug": "game-agent"
+      },
+      {
+        "name": "Social Simulation",
+        "slug": "social-simulation"
+      }
+    ]
+  },
+  {
+    "category": "LLM Ops & Evaluation",
+    "slug": "llm-ops-evaluation",
+    "subcategories": [
+      {
+        "name": "Observability & Tracing",
+        "slug": "llm-ops"
+      },
+      {
+        "name": "Evaluation & Testing",
+        "slug": "evaluation"
+      }
     ]
   }
 ]
