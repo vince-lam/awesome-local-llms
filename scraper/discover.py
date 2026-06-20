@@ -24,6 +24,14 @@ SEARCH_URL = "https://api.github.com/search/repositories"
 MAX_PAGES = 3       # up to 300 results per query (100/page)
 REQUEST_DELAY = 2.5 # seconds between requests (search rate limit: 30/min)
 
+# This script lives in scraper/; data sits in scraper/data/ and the raw
+# candidate dump is written to the repo root (the parent directory).
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+REPOS_FILE = os.path.join(DATA_DIR, "repos.json")
+CANDIDATES_FILE = os.path.join(REPO_ROOT, "discover_candidates.json")
+
 
 # ---------------------------------------------------------------------------
 # Search queries
@@ -168,7 +176,7 @@ def main():
     if not token:
         sys.exit("Error: set STATS_GH_PAT, GITHUB_TOKEN, or GITHUB_API_TOKEN")
 
-    with open("repos.json", encoding="utf-8") as f:
+    with open(REPOS_FILE, encoding="utf-8") as f:
         existing = json.load(f)
     existing_names = {e["repo"].lower() for e in existing}
 
@@ -209,7 +217,7 @@ def main():
 
     candidates.sort(key=lambda x: x["stars"], reverse=True)
 
-    out_path = "discover_candidates.json"
+    out_path = CANDIDATES_FILE
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(candidates, f, indent=2, ensure_ascii=False)
 

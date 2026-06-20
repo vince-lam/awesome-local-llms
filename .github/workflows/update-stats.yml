@@ -28,13 +28,13 @@ jobs:
           cache: pip
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r scraper/requirements.txt
 
       - name: Fetch metrics and update README
         env:
           # Secret must NOT be named GITHUB_*; mapped to the var the script reads.
           GITHUB_API_TOKEN: ${{ secrets.STATS_GH_PAT }}
-        run: python update_stats.py
+        run: python scraper/update_stats.py
 
       - name: Upload CSV artifact
         uses: actions/upload-artifact@v4

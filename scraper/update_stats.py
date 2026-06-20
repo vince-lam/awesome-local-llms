@@ -22,10 +22,16 @@ from tabulate import tabulate
 from urllib3.util.retry import Retry
 
 API_ROOT = "https://api.github.com"
-CONFIG_FILE = "repos.json"
-TAXONOMY_FILE = "categories.json"
-README_FILE = "README.md"
-OUTPUT_DIR = "outputs"
+
+# This script lives in scraper/; data sits in scraper/data/ and the README and
+# CSV outputs live at the repo root (the parent directory).
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(SCRIPT_DIR, "data")
+REPO_ROOT = os.path.dirname(SCRIPT_DIR)
+CONFIG_FILE = os.path.join(DATA_DIR, "repos.json")
+TAXONOMY_FILE = os.path.join(DATA_DIR, "categories.json")
+README_FILE = os.path.join(REPO_ROOT, "README.md")
+OUTPUT_DIR = os.path.join(REPO_ROOT, "outputs")
 
 # README table filters
 MIN_STARS = 100

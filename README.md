@@ -14,9 +14,9 @@ Projects span the full stack:
 - **General Autonomous Agents** — task automation and desktop/GUI control
 - **Gaming & Simulation** — game agents and social simulations
 
-Each repo carries one or more **tags** mapping to the subcategories above (defined in [`categories.json`](categories.json)). GitHub metrics are refreshed automatically every week by a GitHub Actions workflow.
+Each repo carries one or more **tags** mapping to the subcategories above. GitHub metrics are refreshed automatically every week.
 
-**Contributions are welcome!** Suggest a repo I've missed by opening an issue, or add it to [`repos.json`](repos.json) (with its `tags` array) and open a pull request. The table below regenerates automatically.
+**Contributions are welcome!** Suggest a repo I've missed by opening an issue.
 
 There is also a fuller table of metrics in this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing) and [Airtable](https://airtable.com/apparaKqezkq2LECD/shrE26kWFaVU1cvgb) _(no longer updated — kept for reference)_.
 
@@ -233,28 +233,7 @@ Note the condensed table below has two filters applied:
 | 197 | [lite.koboldai.net](https://github.com/LostRuins/lite.koboldai.net)  | Web App  | A zero dependency web UI for any LLM backend, including KoboldCpp, OpenAI and AI Horde  |  183 |  89 |  31 |  39 |  0 | GNU Affero General Public License v3.0  | 0 days, 3 hrs, 10 mins  |
 <!-- END_TABLE -->
 
-## How it works
-
-[`update_stats.py`](update_stats.py) reads [`repos.json`](repos.json), pulls metrics from the GitHub API, writes a full timestamped CSV to `outputs/`, and injects the filtered table above between the `BEGIN_TABLE` / `END_TABLE` markers.
-
-The condensed table above is filtered to repos with **more than 100 stars** and a **commit within the last 60 days**. The full, unfiltered dataset (every tracked repo, all columns) is produced as the `outputs/` CSV, which the weekly workflow also uploads as a build artifact.
-
-### Run it yourself
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env   # then add your GitHub token
-python update_stats.py
-```
-
-### Automated weekly updates
-
-The [`Update repo stats`](.github/workflows/update-stats.yml) GitHub Actions workflow runs every Monday (and on demand via *Run workflow*), regenerates the table, and commits the refreshed README back to `main`. It needs one repository secret (Settings → Secrets and variables → Actions):
-
-| Secret | Purpose |
-|--------|---------|
-| `STATS_GH_PAT` | GitHub read-only PAT (5,000 req/hour; the built-in token's 1,000/hour isn't enough for ~190 repos) |
+The condensed table above is filtered to repos with **more than 100 stars** and a **commit within the last 60 days**. GitHub metrics are refreshed automatically each week.
 
 ## Inspired By
 
