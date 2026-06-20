@@ -1,13 +1,22 @@
 # 👋 Awesome Local LLMs
 
-There are an overwhelming number of open-source tools for running LLMs locally and for building on top of them. This repo curates two families of projects and tracks their GitHub metrics as a proxy for popularity and active maintenance:
+A curated list of open-source projects covering all things local LLMs and generative AI — from running models locally to building production applications and autonomous agents. GitHub metrics (stars, forks, issues, contributors, releases, time since last commit) are refreshed automatically every week.
 
-- **Local LLM** projects — split into *Inference Backend* engines, *Front-end UI* clients, and *All-in-one App* desktop/mobile apps.
-- **Agent** projects — frameworks, coding agents, research agents, and more.
+Projects span the full stack:
 
-Each repo is tagged with a **Category** and **Subcategory** so you can tell the types apart at a glance. GitHub metrics (stars, forks, issues, contributors, releases, time since last commit) are refreshed automatically every week by a GitHub Actions workflow.
+- **Inference & Runtime** — local engines, production serving, distributed inference, web/edge runtimes, and language bindings
+- **Chat Interfaces** — desktop apps, web UIs, mobile apps, CLI tools, and browser extensions
+- **Agentic Frameworks** — orchestration libraries, multi-agent systems, workflow builders, and memory/tool layers
+- **Coding Assistants** — IDE extensions, terminal agents, code generation tools, and repo automation
+- **Research & Knowledge** — research agents, RAG / document Q&A, and prompting optimisation
+- **Data & Analytics** — text-to-SQL and data analysis agents
+- **Web & Browser Agents** — browser automation and API/REST agents
+- **General Autonomous Agents** — task automation and desktop/GUI control
+- **Gaming & Simulation** — game agents and social simulations
 
-**Contributions are welcome!** Suggest a repo I've missed by opening an issue, or add it to [`repos.json`](repos.json) (with its `category` and `subcategory`) and open a pull request. The table below regenerates automatically.
+Each repo carries one or more **tags** mapping to the subcategories above (defined in [`categories.json`](categories.json)). GitHub metrics are refreshed automatically every week by a GitHub Actions workflow.
+
+**Contributions are welcome!** Suggest a repo I've missed by opening an issue, or add it to [`repos.json`](repos.json) (with its `tags` array) and open a pull request. The table below regenerates automatically.
 
 There is also a fuller table of metrics in this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing) and [Airtable](https://airtable.com/apparaKqezkq2LECD/shrE26kWFaVU1cvgb) _(no longer updated — kept for reference)_.
 
