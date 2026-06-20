@@ -1411,5 +1411,30 @@
     "tags": [
       "local-runtime"
     ]
+  },
+  {
+    "repo": "AtomicBot-ai/Atomic-Chat",
+    "tags": [
+      "desktop-app",
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "tetherto/qvac",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "TabbyML/tabby",
+    "tags": [
+      "ide-extension"
+    ]
+  },
+  {
+    "repo": "cheshire-cat-ai/core",
+    "tags": [
+      "orchestration"
+    ]
   }
 ]
