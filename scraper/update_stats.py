@@ -22,7 +22,7 @@ from tabulate import tabulate
 from urllib3.util.retry import Retry
 
 GRAPHQL_URL = "https://api.github.com/graphql"
-BATCH_SIZE = 25
+BATCH_SIZE = 50
 
 # This script lives in scraper/; data sits in scraper/data/ and the README and
 # CSV outputs live at the repo root (the parent directory).
