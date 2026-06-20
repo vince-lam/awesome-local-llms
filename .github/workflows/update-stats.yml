@@ -2,8 +2,9 @@ name: Update repo stats
 
 on:
   schedule:
-    - cron: "0 1 * * *"   # 01:00 UTC daily
-  workflow_dispatch: {}
+    - cron: "0 1 * * *"   # 01:00 UTC daily  → Turso only
+    - cron: "0 6 * * 1"   # 06:00 UTC Monday → Turso + README
+  workflow_dispatch: {}    # manual trigger   → Turso + README
 
 permissions:
   contents: write
@@ -29,14 +30,17 @@ jobs:
       - name: Install dependencies
         run: pip install -r scraper/requirements.txt
 
-      - name: Fetch metrics, update Turso + README
+      - name: Fetch metrics, update Turso (+ README on weekly/manual)
         env:
           GITHUB_API_TOKEN: ${{ secrets.STATS_GH_PAT }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          # Set on the weekly cron and manual triggers; unset on daily cron
+          UPDATE_README: ${{ (github.event.schedule == '0 6 * * 1' || github.event_name == 'workflow_dispatch') && 'true' || '' }}
         run: python scraper/update_stats.py
 
       - name: Commit and push README
+        if: github.event.schedule == '0 6 * * 1' || github.event_name == 'workflow_dispatch'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

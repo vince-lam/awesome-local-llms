@@ -490,7 +490,12 @@ def main() -> None:
     if not os.getenv("CI"):
         write_csv(df)
 
-    update_readme(build_markdown_table(df))
+    # README update: weekly in CI (controlled by UPDATE_README env var),
+    # always when running locally
+    if not os.getenv("CI") or os.getenv("UPDATE_README"):
+        update_readme(build_markdown_table(df))
+    else:
+        print("Skipping README update (daily CI run)")
 
     mins, secs = divmod(time.time() - start, 60)
     print(f"\nDone: {len(df)} repos in {int(mins)}m {int(secs)}s")
