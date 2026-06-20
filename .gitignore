@@ -1,5 +1,6 @@
 # Secrets
 .env
+.env.local
 *.pem
 service_account.json
 
@@ -11,5 +12,10 @@ __pycache__/
 # Generated outputs (timestamped CSVs)
 outputs/
 
+# Discovery script output (raw candidates, not curated)
+discover_candidates.json
+
 # macOS
 .DS_Store
+
+.claude/*
