@@ -37,6 +37,8 @@ FULL_COLUMNS = [
     "Repository Name",
     "Categories",
     "Tags",
+    "Platforms",
+    "GPU Backends",
     "About",
     "Stars",
     "Forks",
@@ -157,6 +159,8 @@ def fetch_repo_info(
     tag_names = [taxonomy[s]["name"] for s in slugs if s in taxonomy]
     # Deduplicate parent categories while preserving order.
     cat_names = list(dict.fromkeys(taxonomy[s]["category"] for s in slugs if s in taxonomy))
+    platforms: List[str] = entry.get("platforms", [])  # type: ignore[assignment]
+    backends: List[str] = entry.get("backends", [])  # type: ignore[assignment]
 
     base_url = f"{API_ROOT}/repos/{repo}"
     try:
@@ -188,6 +192,8 @@ def fetch_repo_info(
             "Repository Name": repo.split("/")[1],
             "Categories": ", ".join(cat_names),
             "Tags": ", ".join(tag_names),
+            "Platforms": ", ".join(platforms),
+            "GPU Backends": ", ".join(backends),
             "About": data.get("description") or "No description available",
             "Stars": data.get("stargazers_count", 0),
             "Forks": data.get("forks_count", 0),

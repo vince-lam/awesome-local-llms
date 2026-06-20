@@ -1,192 +1,1415 @@
 [
-  { "repo": "ggerganov/llama.cpp",                              "tags": ["local-runtime"] },
-  { "repo": "ollama/ollama",                                    "tags": ["local-runtime"] },
-  { "repo": "open-webui/open-webui",                            "tags": ["web-app"] },
-  { "repo": "LostRuins/koboldcpp",                              "tags": ["local-runtime"] },
-  { "repo": "janhq/jan",                                        "tags": ["desktop-app", "local-runtime"] },
-  { "repo": "nat/openplayground",                               "tags": ["web-app"] },
-  { "repo": "Mozilla-Ocho/llamafile",                           "tags": ["local-runtime"] },
-  { "repo": "nomic-ai/gpt4all",                                 "tags": ["desktop-app", "local-runtime"] },
-  { "repo": "oobabooga/text-generation-webui",                  "tags": ["web-app"] },
-  { "repo": "psugihara/FreeChat",                               "tags": ["desktop-app"] },
-  { "repo": "cztomsik/ava",                                     "tags": ["desktop-app"] },
-  { "repo": "withcatai/catai",                                  "tags": ["desktop-app"] },
-  { "repo": "Mobile-Artificial-Intelligence/maid",               "tags": ["mobile-app"] },
-  { "repo": "mudler/LocalAI",                                   "tags": ["local-runtime"] },
-  { "repo": "ptsochantaris/emeltal",                            "tags": ["desktop-app"] },
-  { "repo": "pythops/tenere",                                   "tags": ["cli-terminal"] },
-  { "repo": "semperai/amica",                                   "tags": ["web-app"] },
-  { "repo": "guinmoon/LLMFarm",                                 "tags": ["desktop-app"] },
-  { "repo": "h2oai/h2ogpt",                                     "tags": ["web-app", "document-qa-rag"] },
-  { "repo": "imartinez/privateGPT",                             "tags": ["document-qa-rag", "web-app"] },
-  { "repo": "huggingface/chat-ui",                              "tags": ["web-app"] },
-  { "repo": "ParisNeo/lollms-webui",                            "tags": ["web-app"] },
-  { "repo": "simonw/llm",                                       "tags": ["cli-terminal"] },
-  { "repo": "lobehub/lobe-chat",                                "tags": ["web-app"] },
-  { "repo": "PromtEngineer/localGPT",                           "tags": ["document-qa-rag", "cli-terminal"] },
-  { "repo": "Mintplex-Labs/anything-llm",                       "tags": ["web-app", "document-qa-rag"] },
-  { "repo": "SillyTavern/SillyTavern",                          "tags": ["web-app"] },
-  { "repo": "vllm-project/vllm",                                "tags": ["production-serving"] },
-  { "repo": "turboderp/exui",                                   "tags": ["web-app"] },
-  { "repo": "turboderp/exllama",                                "tags": ["local-runtime"] },
-  { "repo": "turboderp/exllamav2",                              "tags": ["local-runtime", "bindings-sdks"] },
-  { "repo": "huggingface/transformers",                         "tags": ["bindings-sdks"] },
-  { "repo": "mckaywrigley/chatbot-ui",                          "tags": ["web-app"] },
-  { "repo": "ivanfioravanti/chatbot-ollama",                    "tags": ["web-app"] },
-  { "repo": "lmg-anon/mikupad",                                 "tags": ["web-app"] },
-  { "repo": "LostRuins/lite.koboldai.net",                      "tags": ["web-app"] },
-  { "repo": "mlc-ai/mlc-llm",                                   "tags": ["web-edge-runtime"] },
-  { "repo": "ortegaalfredo/neurochat",                          "tags": ["desktop-app"] },
-  { "repo": "KoljaB/LocalAIVoiceChat",                          "tags": ["desktop-app"] },
-  { "repo": "nathanlesage/local-chat",                          "tags": ["desktop-app"] },
-  { "repo": "janhq/nitro",                                      "tags": ["local-runtime"] },
-  { "repo": "InternLM/lmdeploy",                                "tags": ["production-serving"] },
-  { "repo": "NVIDIA/TensorRT-LLM",                              "tags": ["production-serving"] },
-  { "repo": "marella/ctransformers",                            "tags": ["bindings-sdks"] },
-  { "repo": "abetlen/llama-cpp-python",                         "tags": ["bindings-sdks"] },
-  { "repo": "srush/llama2.rs",                                  "tags": ["bindings-sdks"] },
-  { "repo": "enricoros/big-agi",                                "tags": ["web-app"] },
-  { "repo": "ggozad/oterm",                                     "tags": ["cli-terminal"] },
-  { "repo": "ChatGPTNextWeb/ChatGPT-Next-Web",                  "tags": ["web-app"] },
-  { "repo": "Bin-Huang/chatbox",                                "tags": ["desktop-app"] },
-  { "repo": "danny-avila/LibreChat",                            "tags": ["web-app"] },
-  { "repo": "minimaxir/simpleaichat",                           "tags": ["bindings-sdks"] },
-  { "repo": "SciSharp/LLamaSharp",                              "tags": ["bindings-sdks"] },
-  { "repo": "xtekky/gpt4free",                                  "tags": ["bindings-sdks"] },
-  { "repo": "FMInference/FlexGen",                              "tags": ["distributed-inference"] },
-  { "repo": "deep-diver/LLM-As-Chatbot",                        "tags": ["web-app"] },
-  { "repo": "GaiZhenbiao/ChuanhuChatGPT",                       "tags": ["web-app"] },
-  { "repo": "chathub-dev/chathub",                              "tags": ["browser-extension"] },
-  { "repo": "mlc-ai/web-llm",                                   "tags": ["web-edge-runtime"] },
-  { "repo": "bentoml/OpenLLM",                                  "tags": ["production-serving"] },
-  { "repo": "binary-husky/gpt_academic",                        "tags": ["web-app"] },
-  { "repo": "triton-inference-server/server",                   "tags": ["production-serving"] },
-  { "repo": "huggingface/text-generation-inference",            "tags": ["production-serving"] },
-  { "repo": "xorbitsai/inference",                              "tags": ["production-serving"] },
-  { "repo": "Vali-98/ChatterUI",                                "tags": ["mobile-app"] },
-  { "repo": "dbddv01/GPT-Sequencer",                            "tags": ["web-app"] },
-  { "repo": "n4ze3m/page-assist",                               "tags": ["browser-extension"] },
-  { "repo": "mlc-ai/web-llm-chat",                              "tags": ["web-app"] },
-  { "repo": "janhq/cortex.cpp",                                 "tags": ["local-runtime"] },
-  { "repo": "a-ghorbani/pocketpal-ai",                          "tags": ["mobile-app"] },
-  { "repo": "run-llama/chat-ui",                                "tags": ["web-app"] },
-  { "repo": "exo-explore/exo",                                  "tags": ["distributed-inference"] },
-  { "repo": "Jeffser/Alpaca",                                   "tags": ["desktop-app"] },
-  { "repo": "sigoden/aichat",                                   "tags": ["cli-terminal"] },
-  { "repo": "meta-llama/llama-stack-apps",                      "tags": ["orchestration"] },
-  { "repo": "run-llama/llama_index",                            "tags": ["orchestration"] },
-  { "repo": "langchain-ai/langchain",                           "tags": ["orchestration"] },
-  { "repo": "botpress/botpress",                                "tags": ["workflow-low-code"] },
-  { "repo": "deepset-ai/haystack",                              "tags": ["orchestration", "document-qa-rag"] },
-  { "repo": "microsoft/semantic-kernel",                        "tags": ["orchestration"] },
-  { "repo": "Josh-XT/AGiXT",                                    "tags": ["orchestration"] },
-  { "repo": "mpaepper/llm_agents",                              "tags": ["orchestration"] },
-  { "repo": "e2b-dev/e2b",                                      "tags": ["tool-integration"] },
-  { "repo": "dust-tt/dust",                                     "tags": ["orchestration", "workflow-low-code"] },
-  { "repo": "geekan/MetaGPT",                                   "tags": ["multi-agent-system", "code-generation"] },
-  { "repo": "simonmesmith/agentflow",                           "tags": ["orchestration"] },
-  { "repo": "InternLM/lagent",                                  "tags": ["orchestration"] },
-  { "repo": "microsoft/autogen",                                "tags": ["orchestration", "multi-agent-system"] },
-  { "repo": "openbmb/agentverse",                               "tags": ["multi-agent-system"] },
-  { "repo": "Doriandarko/maestro",                              "tags": ["orchestration"] },
-  { "repo": "modelscope/agentscope",                            "tags": ["orchestration", "multi-agent-system"] },
-  { "repo": "crewAIInc/crewAI",                                 "tags": ["multi-agent-system"] },
-  { "repo": "openai/swarm",                                     "tags": ["multi-agent-system"] },
-  { "repo": "VRSEN/agency-swarm",                               "tags": ["multi-agent-system"] },
-  { "repo": "simbianai/taskgen",                                "tags": ["orchestration"] },
-  { "repo": "tanchongmin/agentjo",                              "tags": ["orchestration"] },
-  { "repo": "Pythagora-io/gpt-pilot",                           "tags": ["code-generation"] },
-  { "repo": "stanfordnlp/dspy",                                 "tags": ["prompting-optimization", "orchestration"] },
-  { "repo": "alaeddine-13/thinkgpt",                            "tags": ["prompting-optimization"] },
-  { "repo": "chakkaradeep/pyCodeAGI",                           "tags": ["code-generation"] },
-  { "repo": "TransformerOptimus/SuperAGI",                      "tags": ["task-automation"] },
-  { "repo": "plandex-ai/plandex",                               "tags": ["terminal-agent"] },
-  { "repo": "semanser/codel",                                   "tags": ["code-generation"] },
-  { "repo": "csunny/DB-GPT",                                    "tags": ["data-analysis-agent", "text-to-sql"] },
-  { "repo": "neurocult/agency",                                 "tags": ["orchestration"] },
-  { "repo": "microsoft/TaskWeaver",                             "tags": ["data-analysis-agent", "code-generation"] },
-  { "repo": "aymenfurter/microagents",                          "tags": ["code-generation"] },
-  { "repo": "princeton-nlp/swe-agent",                          "tags": ["repo-pr-automation", "terminal-agent"] },
-  { "repo": "Jonathan-Adly/AgentRun",                           "tags": ["code-generation", "tool-integration"] },
-  { "repo": "Doriandarko/claude-engineer",                      "tags": ["terminal-agent"] },
-  { "repo": "landing-ai/vision-agent",                          "tags": ["data-analysis-agent", "code-generation"] },
-  { "repo": "TrafficGuard/nous",                                "tags": ["orchestration"] },
-  { "repo": "assafelovic/gpt-researcher",                       "tags": ["research-agent"] },
-  { "repo": "blockpipe/blockagi",                               "tags": ["research-agent"] },
-  { "repo": "Technion-Kishony-lab/data-to-paper",               "tags": ["research-agent"] },
-  { "repo": "SakanaAI/AI-Scientist",                            "tags": ["research-agent"] },
-  { "repo": "stanford-oval/storm",                              "tags": ["research-agent"] },
-  { "repo": "hpcaitech/ColossalAI",                             "tags": ["distributed-inference"] },
-  { "repo": "paulpierre/RasaGPT",                               "tags": ["orchestration"] },
-  { "repo": "homanp/superagent",                                "tags": ["orchestration"] },
-  { "repo": "miurla/babyagi-ui",                                "tags": ["task-automation"] },
-  { "repo": "kreneskyp/ix",                                     "tags": ["workflow-low-code"] },
-  { "repo": "kristoferlund/duet-gpt",                           "tags": ["terminal-agent"] },
-  { "repo": "steamship-packages/langchain-agent-production-starter", "tags": ["orchestration"] },
-  { "repo": "stepanogil/autonomous-hr-chatbot",                 "tags": ["orchestration"] },
-  { "repo": "Maximilian-Winter/llama-cpp-agent",                "tags": ["orchestration"] },
-  { "repo": "cpacker/memgpt",                                   "tags": ["memory-state"] },
-  { "repo": "reworkd/AgentGPT",                                 "tags": ["browser-automation"] },
-  { "repo": "langchain-ai/langgraph",                           "tags": ["orchestration"] },
-  { "repo": "ComposioHQ/composio",                              "tags": ["tool-integration"] },
-  { "repo": "phidatahq/phidata",                                "tags": ["orchestration"] },
-  { "repo": "ErikBjare/gptme",                                  "tags": ["terminal-agent"] },
-  { "repo": "awslabs/multi-agent-orchestrator",                 "tags": ["multi-agent-system"] },
-  { "repo": "sourcegraph/cody-public-snapshot",                 "tags": ["ide-extension"] },
-  { "repo": "xlang-ai/OpenAgents",                              "tags": ["browser-automation"] },
-  { "repo": "Aider-AI/aider",                                   "tags": ["terminal-agent"] },
-  { "repo": "All-Hands-AI/OpenHands",                           "tags": ["repo-pr-automation", "terminal-agent"] },
-  { "repo": "stitionai/devika",                                 "tags": ["code-generation"] },
-  { "repo": "OpenBMB/RepoAgent",                                "tags": ["repo-pr-automation"] },
-  { "repo": "SamurAIGPT/GPT-Agent",                             "tags": ["game-agent"] },
-  { "repo": "litanlitudan/skyagi",                              "tags": ["social-simulation"] },
-  { "repo": "MineDojo/Voyager",                                 "tags": ["game-agent"] },
-  { "repo": "melih-unsal/DemoGPT",                              "tags": ["code-generation"] },
-  { "repo": "Yifan-Song793/RestGPT",                            "tags": ["api-rest-agent"] },
-  { "repo": "OpenBMB/XAgent",                                   "tags": ["task-automation"] },
-  { "repo": "fetchai/uAgents",                                  "tags": ["api-rest-agent"] },
-  { "repo": "mikekelly/AgentK",                                 "tags": ["multi-agent-system"] },
-  { "repo": "OpenInterpreter/open-interpreter",                 "tags": ["terminal-agent"] },
-  { "repo": "team-openpm/workgpt",                              "tags": ["code-generation"] },
-  { "repo": "Canner/WrenAI",                                    "tags": ["text-to-sql"] },
-  { "repo": "vanna-ai/vanna",                                   "tags": ["text-to-sql"] },
-  { "repo": "WecoAI/aideml",                                    "tags": ["code-generation"] },
-  { "repo": "smol-ai/developer",                                "tags": ["code-generation"] },
-  { "repo": "continuedev/continue",                             "tags": ["ide-extension"] },
-  { "repo": "joshpxyne/gpt-migrate",                            "tags": ["code-generation"] },
-  { "repo": "gpt-engineer-org/gpt-engineer",                    "tags": ["code-generation"] },
-  { "repo": "eylonmiz/react-agent",                             "tags": ["code-generation"] },
-  { "repo": "uilicious/english-compiler",                       "tags": ["code-generation"] },
-  { "repo": "irgolic/AutoPR",                                   "tags": ["repo-pr-automation"] },
-  { "repo": "LehengTHU/Agent4Rec",                              "tags": ["research-agent"] },
-  { "repo": "myshell-ai/AIlice",                                "tags": ["terminal-agent"] },
-  { "repo": "topoteretes/PromethAI-Backend",                    "tags": ["orchestration"] },
-  { "repo": "trypromptly/LLMStack",                             "tags": ["workflow-low-code"] },
-  { "repo": "Significant-Gravitas/AutoGPT",                     "tags": ["task-automation"] },
-  { "repo": "AutoPackAI/beebot",                                "tags": ["task-automation"] },
-  { "repo": "yoheinakajima/babyagi",                            "tags": ["task-automation"] },
-  { "repo": "Farama-Foundation/chatarena",                      "tags": ["social-simulation"] },
-  { "repo": "Kav-K/GPTDiscord",                                 "tags": ["orchestration"] },
-  { "repo": "agentcoinorg/evo.ninja",                           "tags": ["task-automation", "browser-automation"] },
-  { "repo": "muellerberndt/mini-agi",                           "tags": ["task-automation"] },
-  { "repo": "sidhq/Multi-GPT",                                  "tags": ["multi-agent-system"] },
-  { "repo": "letta-ai/letta",                                   "tags": ["memory-state"] },
-  { "repo": "superagent-ai/superagent",                         "tags": ["orchestration"] },
-  { "repo": "abi/screenshot-to-code",                           "tags": ["code-generation"] },
-  { "repo": "OpenBMB/ChatDev",                                  "tags": ["multi-agent-system", "code-generation"] },
-  { "repo": "krohling/bondai",                                  "tags": ["terminal-agent"] },
-  { "repo": "FlowiseAI/Flowise",                                "tags": ["workflow-low-code"] },
-  { "repo": "HumanSignal/Adala",                                "tags": ["data-analysis-agent"] },
-  { "repo": "jbexta/AgentPilot",                                "tags": ["orchestration"] },
-  { "repo": "airtai/fastagency",                                "tags": ["orchestration"] },
-  { "repo": "DataBassGit/AgentForge",                           "tags": ["orchestration"] },
-  { "repo": "corbt/agent.exe",                                  "tags": ["desktop-gui-control"] },
-  { "repo": "ennucore/clippinator",                             "tags": ["terminal-agent"] },
-  { "repo": "langroid/langroid",                                "tags": ["orchestration"] },
-  { "repo": "frdel/agent-zero",                                 "tags": ["terminal-agent"] },
-  { "repo": "langgenius/dify",                                  "tags": ["workflow-low-code"] },
-  { "repo": "trypear/pearai-app",                               "tags": ["ide-extension"] },
-  { "repo": "yoheinakajima/babyagi-2o",                         "tags": ["multi-agent-system"] },
-  { "repo": "elizaOS/eliza",                                    "tags": ["multi-agent-system"] },
-  { "repo": "raullenchai/Rapid-MLX",                            "tags": ["local-runtime"] }
+  {
+    "repo": "ggerganov/llama.cpp",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows",
+      "Android",
+      "iOS"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal",
+      "SYCL"
+    ]
+  },
+  {
+    "repo": "ollama/ollama",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "open-webui/open-webui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "LostRuins/koboldcpp",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "janhq/jan",
+    "tags": [
+      "desktop-app",
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "nat/openplayground",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "Mozilla-Ocho/llamafile",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows",
+      "FreeBSD"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "nomic-ai/gpt4all",
+    "tags": [
+      "desktop-app",
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "oobabooga/text-generation-webui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "psugihara/FreeChat",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "cztomsik/ava",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "withcatai/catai",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "Mobile-Artificial-Intelligence/maid",
+    "tags": [
+      "mobile-app"
+    ]
+  },
+  {
+    "repo": "mudler/LocalAI",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "ptsochantaris/emeltal",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "pythops/tenere",
+    "tags": [
+      "cli-terminal"
+    ]
+  },
+  {
+    "repo": "semperai/amica",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "guinmoon/LLMFarm",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "h2oai/h2ogpt",
+    "tags": [
+      "web-app",
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "imartinez/privateGPT",
+    "tags": [
+      "document-qa-rag",
+      "web-app"
+    ]
+  },
+  {
+    "repo": "huggingface/chat-ui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "ParisNeo/lollms-webui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "simonw/llm",
+    "tags": [
+      "cli-terminal"
+    ]
+  },
+  {
+    "repo": "lobehub/lobe-chat",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "PromtEngineer/localGPT",
+    "tags": [
+      "document-qa-rag",
+      "cli-terminal"
+    ]
+  },
+  {
+    "repo": "Mintplex-Labs/anything-llm",
+    "tags": [
+      "web-app",
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "SillyTavern/SillyTavern",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "vllm-project/vllm",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm"
+    ]
+  },
+  {
+    "repo": "turboderp/exui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "turboderp/exllama",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "Windows"
+    ],
+    "backends": [
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "turboderp/exllamav2",
+    "tags": [
+      "local-runtime",
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan"
+    ]
+  },
+  {
+    "repo": "huggingface/transformers",
+    "tags": [
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "MPS"
+    ]
+  },
+  {
+    "repo": "mckaywrigley/chatbot-ui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "ivanfioravanti/chatbot-ollama",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "lmg-anon/mikupad",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "LostRuins/lite.koboldai.net",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "mlc-ai/mlc-llm",
+    "tags": [
+      "web-edge-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows",
+      "Android",
+      "iOS",
+      "Web"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal",
+      "WebGPU"
+    ]
+  },
+  {
+    "repo": "ortegaalfredo/neurochat",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "KoljaB/LocalAIVoiceChat",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "nathanlesage/local-chat",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "janhq/nitro",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "InternLM/lmdeploy",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "NVIDIA/TensorRT-LLM",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux",
+      "Windows"
+    ],
+    "backends": [
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "marella/ctransformers",
+    "tags": [
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm"
+    ]
+  },
+  {
+    "repo": "abetlen/llama-cpp-python",
+    "tags": [
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "srush/llama2.rs",
+    "tags": [
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU"
+    ]
+  },
+  {
+    "repo": "enricoros/big-agi",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "ggozad/oterm",
+    "tags": [
+      "cli-terminal"
+    ]
+  },
+  {
+    "repo": "ChatGPTNextWeb/ChatGPT-Next-Web",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "Bin-Huang/chatbox",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "danny-avila/LibreChat",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "minimaxir/simpleaichat",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "SciSharp/LLamaSharp",
+    "tags": [
+      "bindings-sdks"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Vulkan",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "xtekky/gpt4free",
+    "tags": [
+      "bindings-sdks"
+    ]
+  },
+  {
+    "repo": "FMInference/FlexGen",
+    "tags": [
+      "distributed-inference"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "deep-diver/LLM-As-Chatbot",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "GaiZhenbiao/ChuanhuChatGPT",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "chathub-dev/chathub",
+    "tags": [
+      "browser-extension"
+    ]
+  },
+  {
+    "repo": "mlc-ai/web-llm",
+    "tags": [
+      "web-edge-runtime"
+    ],
+    "platforms": [
+      "Web"
+    ],
+    "backends": [
+      "WebGPU"
+    ]
+  },
+  {
+    "repo": "bentoml/OpenLLM",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "binary-husky/gpt_academic",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "triton-inference-server/server",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "huggingface/text-generation-inference",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm"
+    ]
+  },
+  {
+    "repo": "xorbitsai/inference",
+    "tags": [
+      "production-serving"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "Vali-98/ChatterUI",
+    "tags": [
+      "mobile-app"
+    ]
+  },
+  {
+    "repo": "dbddv01/GPT-Sequencer",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "n4ze3m/page-assist",
+    "tags": [
+      "browser-extension"
+    ]
+  },
+  {
+    "repo": "mlc-ai/web-llm-chat",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "janhq/cortex.cpp",
+    "tags": [
+      "local-runtime"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "Vulkan",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "a-ghorbani/pocketpal-ai",
+    "tags": [
+      "mobile-app"
+    ]
+  },
+  {
+    "repo": "run-llama/chat-ui",
+    "tags": [
+      "web-app"
+    ]
+  },
+  {
+    "repo": "exo-explore/exo",
+    "tags": [
+      "distributed-inference"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA",
+      "ROCm",
+      "Metal"
+    ]
+  },
+  {
+    "repo": "Jeffser/Alpaca",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "sigoden/aichat",
+    "tags": [
+      "cli-terminal"
+    ]
+  },
+  {
+    "repo": "meta-llama/llama-stack-apps",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "run-llama/llama_index",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "langchain-ai/langchain",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "botpress/botpress",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "deepset-ai/haystack",
+    "tags": [
+      "orchestration",
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "microsoft/semantic-kernel",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "Josh-XT/AGiXT",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "mpaepper/llm_agents",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "e2b-dev/e2b",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "dust-tt/dust",
+    "tags": [
+      "orchestration",
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "geekan/MetaGPT",
+    "tags": [
+      "multi-agent-system",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "simonmesmith/agentflow",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "InternLM/lagent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "microsoft/autogen",
+    "tags": [
+      "orchestration",
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "openbmb/agentverse",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "Doriandarko/maestro",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "modelscope/agentscope",
+    "tags": [
+      "orchestration",
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "crewAIInc/crewAI",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "openai/swarm",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "VRSEN/agency-swarm",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "simbianai/taskgen",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "tanchongmin/agentjo",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "Pythagora-io/gpt-pilot",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "stanfordnlp/dspy",
+    "tags": [
+      "prompting-optimization",
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "alaeddine-13/thinkgpt",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "chakkaradeep/pyCodeAGI",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "TransformerOptimus/SuperAGI",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "plandex-ai/plandex",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "semanser/codel",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "csunny/DB-GPT",
+    "tags": [
+      "data-analysis-agent",
+      "text-to-sql"
+    ]
+  },
+  {
+    "repo": "neurocult/agency",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "microsoft/TaskWeaver",
+    "tags": [
+      "data-analysis-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "aymenfurter/microagents",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "princeton-nlp/swe-agent",
+    "tags": [
+      "repo-pr-automation",
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "Jonathan-Adly/AgentRun",
+    "tags": [
+      "code-generation",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "Doriandarko/claude-engineer",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "landing-ai/vision-agent",
+    "tags": [
+      "data-analysis-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "TrafficGuard/nous",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "assafelovic/gpt-researcher",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "blockpipe/blockagi",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "Technion-Kishony-lab/data-to-paper",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "SakanaAI/AI-Scientist",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "stanford-oval/storm",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "hpcaitech/ColossalAI",
+    "tags": [
+      "distributed-inference"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "backends": [
+      "CPU",
+      "CUDA"
+    ]
+  },
+  {
+    "repo": "paulpierre/RasaGPT",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "homanp/superagent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "miurla/babyagi-ui",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "kreneskyp/ix",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "kristoferlund/duet-gpt",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "steamship-packages/langchain-agent-production-starter",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "stepanogil/autonomous-hr-chatbot",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "Maximilian-Winter/llama-cpp-agent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "cpacker/memgpt",
+    "tags": [
+      "memory-state"
+    ]
+  },
+  {
+    "repo": "reworkd/AgentGPT",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "langchain-ai/langgraph",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "ComposioHQ/composio",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "phidatahq/phidata",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "ErikBjare/gptme",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "awslabs/multi-agent-orchestrator",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "sourcegraph/cody-public-snapshot",
+    "tags": [
+      "ide-extension"
+    ]
+  },
+  {
+    "repo": "xlang-ai/OpenAgents",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "Aider-AI/aider",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "All-Hands-AI/OpenHands",
+    "tags": [
+      "repo-pr-automation",
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "stitionai/devika",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "OpenBMB/RepoAgent",
+    "tags": [
+      "repo-pr-automation"
+    ]
+  },
+  {
+    "repo": "SamurAIGPT/GPT-Agent",
+    "tags": [
+      "game-agent"
+    ]
+  },
+  {
+    "repo": "litanlitudan/skyagi",
+    "tags": [
+      "social-simulation"
+    ]
+  },
+  {
+    "repo": "MineDojo/Voyager",
+    "tags": [
+      "game-agent"
+    ]
+  },
+  {
+    "repo": "melih-unsal/DemoGPT",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Yifan-Song793/RestGPT",
+    "tags": [
+      "api-rest-agent"
+    ]
+  },
+  {
+    "repo": "OpenBMB/XAgent",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "fetchai/uAgents",
+    "tags": [
+      "api-rest-agent"
+    ]
+  },
+  {
+    "repo": "mikekelly/AgentK",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "OpenInterpreter/open-interpreter",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "team-openpm/workgpt",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Canner/WrenAI",
+    "tags": [
+      "text-to-sql"
+    ]
+  },
+  {
+    "repo": "vanna-ai/vanna",
+    "tags": [
+      "text-to-sql"
+    ]
+  },
+  {
+    "repo": "WecoAI/aideml",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "smol-ai/developer",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "continuedev/continue",
+    "tags": [
+      "ide-extension"
+    ]
+  },
+  {
+    "repo": "joshpxyne/gpt-migrate",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "gpt-engineer-org/gpt-engineer",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "eylonmiz/react-agent",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "uilicious/english-compiler",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "irgolic/AutoPR",
+    "tags": [
+      "repo-pr-automation"
+    ]
+  },
+  {
+    "repo": "LehengTHU/Agent4Rec",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "myshell-ai/AIlice",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "topoteretes/PromethAI-Backend",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "trypromptly/LLMStack",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "Significant-Gravitas/AutoGPT",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "AutoPackAI/beebot",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "yoheinakajima/babyagi",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "Farama-Foundation/chatarena",
+    "tags": [
+      "social-simulation"
+    ]
+  },
+  {
+    "repo": "Kav-K/GPTDiscord",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "agentcoinorg/evo.ninja",
+    "tags": [
+      "task-automation",
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "muellerberndt/mini-agi",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "sidhq/Multi-GPT",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "letta-ai/letta",
+    "tags": [
+      "memory-state"
+    ]
+  },
+  {
+    "repo": "superagent-ai/superagent",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "abi/screenshot-to-code",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "OpenBMB/ChatDev",
+    "tags": [
+      "multi-agent-system",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "krohling/bondai",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "FlowiseAI/Flowise",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "HumanSignal/Adala",
+    "tags": [
+      "data-analysis-agent"
+    ]
+  },
+  {
+    "repo": "jbexta/AgentPilot",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "airtai/fastagency",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "DataBassGit/AgentForge",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "corbt/agent.exe",
+    "tags": [
+      "desktop-gui-control"
+    ]
+  },
+  {
+    "repo": "ennucore/clippinator",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "langroid/langroid",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "frdel/agent-zero",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "langgenius/dify",
+    "tags": [
+      "workflow-low-code"
+    ]
+  },
+  {
+    "repo": "trypear/pearai-app",
+    "tags": [
+      "ide-extension"
+    ]
+  },
+  {
+    "repo": "yoheinakajima/babyagi-2o",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "elizaOS/eliza",
+    "tags": [
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "raullenchai/Rapid-MLX",
+    "tags": [
+      "local-runtime"
+    ]
+  }
 ]
