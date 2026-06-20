@@ -255,9 +255,11 @@ def make_session(token: str) -> requests.Session:
     })
     retry = Retry(
         total=10,
-        backoff_factor=4,
+        backoff_factor=2,
+        backoff_max=30,
         status_forcelist=[500, 502, 503, 504],
         allowed_methods=["POST"],
+        respect_retry_after_header=True,
     )
     session.mount("https://", HTTPAdapter(max_retries=retry))
     return session
