@@ -65,7 +65,6 @@ REPO_FIELDS = """{
   openIssues: issues(states: OPEN) { totalCount }
   watchers { totalCount }
   releases { totalCount }
-  mentionableUsers { totalCount }
 }"""
 
 
@@ -354,7 +353,7 @@ def fetch_batch(
             "Stars": node.get("stargazerCount", 0),
             "Forks": node.get("forkCount", 0),
             "Issues": (node.get("openIssues") or {}).get("totalCount", 0),
-            "Contributors": (node.get("mentionableUsers") or {}).get("totalCount", 0),
+            "Contributors": 0,
             "Releases": (node.get("releases") or {}).get("totalCount", 0),
             "Watchers": (node.get("watchers") or {}).get("totalCount", 0),
             "Time Since Last Commit": (
