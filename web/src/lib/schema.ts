@@ -11,6 +11,7 @@ export const repos = sqliteTable("repos", {
   tags: text("tags").notNull().default("[]"),
   platforms: text("platforms").notNull().default("[]"),
   backends: text("backends").notNull().default("[]"),
+  ownerType: text("owner_type"),
   addedAt: text("added_at").notNull().default(sql`(date('now'))`),
 });
 

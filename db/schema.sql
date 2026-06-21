@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS repos (
   tags        TEXT    NOT NULL DEFAULT '[]',    -- JSON array of tag slugs
   platforms   TEXT    NOT NULL DEFAULT '[]',    -- JSON array
   backends    TEXT    NOT NULL DEFAULT '[]',    -- JSON array
+  owner_type  TEXT,                             -- "User" or "Organization" (from GitHub API)
   added_at    TEXT    NOT NULL DEFAULT (date('now'))
 );
 

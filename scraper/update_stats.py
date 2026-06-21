@@ -18,6 +18,7 @@ import os
 import re
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timezone
 from typing import Dict, List, Optional
 
@@ -140,8 +141,8 @@ _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
 _UPSERT_SNAPSHOT_SQL = """
 INSERT INTO snapshots
   (repo_id, scraped_date, stars, forks, issues, releases,
-   watchers, days_since_commit, license, primary_language)
-SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?
+   watchers, days_since_commit, license, primary_language, contributors)
+SELECT id, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 FROM   repos WHERE full_name = ?
 ON CONFLICT(repo_id, scraped_date) DO UPDATE SET
   stars             = excluded.stars,
@@ -151,7 +152,8 @@ ON CONFLICT(repo_id, scraped_date) DO UPDATE SET
   watchers          = excluded.watchers,
   days_since_commit = excluded.days_since_commit,
   license           = excluded.license,
-  primary_language  = excluded.primary_language
+  primary_language  = excluded.primary_language,
+  contributors      = excluded.contributors
 """
 
 
@@ -178,7 +180,11 @@ def init_repos(db: TursoClient, entries: List[Dict]) -> None:
     print(f"Initialised {len(entries)} repos in Turso")
 
 
-def write_snapshots_to_db(db: TursoClient, df: pd.DataFrame) -> None:
+def write_snapshots_to_db(
+    db: TursoClient,
+    df: pd.DataFrame,
+    contributor_counts: Dict[str, int],
+) -> None:
     today = date.today().isoformat()
     desc_stmts, snap_stmts = [], []
 
@@ -200,6 +206,7 @@ def write_snapshots_to_db(db: TursoClient, df: pd.DataFrame) -> None:
             int(row["_days"]),
             license_val,
             row.get("Languages") or None,
+            contributor_counts.get(full_name),
             full_name,
         ]))
 
@@ -211,6 +218,71 @@ def write_snapshots_to_db(db: TursoClient, df: pd.DataFrame) -> None:
     _flush(db, desc_stmts)
     _flush(db, snap_stmts)
     print(f"Wrote {len(df)} snapshots to Turso")
+
+
+# ---------------------------------------------------------------------------
+# Contributor counts (REST API — cheap, one call per repo)
+# ---------------------------------------------------------------------------
+
+def _fetch_one_contributor_count(
+    session: requests.Session,
+    full_name: str,
+) -> tuple[str, Optional[int]]:
+    try:
+        resp = session.get(
+            f"https://api.github.com/repos/{full_name}/contributors",
+            params={"per_page": 1, "anon": 1},
+            timeout=15,
+        )
+        # Sleep if rate limit is low
+        remaining = int(resp.headers.get("X-RateLimit-Remaining", 1000))
+        if remaining < 100:
+            reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+            wait = max(0, reset - time.time()) + 5
+            print(f"  Rate limit low ({remaining}) — sleeping {wait:.0f}s")
+            time.sleep(wait)
+
+        if resp.status_code in (204, 404):
+            return full_name, 0
+        if not resp.ok:
+            return full_name, None
+
+        link = resp.headers.get("Link", "")
+        m = re.search(r'[?&]page=(\d+)>;\s*rel="last"', link)
+        if m:
+            return full_name, int(m.group(1))
+        body = resp.json()
+        return full_name, len(body) if isinstance(body, list) else 0
+    except Exception as exc:
+        print(f"  contributor error {full_name}: {exc}")
+        return full_name, None
+
+
+def fetch_all_contributor_counts(
+    session: requests.Session,
+    full_names: List[str],
+    workers: int = 4,
+) -> Dict[str, int]:
+    print(f"\nFetching contributor counts for {len(full_names)} repos ({workers} workers)...")
+    counts: Dict[str, int] = {}
+    done = 0
+    total = len(full_names)
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = {
+            pool.submit(_fetch_one_contributor_count, session, fn): fn
+            for fn in full_names
+        }
+        for fut in as_completed(futures):
+            fn, count = fut.result()
+            if count is not None:
+                counts[fn] = count
+            done += 1
+            if done % 200 == 0 or done == total:
+                print(f"  {done}/{total} contributor counts fetched")
+
+    print(f"  Done — got counts for {len(counts)}/{total} repos")
+    return counts
 
 
 # ---------------------------------------------------------------------------
@@ -519,9 +591,13 @@ def main() -> None:
 
     df = fetch_all(session, entries, taxonomy)
 
+    contributor_counts = fetch_all_contributor_counts(
+        session, [e["repo"] for e in entries]
+    )
+
     if db:
         init_repos(db, entries)
-        write_snapshots_to_db(db, df)
+        write_snapshots_to_db(db, df, contributor_counts)
 
     # Skip CSV in CI — it's gitignored and not useful in the action runner
     if not os.getenv("CI"):

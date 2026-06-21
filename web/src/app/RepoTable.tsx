@@ -15,6 +15,8 @@ export interface RepoRow {
   primary_language: string | null;
   delta_7d: number | null;
   delta_30d: number | null;
+  contributors: number | null;
+  owner_type: string | null;
 }
 
 // subcategory slug → { category, categorySlug, subcategory }
@@ -103,7 +105,7 @@ const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
   "llm-ops-evaluation":        { bg: "bg-pink-100 dark:bg-pink-900/40",     text: "text-pink-700 dark:text-pink-300" },
 };
 
-type SortKey = "stars" | "delta_7d" | "delta_30d" | "forks" | "issues";
+type SortKey = "stars" | "delta_7d" | "delta_30d" | "forks" | "issues" | "contributors";
 type SortDir = "desc" | "asc";
 
 function fmt(n: number): string {
@@ -128,6 +130,10 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   return <span className="ml-1 text-gray-700 dark:text-gray-300 text-xs">{dir === "desc" ? "↓" : "↑"}</span>;
 }
 
+function wrapAtSpaces(text: string) {
+  return text.split(" ").join(" ​");
+}
+
 function TagPill({ tag }: { tag: string }) {
   const info = SUBCATEGORY_MAP[tag];
   if (!info) return null;
@@ -135,8 +141,9 @@ function TagPill({ tag }: { tag: string }) {
   return (
     <span
       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}
+      style={{ overflowWrap: "anywhere" }}
     >
-      {info.name}
+      {wrapAtSpaces(info.name)}
     </span>
   );
 }
@@ -144,14 +151,25 @@ function TagPill({ tag }: { tag: string }) {
 function CategoryPill({ categorySlug, categoryName }: { categorySlug: string; categoryName: string }) {
   const colors = CATEGORY_COLORS[categorySlug] ?? { bg: "bg-gray-100", text: "text-gray-600" };
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${colors.bg} ${colors.text}`}>
-      {categoryName}
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${colors.bg} ${colors.text}`}
+      style={{ overflowWrap: "anywhere" }}
+    >
+      {wrapAtSpaces(categoryName)}
     </span>
   );
 }
 
 const PAGE_SIZES = [100, 200, 500, 1000] as const;
 type PageSize = typeof PAGE_SIZES[number];
+
+const COL_KEYS = ["rank","repo","stars","d7","d30","forks","contributors","description","category","subcat","issues","language"] as const;
+type ColKey = typeof COL_KEYS[number];
+
+const DEFAULT_WIDTHS: Record<ColKey, number> = {
+  rank: 32, repo: 140, stars: 76, d7: 54, d30: 54, forks: 60,
+  contributors: 72, description: 200, category: 118, subcat: 108, issues: 58, language: 76,
+};
 
 export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate: string | null }) {
   const [search, setSearch] = useState("");
@@ -161,6 +179,23 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [pageSize, setPageSize] = useState<PageSize>(100);
   const [page, setPage] = useState(0);
+  const [colWidths, setColWidths] = useState<Record<ColKey, number>>(DEFAULT_WIDTHS);
+
+  function startResize(e: React.MouseEvent, col: ColKey) {
+    e.preventDefault();
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startW = colWidths[col];
+    const onMove = (ev: MouseEvent) => {
+      setColWidths(prev => ({ ...prev, [col]: Math.max(40, startW + ev.clientX - startX) }));
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  }
 
   // Collect all categories that actually appear in the data
   const presentCategories = useMemo(() => {
@@ -359,45 +394,42 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <table className="w-full text-xs">
+          <table className="text-xs" style={{ tableLayout: "fixed", width: COL_KEYS.reduce((s, k) => s + colWidths[k], 0) }}>
+            <colgroup>
+              {COL_KEYS.map(k => <col key={k} style={{ width: colWidths[k] }} />)}
+            </colgroup>
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 text-left text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-                <th className="px-2 py-2 w-8 text-center">#</th>
-                <th className="px-2 py-2 min-w-[100px] max-w-[140px]">Repo</th>
-                <th
-                  className="px-2 py-2 text-right w-20 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300"
-                  onClick={() => handleSort("stars")}
-                >
-                  Stars <SortIcon active={sortKey === "stars"} dir={sortDir} />
-                </th>
-                <th
-                  className="px-2 py-2 text-right w-16 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300"
-                  onClick={() => handleSort("delta_7d")}
-                >
-                  7d <SortIcon active={sortKey === "delta_7d"} dir={sortDir} />
-                </th>
-                <th
-                  className="px-2 py-2 text-right w-16 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300"
-                  onClick={() => handleSort("delta_30d")}
-                >
-                  30d <SortIcon active={sortKey === "delta_30d"} dir={sortDir} />
-                </th>
-                <th
-                  className="px-2 py-2 text-right w-20 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300"
-                  onClick={() => handleSort("forks")}
-                >
-                  Forks <SortIcon active={sortKey === "forks"} dir={sortDir} />
-                </th>
-                <th className="px-2 py-2 min-w-[160px] max-w-[200px]">Description</th>
-                <th className="px-2 py-2 min-w-[130px]">Category</th>
-                <th className="px-2 py-2 min-w-[120px]">Subcat</th>
-                <th
-                  className="px-2 py-2 text-right w-20 cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-300"
-                  onClick={() => handleSort("issues")}
-                >
-                  Issues <SortIcon active={sortKey === "issues"} dir={sortDir} />
-                </th>
-                <th className="px-2 py-2 w-20">Language</th>
+                {([
+                  { key: "rank",         label: "#",           right: false, center: true,  sort: null },
+                  { key: "repo",         label: "Repo",        right: false, center: false, sort: null },
+                  { key: "stars",        label: "Stars",       right: true,  center: false, sort: "stars" as SortKey },
+                  { key: "d7",           label: "7d",          right: true,  center: false, sort: "delta_7d" as SortKey },
+                  { key: "d30",          label: "30d",         right: true,  center: false, sort: "delta_30d" as SortKey },
+                  { key: "forks",        label: "Forks",       right: true,  center: false, sort: "forks" as SortKey },
+                  { key: "contributors", label: "Contribs",    right: true,  center: false, sort: "contributors" as SortKey },
+                  { key: "description",  label: "Description", right: false, center: false, sort: null },
+                  { key: "category",     label: "Category",    right: false, center: false, sort: null },
+                  { key: "subcat",       label: "Subcat",      right: false, center: false, sort: null },
+                  { key: "issues",       label: "Issues",      right: true,  center: false, sort: "issues" as SortKey },
+                  { key: "language",     label: "Language",    right: false, center: false, sort: null },
+                ] satisfies { key: ColKey; label: string; right: boolean; center: boolean; sort: SortKey | null }[]).map(col => (
+                  <th
+                    key={col.key}
+                    className={`relative p-0 select-none ${col.sort ? "cursor-pointer" : ""}`}
+                    onClick={col.sort ? () => handleSort(col.sort!) : undefined}
+                  >
+                    <div className={`px-2 py-2 overflow-hidden whitespace-nowrap ${col.center ? "text-center" : col.right ? "text-right" : "text-left"} ${col.sort ? "hover:text-gray-700 dark:hover:text-gray-300" : ""}`}>
+                      {col.label}{col.sort && <SortIcon active={sortKey === col.sort} dir={sortDir} />}
+                    </div>
+                    <div
+                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize z-10 group/rh"
+                      onMouseDown={(e) => startResize(e, col.key)}
+                    >
+                      <div className="absolute inset-y-2 left-1/2 -translate-x-1/2 w-px bg-gray-300 dark:bg-gray-600 group-hover/rh:bg-blue-400 dark:group-hover/rh:bg-blue-500 transition-colors" />
+                    </div>
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
@@ -405,9 +437,9 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                 const globalIndex = page * pageSize + i;
                 const catSlugs = [...new Set(repo.tags.map((t) => SUBCATEGORY_MAP[t]?.categorySlug).filter(Boolean) as string[])];
                 return (
-                  <tr key={repo.full_name} className="hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-colors group">
-                    <td className="px-2 py-2 text-gray-400 dark:text-gray-600 text-center">{globalIndex + 1}</td>
-                    <td className="px-2 py-2 max-w-[140px]">
+                  <tr key={repo.full_name} className={`transition-colors group ${repo.owner_type === "Organization" ? "bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100/40 dark:hover:bg-purple-900/20" : "hover:bg-blue-50/30 dark:hover:bg-blue-950/20"}`}>
+                    <td className="px-2 py-2 text-gray-400 dark:text-gray-600 text-center overflow-hidden">{globalIndex + 1}</td>
+                    <td className="px-2 py-2 overflow-hidden">
                       <a
                         href={`https://github.com/${repo.owner}`}
                         target="_blank"
@@ -420,29 +452,33 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                         href={repo.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="block font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline break-all"
+                        className="block font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline"
+                        style={{ overflowWrap: "anywhere" }}
                       >
-                        {repo.name}
+                        {repo.name.split("-").join("-​")}
                       </a>
                     </td>
-                    <td className="px-2 py-2 text-right font-mono text-gray-800 dark:text-gray-200 font-medium">
+                    <td className="px-2 py-2 text-right font-mono text-gray-800 dark:text-gray-200 font-medium overflow-hidden">
                       ★ {fmt(repo.stars)}
                     </td>
-                    <td className="px-2 py-2 text-right font-mono">
+                    <td className="px-2 py-2 text-right font-mono overflow-hidden">
                       <DeltaBadge delta={repo.delta_7d} />
                     </td>
-                    <td className="px-2 py-2 text-right font-mono">
+                    <td className="px-2 py-2 text-right font-mono overflow-hidden">
                       <DeltaBadge delta={repo.delta_30d} />
                     </td>
-                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400">
+                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {fmt(repo.forks)}
                     </td>
-                    <td className="px-2 py-2 max-w-[200px]">
+                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
+                      {repo.contributors != null ? fmt(repo.contributors) : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    </td>
+                    <td className="px-2 py-2 overflow-hidden">
                       <span className="text-gray-500 dark:text-gray-400 leading-relaxed">
                         {repo.description ?? <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
                       </span>
                     </td>
-                    <td className="px-2 py-2">
+                    <td className="px-2 py-2 overflow-hidden">
                       <div className="flex flex-col gap-1">
                         {catSlugs.map((cs) => {
                           const cat = CATEGORIES.find((c) => c.slug === cs);
@@ -451,15 +487,15 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                         })}
                       </div>
                     </td>
-                    <td className="px-2 py-2">
+                    <td className="px-2 py-2 overflow-hidden">
                       <div className="flex flex-col gap-1">
                         {repo.tags.map((t) => <TagPill key={t} tag={t} />)}
                       </div>
                     </td>
-                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400">
+                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {fmt(repo.issues)}
                     </td>
-                    <td className="px-2 py-2 text-gray-400 dark:text-gray-500">
+                    <td className="px-2 py-2 text-gray-400 dark:text-gray-500 overflow-hidden">
                       {repo.primary_language ?? "—"}
                     </td>
                   </tr>

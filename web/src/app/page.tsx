@@ -19,7 +19,9 @@ async function getAllRepos(): Promise<RepoRow[]> {
       s_now.issues,
       s_now.primary_language,
       (s_now.stars - s_7d.stars)  AS delta_7d,
-      (s_now.stars - s_30d.stars) AS delta_30d
+      (s_now.stars - s_30d.stars) AS delta_30d,
+      s_now.contributors,
+      r.owner_type
     FROM repos r
     INNER JOIN snapshots s_now
       ON r.id = s_now.repo_id
@@ -46,6 +48,8 @@ async function getAllRepos(): Promise<RepoRow[]> {
     primary_language: row[9] as string | null,
     delta_7d: row[10] != null ? Number(row[10]) : null,
     delta_30d: row[11] != null ? Number(row[11]) : null,
+    contributors: row[12] != null ? Number(row[12]) : null,
+    owner_type: row[13] as string | null,
   }));
 }
 

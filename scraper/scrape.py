@@ -40,6 +40,7 @@ REPO_FIELDS = """{
   description
   pushedAt
   isArchived
+  owner { __typename }
   primaryLanguage { name }
   licenseInfo { name }
   openIssues: issues(states: OPEN) { totalCount }
@@ -190,6 +191,7 @@ def fetch_batch(session: requests.Session, batch: list[dict]) -> list[dict]:
             "license": (node.get("licenseInfo") or {}).get("name"),
             "primary_language": (node.get("primaryLanguage") or {}).get("name"),
             "is_archived": node.get("isArchived", False),
+            "owner_type": (node.get("owner") or {}).get("__typename"),  # "User" or "Organization"
         }
         results.append(row)
         print(f"  ok: {entry['repo']} ({row['stars']:,} ★)")
@@ -219,6 +221,7 @@ ON CONFLICT(full_name) DO UPDATE SET
 """
 
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
+_UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ? AND owner_type IS NULL"
 
 _UPSERT_SNAPSHOT_SQL = """
 INSERT INTO snapshots
@@ -268,6 +271,8 @@ def write_batch_to_db(db: TursoClient, rows: list[dict]) -> None:
 
     for r in rows:
         desc_stmts.append((_UPDATE_DESC_SQL, [r.get("description"), r["repo"]]))
+        if r.get("owner_type"):
+            desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [r["owner_type"], r["repo"]]))
         snap_stmts.append((_UPSERT_SNAPSHOT_SQL, [
             today,
             r["stars"], r["forks"], r["issues"],
