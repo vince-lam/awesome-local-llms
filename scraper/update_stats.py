@@ -254,9 +254,9 @@ def make_session(token: str) -> requests.Session:
         "Content-Type": "application/json",
     })
     retry = Retry(
-        total=10,
+        total=3,
         backoff_factor=2,
-        backoff_max=30,
+        backoff_max=5,
         status_forcelist=[500, 502, 503, 504],
         allowed_methods=["POST"],
         respect_retry_after_header=True,
@@ -266,19 +266,11 @@ def make_session(token: str) -> requests.Session:
 
 
 def _post(session: requests.Session, query: str) -> Optional[requests.Response]:
-    """POST a GraphQL query, catching RetryError so a flaky batch doesn't crash the run."""
+    """POST a GraphQL query. Returns None on failure so the caller can queue a retry."""
     try:
         return session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
-    except requests.exceptions.RetryError as exc:
-        print(f"  RetryError (likely intermittent 502s) — sleeping 90s then retrying: {exc}")
-        time.sleep(90)
-        try:
-            return session.post(GRAPHQL_URL, json={"query": query}, timeout=30)
-        except requests.exceptions.RequestException as exc2:
-            print(f"  Batch still failing after retry — skipping: {exc2}")
-            return None
     except requests.exceptions.RequestException as exc:
-        print(f"  Request error — skipping batch: {exc}")
+        print(f"  API error (will retry later): {exc}")
         return None
 
 
@@ -300,11 +292,12 @@ def fetch_batch(
     session: requests.Session,
     batch: List[Dict],
     taxonomy: Dict[str, Dict[str, str]],
-) -> List[Dict]:
+) -> Optional[List[Dict]]:
+    """Returns a list of rows on success, or None if the API was unreachable."""
     query = build_query(batch)
     resp = _post(session, query)
     if resp is None:
-        return []
+        return None
 
     if resp.status_code in (403, 429):
         reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
@@ -313,11 +306,11 @@ def fetch_batch(
         time.sleep(wait)
         resp = _post(session, query)
         if resp is None:
-            return []
+            return None
 
     if not resp.ok:
-        print(f"  HTTP {resp.status_code} — skipping batch")
-        return []
+        print(f"  HTTP {resp.status_code} — queuing for retry")
+        return None
 
     payload = resp.json()
     for err in payload.get("errors", []):
@@ -398,14 +391,36 @@ def fetch_all(
     batches = [entries[i: i + BATCH_SIZE] for i in range(0, len(entries), BATCH_SIZE)]
     total = len(batches)
     rows: List[Dict] = []
+    failed: List[List[Dict]] = []
 
     for idx, batch in enumerate(batches, 1):
         names = ", ".join(e["repo"].split("/")[1] for e in batch[:3])
         suffix = "..." if len(batch) > 3 else ""
         print(f"\n[Batch {idx}/{total}] {names}{suffix}")
-        rows.extend(fetch_batch(session, batch, taxonomy))
+        result = fetch_batch(session, batch, taxonomy)
+        if result is None:
+            failed.append(batch)
+        else:
+            rows.extend(result)
         if idx < total:
             time.sleep(0.5)
+
+    if failed:
+        print(f"\n{len(failed)} batch(es) failed — waiting 2 min then retrying...")
+        time.sleep(120)
+        still_failed = 0
+        for batch in failed:
+            names = ", ".join(e["repo"].split("/")[1] for e in batch[:3])
+            print(f"\n[Retry] {names}...")
+            result = fetch_batch(session, batch, taxonomy)
+            if result is None:
+                still_failed += 1
+                print(f"  Still failing — skipping")
+            else:
+                rows.extend(result)
+            time.sleep(0.5)
+        if still_failed:
+            print(f"  {still_failed} batch(es) permanently skipped after retry")
 
     if not rows:
         sys.exit("Error: no repository data fetched.")
