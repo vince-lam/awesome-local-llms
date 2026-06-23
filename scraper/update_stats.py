@@ -383,7 +383,11 @@ def fetch_batch(
         print(f"  HTTP {resp.status_code} — queuing for retry")
         return None
 
-    payload = resp.json()
+    try:
+        payload = resp.json()
+    except requests.exceptions.JSONDecodeError:
+        print(f"  Empty/invalid JSON response (status {resp.status_code}) — queuing for retry")
+        return None
     for err in payload.get("errors", []):
         print(f"  GraphQL error: {err.get('message', err)}")
 
