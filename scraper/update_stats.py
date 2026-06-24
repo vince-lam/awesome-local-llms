@@ -463,7 +463,10 @@ def fetch_all(
     entries: List[Dict],
     taxonomy: Dict[str, Dict[str, str]],
 ) -> pd.DataFrame:
-    batches = [entries[i: i + BATCH_SIZE] for i in range(0, len(entries), BATCH_SIZE)]
+    # Reverse so low-star repos are processed first; high-star repos land at the
+    # end and benefit from any mid-run recovery from GitHub 502 storms.
+    ordered = list(reversed(entries))
+    batches = [ordered[i: i + BATCH_SIZE] for i in range(0, len(ordered), BATCH_SIZE)]
     total = len(batches)
     rows: List[Dict] = []
     failed: List[List[Dict]] = []
@@ -480,22 +483,26 @@ def fetch_all(
         if idx < total:
             time.sleep(0.5)
 
-    if failed:
-        print(f"\n{len(failed)} batch(es) failed — waiting 2 min then retrying...")
-        time.sleep(120)
-        still_failed = 0
+    for attempt in range(1, 3):
+        if not failed:
+            break
+        print(f"\n{len(failed)} batch(es) failed — waiting 5 min then retrying (attempt {attempt}/2)...")
+        time.sleep(300)
+        still_failed = []
         for batch in failed:
             names = ", ".join(e["repo"].split("/")[1] for e in batch[:3])
-            print(f"\n[Retry] {names}...")
+            print(f"\n[Retry {attempt}] {names}...")
             result = fetch_batch(session, batch, taxonomy)
             if result is None:
-                still_failed += 1
-                print(f"  Still failing — skipping")
+                still_failed.append(batch)
+                print(f"  Still failing")
             else:
                 rows.extend(result)
             time.sleep(0.5)
-        if still_failed:
-            print(f"  {still_failed} batch(es) permanently skipped after retry")
+        failed = still_failed
+
+    if failed:
+        print(f"  {len(failed)} batch(es) permanently skipped after all retries")
 
     if not rows:
         sys.exit("Error: no repository data fetched.")
