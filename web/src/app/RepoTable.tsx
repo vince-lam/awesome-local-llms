@@ -17,6 +17,7 @@ export interface RepoRow {
   delta_30d: number | null;
   contributors: number | null;
   owner_type: string | null;
+  scraped_date: string;
 }
 
 // subcategory slug → { category, categorySlug, subcategory }
@@ -412,6 +413,7 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
               {paginated.map((repo, i) => {
                 const globalIndex = page * pageSize + i;
                 const catSlugs = [...new Set(repo.tags.map((t) => SUBCATEGORY_MAP[t]?.categorySlug).filter(Boolean) as string[])];
+                const isStale = latestDate != null && repo.scraped_date !== latestDate;
                 return (
                   <tr key={repo.full_name} className={`transition-colors group ${repo.owner_type === "Organization" ? "bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100/40 dark:hover:bg-purple-900/20" : "hover:bg-blue-50/30 dark:hover:bg-blue-950/20"}`}>
                     <td className="px-2 py-2 text-gray-400 dark:text-gray-600 text-center overflow-hidden">{globalIndex + 1}</td>
@@ -433,6 +435,14 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                       >
                         {repo.name.split("-").join("-​")}
                       </a>
+                      {isStale && (
+                        <span
+                          className="block text-[9px] font-mono text-gray-300 dark:text-gray-600 leading-tight"
+                          title={`Stats from ${repo.scraped_date} — skipped in latest run`}
+                        >
+                          {repo.scraped_date}
+                        </span>
+                      )}
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-800 dark:text-gray-200 font-medium overflow-hidden">
                       ★ {fmt(repo.stars)}

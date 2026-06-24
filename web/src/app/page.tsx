@@ -21,17 +21,19 @@ async function getAllRepos(): Promise<RepoRow[]> {
       (s_now.stars - s_7d.stars)  AS delta_7d,
       (s_now.stars - s_30d.stars) AS delta_30d,
       s_now.contributors,
-      r.owner_type
+      r.owner_type,
+      s_now.scraped_date
     FROM repos r
     INNER JOIN snapshots s_now
-      ON r.id = s_now.repo_id
-      AND s_now.scraped_date = (SELECT MAX(scraped_date) FROM snapshots)
+      ON s_now.id = (
+        SELECT id FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1
+      )
     LEFT JOIN snapshots s_7d
       ON r.id = s_7d.repo_id
-      AND s_7d.scraped_date = date((SELECT MAX(scraped_date) FROM snapshots), '-7 days')
+      AND s_7d.scraped_date = date(s_now.scraped_date, '-7 days')
     LEFT JOIN snapshots s_30d
       ON r.id = s_30d.repo_id
-      AND s_30d.scraped_date = date((SELECT MAX(scraped_date) FROM snapshots), '-30 days')
+      AND s_30d.scraped_date = date(s_now.scraped_date, '-30 days')
     ORDER BY s_now.stars DESC
   `);
 
@@ -50,6 +52,7 @@ async function getAllRepos(): Promise<RepoRow[]> {
     delta_30d: row[11] != null ? Number(row[11]) : null,
     contributors: row[12] != null ? Number(row[12]) : null,
     owner_type: row[13] as string | null,
+    scraped_date: row[14] as string,
   }));
 }
 
