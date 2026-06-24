@@ -166,9 +166,9 @@ type PageSize = typeof PAGE_SIZES[number];
 const COL_KEYS = ["rank","repo","stars","d7","d30","forks","contributors","description","category","subcat","issues","language"] as const;
 type ColKey = typeof COL_KEYS[number];
 
-const DEFAULT_WIDTHS: Record<ColKey, number> = {
-  rank: 32, repo: 140, stars: 76, d7: 54, d30: 54, forks: 60,
-  contributors: 72, description: 200, category: 118, subcat: 108, issues: 58, language: 76,
+const COL_WIDTHS: Record<ColKey, number> = {
+  rank: 32, repo: 140, stars: 84, d7: 64, d30: 64, forks: 70,
+  contributors: 82, description: 260, category: 114, subcat: 104, issues: 68, language: 72,
 };
 
 export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate: string | null }) {
@@ -179,24 +179,6 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   const [pageSize, setPageSize] = useState<PageSize>(100);
   const [page, setPage] = useState(0);
-  const [colWidths, setColWidths] = useState<Record<ColKey, number>>(DEFAULT_WIDTHS);
-
-  function startResize(e: React.MouseEvent, col: ColKey) {
-    e.preventDefault();
-    e.stopPropagation();
-    const startX = e.clientX;
-    const startW = colWidths[col];
-    const onMove = (ev: MouseEvent) => {
-      setColWidths(prev => ({ ...prev, [col]: Math.max(40, startW + ev.clientX - startX) }));
-    };
-    const onUp = () => {
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  }
-
   // Collect all categories that actually appear in the data
   const presentCategories = useMemo(() => {
     const catSlugs = new Set<string>();
@@ -394,9 +376,9 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm">
-          <table className="text-xs" style={{ tableLayout: "fixed", width: COL_KEYS.reduce((s, k) => s + colWidths[k], 0) }}>
+          <table className="text-xs w-full" style={{ tableLayout: "fixed" }}>
             <colgroup>
-              {COL_KEYS.map(k => <col key={k} style={{ width: colWidths[k] }} />)}
+              {COL_KEYS.map(k => <col key={k} style={k === "description" ? { minWidth: COL_WIDTHS[k] } : { width: COL_WIDTHS[k] }} />)}
             </colgroup>
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 text-left text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wider">
@@ -416,17 +398,11 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                 ] satisfies { key: ColKey; label: string; right: boolean; center: boolean; sort: SortKey | null }[]).map(col => (
                   <th
                     key={col.key}
-                    className={`relative p-0 select-none ${col.sort ? "cursor-pointer" : ""}`}
+                    className={`p-0 select-none ${col.sort ? "cursor-pointer" : ""}`}
                     onClick={col.sort ? () => handleSort(col.sort!) : undefined}
                   >
                     <div className={`px-2 py-2 overflow-hidden whitespace-nowrap ${col.center ? "text-center" : col.right ? "text-right" : "text-left"} ${col.sort ? "hover:text-gray-700 dark:hover:text-gray-300" : ""}`}>
                       {col.label}{col.sort && <SortIcon active={sortKey === col.sort} dir={sortDir} />}
-                    </div>
-                    <div
-                      className="absolute right-0 top-0 bottom-0 w-3 cursor-col-resize z-10 group/rh"
-                      onMouseDown={(e) => startResize(e, col.key)}
-                    >
-                      <div className="absolute inset-y-2 left-1/2 -translate-x-1/2 w-px bg-gray-300 dark:bg-gray-600 group-hover/rh:bg-blue-400 dark:group-hover/rh:bg-blue-500 transition-colors" />
                     </div>
                   </th>
                 ))}
@@ -473,8 +449,8 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                     <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {repo.contributors != null ? fmt(repo.contributors) : <span className="text-gray-300 dark:text-gray-600">—</span>}
                     </td>
-                    <td className="px-2 py-2 overflow-hidden">
-                      <span className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                    <td className="px-2 py-2">
+                      <span className="text-gray-500 dark:text-gray-400 leading-relaxed break-words">
                         {repo.description ?? <span className="text-gray-300 dark:text-gray-600 italic">—</span>}
                       </span>
                     </td>
