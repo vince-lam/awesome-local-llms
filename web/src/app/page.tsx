@@ -70,13 +70,14 @@ export default async function Page() {
       <div className="mb-8 flex items-start justify-between">
         <div>
           <div className="flex items-baseline gap-3 mb-1">
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">llm repos</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">(awesome local) llm repos</h1>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
               Updated daily
             </span>
           </div>
-          <p className="text-gray-400 dark:text-gray-500 text-sm">
-            {repos.length.toLocaleString()} curated AI &amp; LLM GitHub repositories, tracked daily
+          <p className="text-gray-500 dark:text-gray-400 text-sm max-w-xl">
+            A directory of open-source local LLM GitHub projects to help you compare, use, and build with local AI.
+            Browse {repos.length.toLocaleString()} repos tracked daily.
           </p>
         </div>
         <ThemeToggle />

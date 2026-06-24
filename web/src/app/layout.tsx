@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "llm repos",
+  title: "(awesome local) llm repos",
   description: "Curated AI & LLM GitHub repositories tracked daily — sorted by stars, filterable by category",
 };
 
