@@ -69,6 +69,18 @@
     ]
   },
   {
+    "repo": "Nexo-Agent/nexo",
+    "tags": [
+      "desktop-app",
+      "mcp-server"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ]
+  },
+  {
     "repo": "nat/openplayground",
     "tags": [
       "web-app"
