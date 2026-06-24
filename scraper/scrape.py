@@ -13,10 +13,11 @@ Environment variables:
 
 import json
 import os
+import re
 import sys
 import time
 import csv
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
 import requests
@@ -106,6 +107,20 @@ class TursoClient:
                 stmt["args"] = [_arg(a) for a in args]
             stmts.append(stmt)
         return self._pipeline(stmts)
+
+    def query(self, sql: str, args: Optional[list] = None) -> list[list]:
+        """Run a SELECT and return rows as plain Python lists."""
+        res = self.execute(sql, args)
+        raw_rows = res.get("response", {}).get("result", {}).get("rows", [])
+        def _val(v: dict):
+            if v["type"] == "null":
+                return None
+            if v["type"] == "integer":
+                return int(v["value"])
+            if v["type"] == "float":
+                return float(v["value"])
+            return v["value"]
+        return [[_val(cell) for cell in row] for row in raw_rows]
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +306,113 @@ def write_batch_to_db(db: TursoClient, rows: list[dict]) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Contributor count via REST (one call per repo, parse Link rel="last")
+# ---------------------------------------------------------------------------
+
+_CONTRIBUTORS_STALE_DAYS = 7  # re-fetch if no data within this many days
+
+_COPY_FORWARD_CONTRIBUTORS_SQL = """
+UPDATE snapshots
+SET contributors = (
+  SELECT s2.contributors
+  FROM   snapshots s2
+  WHERE  s2.repo_id = snapshots.repo_id
+    AND  s2.contributors IS NOT NULL
+  ORDER BY s2.scraped_date DESC
+  LIMIT 1
+)
+WHERE scraped_date = ?
+  AND contributors IS NULL
+  AND EXISTS (
+    SELECT 1 FROM snapshots s2
+    WHERE  s2.repo_id = snapshots.repo_id
+      AND  s2.contributors IS NOT NULL
+      AND  s2.scraped_date >= ?
+  )
+"""
+
+_STALE_CONTRIBUTOR_REPOS_SQL = """
+SELECT r.full_name
+FROM   repos r
+INNER JOIN snapshots s ON s.repo_id = r.id AND s.scraped_date = ?
+WHERE  s.contributors IS NULL
+ORDER BY r.full_name
+"""
+
+_UPDATE_CONTRIBUTORS_SQL = """
+UPDATE snapshots
+SET contributors = ?
+WHERE repo_id = (SELECT id FROM repos WHERE full_name = ?)
+  AND scraped_date = ?
+"""
+
+
+def fetch_contributor_count(session: requests.Session, full_name: str) -> Optional[int]:
+    url = f"https://api.github.com/repos/{full_name}/contributors"
+    try:
+        resp = session.get(url, params={"per_page": "1", "anon": "true"}, timeout=15)
+    except requests.RequestException as e:
+        print(f"    network error fetching contributors for {full_name}: {e}")
+        return None
+
+    if resp.status_code == 204:  # empty repo
+        return 0
+    if resp.status_code in (403, 429):
+        reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+        wait = max(0, reset - time.time()) + 5
+        print(f"    rate limited — sleeping {wait:.0f}s")
+        time.sleep(wait)
+        try:
+            resp = session.get(url, params={"per_page": "1", "anon": "true"}, timeout=15)
+        except requests.RequestException:
+            return None
+    if not resp.ok:
+        print(f"    HTTP {resp.status_code} for {full_name} — skipping")
+        return None
+
+    link = resp.headers.get("Link", "")
+    m = re.search(r'[?&]page=(\d+)>;\s*rel="last"', link)
+    if m:
+        return int(m.group(1))
+
+    try:
+        return len(resp.json())
+    except Exception:
+        return None
+
+
+def contributors_pass(db: TursoClient, session: requests.Session) -> None:
+    today = date.today().isoformat()
+    cutoff = (date.today() - timedelta(days=_CONTRIBUTORS_STALE_DAYS)).isoformat()
+
+    # Copy forward recent contributor counts so we don't re-fetch unchanged data
+    db.execute(_COPY_FORWARD_CONTRIBUTORS_SQL, [today, cutoff])
+
+    # Find repos whose today's snapshot still has no contributor count
+    stale = [row[0] for row in db.query(_STALE_CONTRIBUTOR_REPOS_SQL, [today])]
+    if not stale:
+        print("Contributors: all repos have recent data — nothing to fetch")
+        return
+
+    print(f"\nContributors: fetching {len(stale)} repos (stale or new)")
+    update_stmts = []
+    for i, full_name in enumerate(stale, 1):
+        count = fetch_contributor_count(session, full_name)
+        status = str(count) if count is not None else "err"
+        print(f"  [{i}/{len(stale)}] {full_name}: {status}")
+        if count is not None:
+            update_stmts.append((_UPDATE_CONTRIBUTORS_SQL, [count, full_name, today]))
+        if len(update_stmts) >= 50:
+            db.executemany(update_stmts)
+            update_stmts = []
+        time.sleep(0.1)  # be polite to the REST API
+
+    if update_stmts:
+        db.executemany(update_stmts)
+    print(f"Contributors: updated {len(stale)} repos")
+
+
+# ---------------------------------------------------------------------------
 # CSV output (keeps existing outputs/ convention)
 # ---------------------------------------------------------------------------
 
@@ -368,6 +490,9 @@ def main() -> None:
 
         if idx < len(batches):
             time.sleep(0.5)
+
+    if db:
+        contributors_pass(db, session)
 
     write_csv(all_rows)
 

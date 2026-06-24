@@ -31,6 +31,7 @@ export const snapshots = sqliteTable(
     daysSinceCommit: integer("days_since_commit"),
     license: text("license"),
     primaryLanguage: text("primary_language"),
+    contributors: integer("contributors"),
   },
   (table) => ({
     repoDateIdx: uniqueIndex("repo_date_idx").on(table.repoId, table.scrapedDate),

@@ -30,9 +30,13 @@ CREATE TABLE IF NOT EXISTS snapshots (
   days_since_commit INTEGER,
   license           TEXT,
   primary_language  TEXT,
+  contributors      INTEGER,
   UNIQUE(repo_id, scraped_date)
 );
 
 CREATE INDEX IF NOT EXISTS idx_snap_repo_date ON snapshots(repo_id, scraped_date);
 CREATE INDEX IF NOT EXISTS idx_snap_date      ON snapshots(scraped_date);
 CREATE INDEX IF NOT EXISTS idx_snap_stars     ON snapshots(stars DESC);
+
+-- Migration for existing databases:
+-- ALTER TABLE snapshots ADD COLUMN contributors INTEGER;
