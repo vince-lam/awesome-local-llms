@@ -15963,5 +15963,607 @@
     "tags": [
       "orchestration"
     ]
+  },
+  {
+    "repo": "openclaw/openclaw",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "openai/codex",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "anomalyco/opencode",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "corsairdev/corsair",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "BigPizzaV3/CodexPlusPlus",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Alishahryar1/free-claude-code",
+    "tags": [
+      "terminal-agent"
+    ]
+  },
+  {
+    "repo": "imbue-bit/AlphaGPT",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "antirez/ds4",
+    "tags": [
+      "terminal-agent",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Helvesec/rmux",
+    "tags": [
+      "terminal-agent",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "Kilo-Org/kilocode",
+    "tags": [
+      "ide-extension",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "palmier-io/palmier-pro",
+    "tags": [
+      "ide-extension",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Waishnav/devspace",
+    "tags": [
+      "ide-extension",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "Comfy-Org/ComfyUI",
+    "tags": [
+      "local-runtime",
+      "web-app"
+    ]
+  },
+  {
+    "repo": "google-research/timesfm",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "XiaomiMiMo/MiMo-Code",
+    "tags": [
+      "local-runtime",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "OpenBMB/VoxCPM",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "AIDC-AI/Pixelle-Video",
+    "tags": [
+      "local-runtime"
+    ]
+  },
+  {
+    "repo": "router-for-me/CLIProxyAPI",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "Wei-Shaw/sub2api",
+    "tags": [
+      "production-serving"
+    ]
+  },
+  {
+    "repo": "n8n-io/n8n",
+    "tags": [
+      "workflow-low-code",
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "harry0703/MoneyPrinterTurbo",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "Forward-Future/loop-library",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "koala73/worldmonitor",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "interviewstreet/hiring-agent",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "AgriciDaniel/claude-seo",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "Agentchengfeng/chengfeng-videocut-skills",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "garrytan/gstack",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "revfactory/harness",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "msitarzewski/agency-agents",
+    "tags": [
+      "orchestration",
+      "multi-agent-system"
+    ]
+  },
+  {
+    "repo": "shiyu-coder/Kronos",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "yorgai/ORG2",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "stablyai/orca",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "Nasiko-Labs/nasiko",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "unicity-astrid/astrid",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "garrytan/gbrain",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "Forsy-AI/agent-apprenticeship",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "open-gsd/gsd-core",
+    "tags": [
+      "orchestration"
+    ]
+  },
+  {
+    "repo": "vercel/eve",
+    "tags": [
+      "orchestration",
+      "web-app"
+    ]
+  },
+  {
+    "repo": "agentscope-ai/QwenPaw",
+    "tags": [
+      "orchestration",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "unclecode/crawl4ai",
+    "tags": [
+      "browser-automation",
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "microsoft/markitdown",
+    "tags": [
+      "document-qa-rag",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "StarTrail-org/PixelRAG",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "Egonex-AI/Understand-Anything",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "colbymchenry/codegraph",
+    "tags": [
+      "document-qa-rag",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "kepano/obsidian-skills",
+    "tags": [
+      "document-qa-rag",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "AgriciDaniel/claude-obsidian",
+    "tags": [
+      "document-qa-rag",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "nashsu/llm_wiki",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "virgiliojr94/book-to-skill",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "paperclipai/paperclip",
+    "tags": [
+      "document-qa-rag",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "xbtlin/ai-berkshire",
+    "tags": [
+      "data-analysis-agent"
+    ]
+  },
+  {
+    "repo": "karpathy/autoresearch",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "Imbad0202/academic-research-skills",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "Imbad0202/academic-research-skills-codex",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "fivetaku/insane-search",
+    "tags": [
+      "research-agent"
+    ]
+  },
+  {
+    "repo": "alibaba/page-agent",
+    "tags": [
+      "browser-automation",
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "vercel-labs/agent-browser",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "getpaseo/paseo",
+    "tags": [
+      "browser-automation"
+    ]
+  },
+  {
+    "repo": "D4Vinci/Scrapling",
+    "tags": [
+      "browser-automation",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "mattpocock/skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "anthropics/skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "anthropics/claude-plugins-official",
+    "tags": [
+      "mcp-server",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "ComposioHQ/awesome-claude-skills",
+    "tags": [
+      "tool-integration",
+      "mcp-server"
+    ]
+  },
+  {
+    "repo": "VoltAgent/awesome-agent-skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "VoltAgent/awesome-design-md",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "vercel-labs/skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "multica-ai/andrej-karpathy-skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "NVIDIA/SkillSpector",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "obra/superpowers",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "farion1231/cc-switch",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "mvanhorn/last30days-skill",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "Leonxlnx/taste-skill",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "zhaoxuya520/reverse-skill",
+    "tags": [
+      "prompting-optimization",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "phuryn/pm-skills",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "github/spec-kit",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "Fission-AI/OpenSpec",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "ruvnet/RuView",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "steipete/birdclaw",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "ogulcancelik/herdr",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "microsoft/SkillOpt",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "modem-dev/hunk",
+    "tags": [
+      "tool-integration",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "RhysSullivan/executor",
+    "tags": [
+      "tool-integration",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "htdt/godogen",
+    "tags": [
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "google-labs-code/design.md",
+    "tags": [
+      "tool-integration",
+      "code-generation"
+    ]
+  },
+  {
+    "repo": "anthropics/financial-services",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "blader/humanizer",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "op7418/Humanizer-zh",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "elder-plinius/CL4R1T4S",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "luongnv89/claude-howto",
+    "tags": [
+      "prompting-optimization"
+    ]
+  },
+  {
+    "repo": "javaht/claude-desktop-zh-cn",
+    "tags": [
+      "desktop-app"
+    ]
+  },
+  {
+    "repo": "lyra81604/zhengxi-views",
+    "tags": [
+      "document-qa-rag"
+    ]
+  },
+  {
+    "repo": "zarazhangrui/frontend-slides",
+    "tags": [
+      "task-automation"
+    ]
+  },
+  {
+    "repo": "withastro/flue",
+    "tags": [
+      "web-app",
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "jakubkrehel/make-interfaces-feel-better",
+    "tags": [
+      "tool-integration"
+    ]
+  },
+  {
+    "repo": "alchaincyf/huashu-design",
+    "tags": [
+      "tool-integration"
+    ]
   }
 ]
