@@ -49,5 +49,6 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "Update repo stats ($(date -u +'%Y-%m-%d'))"
+            git pull --rebase origin main
             git push
           fi
