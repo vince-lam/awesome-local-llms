@@ -61,6 +61,7 @@ REPO_FIELDS = """{
   description
   pushedAt
   isArchived
+  owner { __typename }
   primaryLanguage { name }
   licenseInfo { name }
   openIssues: issues(states: OPEN) { totalCount }
@@ -137,6 +138,7 @@ ON CONFLICT(full_name) DO UPDATE SET
 """
 
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
+_UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ?"
 
 _UPSERT_SNAPSHOT_SQL = """
 INSERT INTO snapshots
@@ -198,6 +200,9 @@ def write_snapshots_to_db(
             license_val = None
 
         desc_stmts.append((_UPDATE_DESC_SQL, [description, full_name]))
+        owner_type = row.get("owner_type")
+        if owner_type:
+            desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [owner_type, full_name]))
         snap_stmts.append((_UPSERT_SNAPSHOT_SQL, [
             today,
             int(row["Stars"]), int(row["Forks"]), int(row["Issues"]),
@@ -421,6 +426,7 @@ def fetch_batch(
         row = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
+            "owner_type": (node.get("owner") or {}).get("__typename"),
             "Categories": ", ".join(cat_names),
             "Tags": ", ".join(tag_names),
             "Platforms": ", ".join(platforms),
