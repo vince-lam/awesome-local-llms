@@ -508,7 +508,21 @@ def fetch_all(
         failed = still_failed
 
     if failed:
-        print(f"  {len(failed)} batch(es) permanently skipped after all retries")
+        # Retry each repo individually so transient 502s don't strand an
+        # entire batch — only truly broken repos end up skipped.
+        individual_failed: List[Dict] = [e for batch in failed for e in batch]
+        print(f"\n{len(individual_failed)} repos from failed batches — retrying individually...")
+        still_individual_failed: List[Dict] = []
+        for entry in individual_failed:
+            result = fetch_batch(session, [entry], taxonomy)
+            if result is None:
+                print(f"  permanently skipped: {entry['repo']}")
+                still_individual_failed.append(entry)
+            else:
+                rows.extend(result)
+            time.sleep(0.5)
+        if still_individual_failed:
+            print(f"  {len(still_individual_failed)} repo(s) permanently skipped after individual retry")
 
     if not rows:
         sys.exit("Error: no repository data fetched.")
