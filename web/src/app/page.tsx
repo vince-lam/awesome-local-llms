@@ -82,7 +82,7 @@ export default async function Page() {
         </div>
         <div className="flex items-center gap-2">
           <a
-            href="https://github.com/vince-lam/awesome-llm-repos"
+            href="https://github.com/vince-lam/awesome-local-llms"
             target="_blank"
             rel="noopener noreferrer"
             className="p-2 rounded-md text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
