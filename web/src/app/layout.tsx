@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "(awesome local) llm repos",
-  description: "Curated AI & LLM GitHub repositories tracked daily — sorted by stars, filterable by category",
+  title: "LLMRepos — Open-Source LLM Projects for Builders",
+  description: "Discover the best open-source LLM projects: AI agents, RAG tools, inference engines, eval frameworks, coding agents, and AI devtools — curated for builders, founders, and researchers.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
