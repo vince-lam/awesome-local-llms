@@ -162,7 +162,7 @@ function CategoryPill({ categorySlug, categoryName }: { categorySlug: string; ca
   );
 }
 
-const PAGE_SIZES = [100, 200, 500, 1000] as const;
+const PAGE_SIZES = [100, 200, 500] as const;
 type PageSize = typeof PAGE_SIZES[number];
 
 const COL_KEYS = ["rank","repo","stars","d7","d30","forks","contributors","description","category","subcat","issues","language"] as const;
@@ -448,13 +448,13 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                   <tr key={repo.full_name} className={`transition-colors group ${repo.owner_type === "Organization" ? "bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100/40 dark:hover:bg-purple-900/20" : "hover:bg-blue-50/30 dark:hover:bg-blue-950/20"}`}>
                     <td className="px-2 py-2 text-gray-400 dark:text-gray-600 text-center overflow-hidden">{globalIndex + 1}</td>
                     <td className="px-2 py-2 overflow-hidden">
-                      <div className="flex items-start gap-1.5">
+                      <div className="flex items-center gap-2">
                         <Image
                           src={`https://github.com/${repo.owner}.png?size=64`}
                           alt={repo.owner}
-                          width={20}
-                          height={20}
-                          className="rounded-full mt-0.5 shrink-0"
+                          width={28}
+                          height={28}
+                          className="rounded-full shrink-0"
                           unoptimized
                         />
                         <div className="min-w-0">
@@ -487,7 +487,7 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                       </div>
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-800 dark:text-gray-200 font-medium overflow-hidden">
-                      ★ {fmt(repo.stars)}
+                      {fmt(repo.stars)}
                     </td>
                     <td className="px-2 py-2 text-right font-mono overflow-hidden">
                       <DeltaBadge delta={repo.delta_7d} />
