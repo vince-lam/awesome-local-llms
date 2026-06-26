@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Image from "next/image";
 
 export interface RepoRow {
   full_name: string;
@@ -447,31 +448,43 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                   <tr key={repo.full_name} className={`transition-colors group ${repo.owner_type === "Organization" ? "bg-purple-50/40 dark:bg-purple-950/20 hover:bg-purple-100/40 dark:hover:bg-purple-900/20" : "hover:bg-blue-50/30 dark:hover:bg-blue-950/20"}`}>
                     <td className="px-2 py-2 text-gray-400 dark:text-gray-600 text-center overflow-hidden">{globalIndex + 1}</td>
                     <td className="px-2 py-2 overflow-hidden">
-                      <a
-                        href={`https://github.com/${repo.owner}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-gray-400 dark:text-gray-500 hover:text-blue-500 font-mono leading-tight transition-colors break-all"
-                      >
-                        {repo.owner}
-                      </a>
-                      <a
-                        href={repo.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline"
-                        style={{ overflowWrap: "anywhere" }}
-                      >
-                        {repo.name.split("-").join("-​")}
-                      </a>
-                      {isStale && (
-                        <span
-                          className="block text-[9px] font-mono text-gray-300 dark:text-gray-600 leading-tight"
-                          title={`Stats from ${repo.scraped_date} — skipped in latest run`}
-                        >
-                          {repo.scraped_date}
-                        </span>
-                      )}
+                      <div className="flex items-start gap-1.5">
+                        <Image
+                          src={`https://github.com/${repo.owner}.png?size=64`}
+                          alt={repo.owner}
+                          width={20}
+                          height={20}
+                          className="rounded-full mt-0.5 shrink-0"
+                          unoptimized
+                        />
+                        <div className="min-w-0">
+                          <a
+                            href={`https://github.com/${repo.owner}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block text-gray-400 dark:text-gray-500 hover:text-blue-500 font-mono leading-tight transition-colors break-all"
+                          >
+                            {repo.owner}
+                          </a>
+                          <a
+                            href={repo.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline"
+                            style={{ overflowWrap: "anywhere" }}
+                          >
+                            {repo.name.split("-").join("-​")}
+                          </a>
+                          {isStale && (
+                            <span
+                              className="block text-[9px] font-mono text-gray-300 dark:text-gray-600 leading-tight"
+                              title={`Stats from ${repo.scraped_date} — skipped in latest run`}
+                            >
+                              {repo.scraped_date}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-800 dark:text-gray-200 font-medium overflow-hidden">
                       ★ {fmt(repo.stars)}
