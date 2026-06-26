@@ -142,7 +142,7 @@ function TagPill({ tag }: { tag: string }) {
   const colors = CATEGORY_COLORS[info.categorySlug] ?? { bg: "bg-gray-100", text: "text-gray-600" };
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${colors.bg} ${colors.text}`}
+      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium ${colors.bg} ${colors.text}`}
       style={{ overflowWrap: "anywhere" }}
     >
       {wrapAtSpaces(info.name)}
