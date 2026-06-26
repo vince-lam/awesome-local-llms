@@ -24,6 +24,11 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+try:
+    import pycountry as _pycountry
+except ImportError:
+    _pycountry = None  # type: ignore[assignment]
+
 GRAPHQL_URL = "https://api.github.com/graphql"
 BATCH_SIZE = 50
 
@@ -413,6 +418,155 @@ def contributors_pass(db: TursoClient, session: requests.Session) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Owner country enrichment (one-time per owner)
+# ---------------------------------------------------------------------------
+
+# Free-text GitHub locations that pycountry can't reliably identify
+_COUNTRY_OVERRIDES: dict[str, Optional[str]] = {
+    # UK variants
+    "uk": "GB", "u.k.": "GB", "u.k": "GB", "great britain": "GB",
+    "england": "GB", "scotland": "GB", "wales": "GB", "northern ireland": "GB",
+    # US variants
+    "usa": "US", "u.s.a.": "US", "u.s.": "US", "america": "US",
+    # Renamed / non-obvious
+    "russia": "RU",
+    "south korea": "KR", "korea": "KR",
+    "taiwan": "TW", "republic of china": "TW",
+    "hong kong": "HK",
+    "iran": "IR",
+    "vietnam": "VN",
+    "czechia": "CZ", "czech republic": "CZ",
+    "moldova": "MD",
+    # Non-locations → no flag
+    "earth": None, "planet earth": None, "remote": None, "worldwide": None,
+    "internet": None, "the internet": None, "everywhere": None,
+    "world": None, "global": None, "online": None,
+}
+
+# US state abbreviations that collide with ISO alpha-2 country codes
+_US_STATES = {
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "DC", "PR",
+}
+
+
+def _location_to_country(location: str) -> Optional[str]:
+    """Parse a free-text GitHub location string into an ISO 3166-1 alpha-2 code."""
+    if not location or not location.strip():
+        return None
+
+    location = location.strip()
+    loc_lower = location.lower()
+
+    if loc_lower in _COUNTRY_OVERRIDES:
+        return _COUNTRY_OVERRIDES[loc_lower]
+
+    if _pycountry is None:
+        return None
+
+    parts = [p.strip() for p in location.split(",")]
+
+    # Single token: allow 2-letter exact matches (but not US state codes)
+    if len(parts) == 1:
+        token = parts[0]
+        if len(token) == 2:
+            if token.upper() in _US_STATES:
+                return None
+            c = _pycountry.countries.get(alpha_2=token.upper())
+            return c.alpha_2 if c else None
+        try:
+            matches = _pycountry.countries.search_fuzzy(token)
+            return matches[0].alpha_2 if matches else None
+        except LookupError:
+            return None
+
+    # Multiple tokens: scan right-to-left, skip short tokens (state-code ambiguity)
+    for part in reversed(parts):
+        part = part.strip()
+        if not part or len(part) <= 2:
+            continue
+
+        override = _COUNTRY_OVERRIDES.get(part.lower())
+        if override is not None or part.lower() in _COUNTRY_OVERRIDES:
+            return override
+
+        try:
+            matches = _pycountry.countries.search_fuzzy(part)
+            if matches:
+                return matches[0].alpha_2
+        except LookupError:
+            pass
+
+    return None
+
+
+_NULL_COUNTRY_OWNERS_SQL = """
+SELECT DISTINCT owner, owner_type
+FROM repos
+WHERE owner_country IS NULL
+"""
+
+_UPDATE_OWNER_COUNTRY_SQL = "UPDATE repos SET owner_country = ? WHERE owner = ?"
+
+
+def owner_country_pass(db: TursoClient, session: requests.Session) -> None:
+    owners = db.query(_NULL_COUNTRY_OWNERS_SQL)
+    if not owners:
+        print("Owner country: all repos already have data — nothing to fetch")
+        return
+
+    print(f"\nOwner country: fetching locations for {len(owners)} owners")
+    update_stmts: list[tuple[str, list]] = []
+
+    for i, (owner, owner_type) in enumerate(owners, 1):
+        endpoint = "orgs" if owner_type == "Organization" else "users"
+        url = f"https://api.github.com/{endpoint}/{owner}"
+
+        try:
+            resp = session.get(url, timeout=15)
+        except requests.RequestException as e:
+            print(f"  [{i}/{len(owners)}] {owner}: network error — {e}")
+            update_stmts.append((_UPDATE_OWNER_COUNTRY_SQL, ["", owner]))
+            continue
+
+        if resp.status_code in (403, 429):
+            reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+            wait = max(0, reset - time.time()) + 5
+            print(f"    rate limited — sleeping {wait:.0f}s")
+            time.sleep(wait)
+            try:
+                resp = session.get(url, timeout=15)
+            except requests.RequestException:
+                update_stmts.append((_UPDATE_OWNER_COUNTRY_SQL, ["", owner]))
+                continue
+
+        if not resp.ok:
+            print(f"  [{i}/{len(owners)}] {owner}: HTTP {resp.status_code} — skipping")
+            update_stmts.append((_UPDATE_OWNER_COUNTRY_SQL, ["", owner]))
+        else:
+            location = (resp.json().get("location") or "").strip()
+            country = _location_to_country(location)
+            status = f"→ {country}" if country else f"no match ({location!r})"
+            print(f"  [{i}/{len(owners)}] {owner}: {location!r} {status}")
+            # Store code, "" (checked/no match), so NULL stays meaning "not yet fetched"
+            update_stmts.append((_UPDATE_OWNER_COUNTRY_SQL, [country or "", owner]))
+
+        if len(update_stmts) >= 50:
+            db.executemany(update_stmts)
+            update_stmts = []
+
+        time.sleep(0.1)
+
+    if update_stmts:
+        db.executemany(update_stmts)
+    print(f"Owner country: processed {len(owners)} owners")
+
+
+# ---------------------------------------------------------------------------
 # CSV output (keeps existing outputs/ convention)
 # ---------------------------------------------------------------------------
 
@@ -493,6 +647,7 @@ def main() -> None:
 
     if db:
         contributors_pass(db, session)
+        owner_country_pass(db, session)
 
     write_csv(all_rows)
 

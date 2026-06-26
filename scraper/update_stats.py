@@ -28,6 +28,11 @@ from requests.adapters import HTTPAdapter
 from tabulate import tabulate
 from urllib3.util.retry import Retry
 
+try:
+    import pycountry as _pycountry
+except ImportError:
+    _pycountry = None  # type: ignore[assignment]
+
 GRAPHQL_URL = "https://api.github.com/graphql"
 BATCH_SIZE = 50
 
@@ -126,6 +131,16 @@ class TursoClient:
                 stmt["args"] = [_arg(a) for a in args]
             stmts.append(stmt)
         return self._pipeline(stmts)
+
+    def query(self, sql: str, args: Optional[list] = None) -> list:
+        res = self.execute(sql, args)
+        raw_rows = res.get("response", {}).get("result", {}).get("rows", [])
+        def _val(v: dict):
+            if v["type"] == "null": return None
+            if v["type"] == "integer": return int(v["value"])
+            if v["type"] == "float": return float(v["value"])
+            return v["value"]
+        return [[_val(cell) for cell in row] for row in raw_rows]
 
 
 _INIT_REPO_SQL = """
@@ -597,6 +612,127 @@ def update_readme(markdown_table: str) -> None:
 
 
 # ---------------------------------------------------------------------------
+# Owner country enrichment (one-time per owner; NULL = not yet fetched)
+# ---------------------------------------------------------------------------
+
+_COUNTRY_OVERRIDES: Dict[str, Optional[str]] = {
+    "uk": "GB", "u.k.": "GB", "u.k": "GB", "great britain": "GB",
+    "england": "GB", "scotland": "GB", "wales": "GB", "northern ireland": "GB",
+    "usa": "US", "u.s.a.": "US", "u.s.": "US", "america": "US",
+    "russia": "RU",
+    "south korea": "KR", "korea": "KR",
+    "taiwan": "TW", "republic of china": "TW",
+    "hong kong": "HK",
+    "iran": "IR",
+    "vietnam": "VN",
+    "czechia": "CZ", "czech republic": "CZ",
+    "moldova": "MD",
+    "earth": None, "planet earth": None, "remote": None, "worldwide": None,
+    "internet": None, "the internet": None, "everywhere": None,
+    "world": None, "global": None, "online": None,
+}
+
+_US_STATES = {
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA",
+    "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+    "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ",
+    "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC",
+    "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+    "DC", "PR",
+}
+
+
+def _location_to_country(location: str) -> Optional[str]:
+    if not location or not location.strip():
+        return None
+    location = location.strip()
+    loc_lower = location.lower()
+    if loc_lower in _COUNTRY_OVERRIDES:
+        return _COUNTRY_OVERRIDES[loc_lower]
+    if _pycountry is None:
+        return None
+    parts = [p.strip() for p in location.split(",")]
+    if len(parts) == 1:
+        token = parts[0]
+        if len(token) == 2:
+            if token.upper() in _US_STATES:
+                return None
+            c = _pycountry.countries.get(alpha_2=token.upper())
+            return c.alpha_2 if c else None
+        try:
+            matches = _pycountry.countries.search_fuzzy(token)
+            return matches[0].alpha_2 if matches else None
+        except LookupError:
+            return None
+    for part in reversed(parts):
+        part = part.strip()
+        if not part or len(part) <= 2:
+            continue
+        override = _COUNTRY_OVERRIDES.get(part.lower())
+        if part.lower() in _COUNTRY_OVERRIDES:
+            return override
+        try:
+            matches = _pycountry.countries.search_fuzzy(part)
+            if matches:
+                return matches[0].alpha_2
+        except LookupError:
+            pass
+    return None
+
+
+def owner_country_pass(db: TursoClient, session: requests.Session) -> None:
+    owners = db.query(
+        "SELECT DISTINCT owner, owner_type FROM repos WHERE owner_country IS NULL"
+    )
+    if not owners:
+        print("Owner country: all repos already have data — nothing to fetch")
+        return
+
+    print(f"\nOwner country: fetching locations for {len(owners)} owners")
+    update_stmts: list = []
+
+    for i, (owner, owner_type) in enumerate(owners, 1):
+        endpoint = "orgs" if owner_type == "Organization" else "users"
+        url = f"https://api.github.com/{endpoint}/{owner}"
+        try:
+            resp = session.get(url, timeout=15)
+        except requests.RequestException as e:
+            print(f"  [{i}/{len(owners)}] {owner}: network error — {e}")
+            update_stmts.append(("UPDATE repos SET owner_country = ? WHERE owner = ?", ["", owner]))
+            continue
+
+        if resp.status_code in (403, 429):
+            reset = int(resp.headers.get("X-RateLimit-Reset", time.time() + 60))
+            wait = max(0, reset - time.time()) + 5
+            print(f"    rate limited — sleeping {wait:.0f}s")
+            time.sleep(wait)
+            try:
+                resp = session.get(url, timeout=15)
+            except requests.RequestException:
+                update_stmts.append(("UPDATE repos SET owner_country = ? WHERE owner = ?", ["", owner]))
+                continue
+
+        if not resp.ok:
+            print(f"  [{i}/{len(owners)}] {owner}: HTTP {resp.status_code} — skipping")
+            update_stmts.append(("UPDATE repos SET owner_country = ? WHERE owner = ?", ["", owner]))
+        else:
+            location = (resp.json().get("location") or "").strip()
+            country = _location_to_country(location)
+            status = f"→ {country}" if country else f"no match ({location!r})"
+            print(f"  [{i}/{len(owners)}] {owner}: {location!r} {status}")
+            update_stmts.append(("UPDATE repos SET owner_country = ? WHERE owner = ?", [country or "", owner]))
+
+        if len(update_stmts) >= 50:
+            db.executemany(update_stmts)
+            update_stmts = []
+        time.sleep(0.1)
+
+    if update_stmts:
+        db.executemany(update_stmts)
+    print(f"Owner country: processed {len(owners)} owners")
+
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
@@ -629,6 +765,7 @@ def main() -> None:
     if db:
         init_repos(db, entries)
         write_snapshots_to_db(db, df, contributor_counts)
+        owner_country_pass(db, session)
 
     # Skip CSV in CI — it's gitignored and not useful in the action runner
     if not os.getenv("CI"):

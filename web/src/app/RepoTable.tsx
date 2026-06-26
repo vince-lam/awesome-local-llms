@@ -19,6 +19,7 @@ export interface RepoRow {
   contributors: number | null;
   owner_type: string | null;
   scraped_date: string;
+  owner_country: string | null;
 }
 
 // subcategory slug → { category, categorySlug, subcategory }
@@ -130,6 +131,12 @@ function DeltaBadge({ delta }: { delta: number | null }) {
 function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
   if (!active) return <span className="ml-1 text-gray-300 dark:text-gray-600 text-xs">↕</span>;
   return <span className="ml-1 text-gray-700 dark:text-gray-300 text-xs">{dir === "desc" ? "↓" : "↑"}</span>;
+}
+
+function countryFlag(code: string): string {
+  return [...code.toUpperCase()].map(c =>
+    String.fromCodePoint(c.charCodeAt(0) + 0x1F1A5)
+  ).join("");
 }
 
 function wrapAtSpaces(text: string) {
@@ -466,15 +473,26 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                           >
                             {repo.owner}
                           </a>
-                          <a
-                            href={repo.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="block font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline"
-                            style={{ overflowWrap: "anywhere" }}
-                          >
-                            {repo.name.split("-").join("-​")}
-                          </a>
+                          <span className="flex items-center gap-1">
+                            <a
+                              href={repo.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-semibold text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 leading-tight transition-colors group-hover:underline"
+                              style={{ overflowWrap: "anywhere" }}
+                            >
+                              {repo.name.split("-").join("-​")}
+                            </a>
+                            {repo.owner_country && (
+                              <span
+                                className="text-sm leading-none shrink-0"
+                                title={repo.owner_country}
+                                aria-label={repo.owner_country}
+                              >
+                                {countryFlag(repo.owner_country)}
+                              </span>
+                            )}
+                          </span>
                           {isStale && (
                             <span
                               className="block text-[9px] font-mono text-gray-300 dark:text-gray-600 leading-tight"

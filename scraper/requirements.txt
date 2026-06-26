@@ -3,3 +3,4 @@ urllib3>=2.0
 pandas>=2.2
 tabulate>=0.9
 python-dotenv>=1.0
+pycountry>=22.3
