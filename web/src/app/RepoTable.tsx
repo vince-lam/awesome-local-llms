@@ -173,7 +173,7 @@ function CategoryPill({ categorySlug, categoryName }: { categorySlug: string; ca
 const PAGE_SIZES = [100, 200, 500] as const;
 type PageSize = typeof PAGE_SIZES[number];
 
-const COL_KEYS = ["rank","repo","stars","d7","d30","contributors","forks","description","category","subcat","created","issues","language"] as const;
+const COL_KEYS = ["rank","repo","stars","d7","d30","forks","description","category","subcat","created","contributors","issues","language"] as const;
 type ColKey = typeof COL_KEYS[number];
 
 const COL_WIDTHS: Record<ColKey, number> = {
@@ -425,12 +425,12 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                   { key: "stars",        label: "Stars",       right: true,  center: false, sort: "stars" as SortKey },
                   { key: "d7",           label: "7d",          right: true,  center: false, sort: "delta_7d" as SortKey },
                   { key: "d30",          label: "30d",         right: true,  center: false, sort: "delta_30d" as SortKey },
-                  { key: "contributors", label: "Contribs",    right: true,  center: false, sort: "contributors" as SortKey },
                   { key: "forks",        label: "Forks",       right: true,  center: false, sort: "forks" as SortKey },
                   { key: "description",  label: "Description", right: false, center: false, sort: null },
                   { key: "category",     label: "Category",    right: false, center: false, sort: null },
                   { key: "subcat",       label: "Subcat",      right: false, center: false, sort: null },
                   { key: "created",      label: "Created",     right: false, center: false, sort: null },
+                  { key: "contributors", label: "Contribs",    right: true,  center: false, sort: "contributors" as SortKey },
                   { key: "issues",       label: "Issues",      right: true,  center: false, sort: "issues" as SortKey },
                   { key: "language",     label: "Language",    right: false, center: false, sort: null },
                 ] satisfies { key: ColKey; label: string; right: boolean; center: boolean; sort: SortKey | null }[]).map(col => (
@@ -523,9 +523,6 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                       <DeltaBadge delta={repo.delta_30d} />
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
-                      {repo.contributors != null ? fmt(repo.contributors) : <span className="text-gray-300 dark:text-gray-600">—</span>}
-                    </td>
-                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {fmt(repo.forks)}
                     </td>
                     <td className="px-2 py-2">
@@ -549,6 +546,9 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                       {repo.repo_created_at
                         ? new Date(repo.repo_created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
                         : <span className="text-gray-300 dark:text-gray-600">—</span>}
+                    </td>
+                    <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
+                      {repo.contributors != null ? fmt(repo.contributors) : <span className="text-gray-300 dark:text-gray-600">—</span>}
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {fmt(repo.issues)}
