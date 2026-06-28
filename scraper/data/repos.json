@@ -69,6 +69,18 @@
     ]
   },
   {
+    "repo": "CogitoForge-AI/cogito-studio",
+    "tags": [
+      "desktop-app",
+      "mcp-server"
+    ],
+    "platforms": [
+      "Linux",
+      "macOS",
+      "Windows"
+    ]
+  },
+  {
     "repo": "nat/openplayground",
     "tags": [
       "web-app"
