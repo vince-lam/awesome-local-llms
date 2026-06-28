@@ -44,6 +44,7 @@ REPO_FIELDS = """{
   stargazerCount
   forkCount
   description
+  createdAt
   pushedAt
   isArchived
   owner { __typename }
@@ -196,12 +197,16 @@ def fetch_batch(session: requests.Session, batch: list[dict]) -> list[dict]:
             dt = datetime.strptime(pushed, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
             days_since = int((datetime.now(timezone.utc) - dt).total_seconds() / 86400)
 
+        created_raw = node.get("createdAt") or ""
+        repo_created_at = created_raw[:10] if created_raw else None  # YYYY-MM-DD
+
         row = {
             "repo": entry["repo"],
             "tags": entry.get("tags", []),
             "platforms": entry.get("platforms", []),
             "backends": entry.get("backends", []),
             "description": node.get("description"),
+            "repo_created_at": repo_created_at,
             "stars": node.get("stargazerCount", 0),
             "forks": node.get("forkCount", 0),
             "issues": (node.get("openIssues") or {}).get("totalCount", 0),
@@ -242,6 +247,7 @@ ON CONFLICT(full_name) DO UPDATE SET
 
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
 _UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ? AND owner_type IS NULL"
+_UPDATE_CREATED_AT_SQL = "UPDATE repos SET repo_created_at = ? WHERE full_name = ? AND repo_created_at IS NULL"
 
 _UPSERT_SNAPSHOT_SQL = """
 INSERT INTO snapshots
@@ -293,6 +299,8 @@ def write_batch_to_db(db: TursoClient, rows: list[dict]) -> None:
         desc_stmts.append((_UPDATE_DESC_SQL, [r.get("description"), r["repo"]]))
         if r.get("owner_type"):
             desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [r["owner_type"], r["repo"]]))
+        if r.get("repo_created_at"):
+            desc_stmts.append((_UPDATE_CREATED_AT_SQL, [r["repo_created_at"], r["repo"]]))
         snap_stmts.append((_UPSERT_SNAPSHOT_SQL, [
             today,
             r["stars"], r["forks"], r["issues"],

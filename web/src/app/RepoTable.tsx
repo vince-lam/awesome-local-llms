@@ -20,6 +20,7 @@ export interface RepoRow {
   owner_type: string | null;
   scraped_date: string;
   owner_country: string | null;
+  repo_created_at: string | null;
 }
 
 // subcategory slug → { category, categorySlug, subcategory }
@@ -172,12 +173,12 @@ function CategoryPill({ categorySlug, categoryName }: { categorySlug: string; ca
 const PAGE_SIZES = [100, 200, 500] as const;
 type PageSize = typeof PAGE_SIZES[number];
 
-const COL_KEYS = ["rank","repo","stars","d7","d30","contributors","forks","description","category","subcat","issues","language"] as const;
+const COL_KEYS = ["rank","repo","stars","d7","d30","contributors","forks","description","category","subcat","created","issues","language"] as const;
 type ColKey = typeof COL_KEYS[number];
 
 const COL_WIDTHS: Record<ColKey, number> = {
   rank: 32, repo: 172, stars: 84, d7: 64, d30: 64, contributors: 82,
-  forks: 70, description: 280, category: 114, subcat: 104, issues: 68, language: 72,
+  forks: 70, description: 280, category: 114, subcat: 104, created: 68, issues: 68, language: 72,
 };
 
 const DESCRIPTION_LIMIT = 130;
@@ -428,6 +429,7 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                   { key: "description",  label: "Description", right: false, center: false, sort: null },
                   { key: "category",     label: "Category",    right: false, center: false, sort: null },
                   { key: "subcat",       label: "Subcat",      right: false, center: false, sort: null },
+                  { key: "created",      label: "Created",     right: false, center: false, sort: null },
                   { key: "issues",       label: "Issues",      right: true,  center: false, sort: "issues" as SortKey },
                   { key: "language",     label: "Language",    right: false, center: false, sort: null },
                 ] satisfies { key: ColKey; label: string; right: boolean; center: boolean; sort: SortKey | null }[]).map(col => (
@@ -541,6 +543,11 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                       <div className="flex flex-col gap-1">
                         {repo.tags.map((t) => <TagPill key={t} tag={t} />)}
                       </div>
+                    </td>
+                    <td className="px-2 py-2 text-gray-400 dark:text-gray-500 overflow-hidden whitespace-nowrap" title={repo.repo_created_at ?? undefined}>
+                      {repo.repo_created_at
+                        ? new Date(repo.repo_created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" })
+                        : <span className="text-gray-300 dark:text-gray-600">—</span>}
                     </td>
                     <td className="px-2 py-2 text-right font-mono text-gray-500 dark:text-gray-400 overflow-hidden">
                       {fmt(repo.issues)}

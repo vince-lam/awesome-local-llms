@@ -15,8 +15,9 @@ CREATE TABLE IF NOT EXISTS repos (
   platforms   TEXT    NOT NULL DEFAULT '[]',    -- JSON array
   backends    TEXT    NOT NULL DEFAULT '[]',    -- JSON array
   owner_type    TEXT,                           -- "User" or "Organization" (from GitHub API)
-  owner_country TEXT,                           -- ISO 3166-1 alpha-2 (e.g. "US"), "" = checked/no location, NULL = not yet fetched
-  added_at      TEXT    NOT NULL DEFAULT (date('now'))
+  owner_country    TEXT,                         -- ISO 3166-1 alpha-2 (e.g. "US"), "" = checked/no location, NULL = not yet fetched
+  repo_created_at  TEXT,                         -- GitHub repo creation date (YYYY-MM-DD), NULL = not yet fetched
+  added_at         TEXT    NOT NULL DEFAULT (date('now'))
 );
 
 CREATE TABLE IF NOT EXISTS snapshots (
@@ -42,3 +43,4 @@ CREATE INDEX IF NOT EXISTS idx_snap_stars     ON snapshots(stars DESC);
 -- Migration for existing databases:
 -- ALTER TABLE snapshots ADD COLUMN contributors INTEGER;
 -- ALTER TABLE repos ADD COLUMN owner_country TEXT;
+-- ALTER TABLE repos ADD COLUMN repo_created_at TEXT;

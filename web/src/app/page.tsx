@@ -23,7 +23,8 @@ async function getAllRepos(): Promise<RepoRow[]> {
       s_now.contributors,
       r.owner_type,
       s_now.scraped_date,
-      r.owner_country
+      r.owner_country,
+      r.repo_created_at
     FROM repos r
     INNER JOIN snapshots s_now
       ON s_now.id = (
@@ -55,6 +56,7 @@ async function getAllRepos(): Promise<RepoRow[]> {
     owner_type: row[13] as string | null,
     scraped_date: row[14] as string,
     owner_country: (row[15] as string | null) || null,
+    repo_created_at: row[16] as string | null,
   }));
 }
 

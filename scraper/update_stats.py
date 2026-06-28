@@ -64,6 +64,7 @@ REPO_FIELDS = """{
   stargazerCount
   forkCount
   description
+  createdAt
   pushedAt
   isArchived
   owner { __typename }
@@ -154,6 +155,7 @@ ON CONFLICT(full_name) DO UPDATE SET
 
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
 _UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ?"
+_UPDATE_CREATED_AT_SQL = "UPDATE repos SET repo_created_at = ? WHERE full_name = ? AND repo_created_at IS NULL"
 
 _UPSERT_SNAPSHOT_SQL = """
 INSERT INTO snapshots
@@ -218,6 +220,9 @@ def write_snapshots_to_db(
         owner_type = row.get("owner_type")
         if owner_type:
             desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [owner_type, full_name]))
+        repo_created_at = row.get("repo_created_at")
+        if repo_created_at:
+            desc_stmts.append((_UPDATE_CREATED_AT_SQL, [repo_created_at, full_name]))
         snap_stmts.append((_UPSERT_SNAPSHOT_SQL, [
             today,
             int(row["Stars"]), int(row["Forks"]), int(row["Issues"]),
@@ -438,10 +443,14 @@ def fetch_batch(
             hours, rem = divmod(rem, 3600)
             minutes, _ = divmod(rem, 60)
 
+        created_raw = node.get("createdAt") or ""
+        repo_created_at = created_raw[:10] if created_raw else None  # YYYY-MM-DD
+
         row = {
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
             "owner_type": (node.get("owner") or {}).get("__typename"),
+            "repo_created_at": repo_created_at,
             "Categories": ", ".join(cat_names),
             "Tags": ", ".join(tag_names),
             "Platforms": ", ".join(platforms),
