@@ -76,7 +76,7 @@ export default async function Page() {
           <div className="flex items-baseline gap-3 mb-1">
             <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               <span className="text-emerald-600 dark:text-emerald-400">LLMRepos</span>
-              <span className="mx-2 text-gray-300 dark:text-gray-600 font-light">·</span>
+              <span className="mx-1 text-gray-400 dark:text-gray-500">·</span>
               Discover open-source LLM projects worth building with
             </h1>
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">

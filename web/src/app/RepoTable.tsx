@@ -370,7 +370,7 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
                 className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
                   active
                     ? `${colors.bg} ${colors.text} border-transparent ring-2 ring-offset-1 dark:ring-offset-gray-950 ring-current`
-                    : "bg-white dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500"
+                    : `${colors.bg} ${colors.text} border-transparent opacity-55 hover:opacity-90`
                 }`}
               >
                 {cat.category}
@@ -386,14 +386,15 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
           <div className="flex flex-wrap gap-1">
             {presentSubcategories.map((sub) => {
               const active = activeSubs.has(sub.slug);
+              const subColors = CATEGORY_COLORS[sub.categorySlug] ?? { bg: "bg-gray-100 dark:bg-gray-800", text: "text-gray-600 dark:text-gray-300" };
               return (
                 <button
                   key={sub.slug}
                   onClick={() => toggleSub(sub.slug)}
                   className={`px-2.5 py-0.5 rounded text-xs border transition-all ${
                     active
-                      ? "bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 border-gray-800 dark:border-gray-200"
-                      : "bg-gray-50 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200"
+                      ? `${subColors.bg} ${subColors.text} border-transparent ring-2 ring-offset-1 dark:ring-offset-gray-950 ring-current`
+                      : `${subColors.bg} ${subColors.text} border-transparent opacity-50 hover:opacity-85`
                   }`}
                 >
                   {sub.name}
