@@ -79,7 +79,7 @@ export default async function Page() {
               <span className="mx-1 text-gray-400 dark:text-gray-500">·</span>
               Discover open-source LLM projects worth building with
             </h1>
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
+            <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400">
               Updated daily
             </span>
           </div>

@@ -367,7 +367,7 @@ export function RepoTable({ repos, latestDate }: { repos: RepoRow[]; latestDate:
               <button
                 key={cat.slug}
                 onClick={() => toggleCat(cat.slug)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border transition-all ${
+                className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
                   active
                     ? `${colors.bg} ${colors.text} border-transparent ring-2 ring-offset-1 dark:ring-offset-gray-950 ring-current`
                     : `${colors.bg} ${colors.text} border-transparent opacity-55 hover:opacity-90`
