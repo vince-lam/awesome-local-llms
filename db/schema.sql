@@ -40,7 +40,36 @@ CREATE INDEX IF NOT EXISTS idx_snap_repo_date ON snapshots(repo_id, scraped_date
 CREATE INDEX IF NOT EXISTS idx_snap_date      ON snapshots(scraped_date);
 CREATE INDEX IF NOT EXISTS idx_snap_stars     ON snapshots(stars DESC);
 
+-- Discovery pipeline: repos found by discover.py awaiting triage. A candidate
+-- is a repo not yet in the curated repos table. status tracks its lifecycle;
+-- rejected rows are kept so discovery never re-surfaces them.
+CREATE TABLE IF NOT EXISTS candidates (
+  id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+  full_name             TEXT    NOT NULL UNIQUE,       -- "owner/name"
+  description           TEXT,
+  topics                TEXT    NOT NULL DEFAULT '[]', -- JSON array of GitHub topics
+  language              TEXT,
+  stars                 INTEGER NOT NULL DEFAULT 0,
+  archived              INTEGER NOT NULL DEFAULT 0,    -- 0/1
+  url                   TEXT,
+
+  -- classification (filled by classify.py)
+  suggested_category    TEXT,                          -- category slug
+  suggested_subcategory TEXT,                          -- subcategory slug = a repos.tags value
+  confidence            REAL,                          -- 0.0–1.0
+  reason                TEXT,                          -- one-line LLM justification
+
+  -- lifecycle: new | classified | accepted | rejected | duplicate
+  status                TEXT    NOT NULL DEFAULT 'new',
+  discovered_at         TEXT    NOT NULL DEFAULT (date('now')),
+  decided_at            TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_cand_status ON candidates(status);
+CREATE INDEX IF NOT EXISTS idx_cand_stars  ON candidates(stars DESC);
+
 -- Migration for existing databases:
 -- ALTER TABLE snapshots ADD COLUMN contributors INTEGER;
 -- ALTER TABLE repos ADD COLUMN owner_country TEXT;
 -- ALTER TABLE repos ADD COLUMN repo_created_at TEXT;
+-- (candidates table is new — CREATE TABLE IF NOT EXISTS above is safe to re-run)

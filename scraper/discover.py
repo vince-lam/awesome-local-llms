@@ -1,13 +1,24 @@
 """
-GitHub repo discovery — finds candidates not yet in repos.json.
+GitHub repo discovery — finds candidates not yet in the curated list and writes
+them to the Turso `candidates` table for triage.
 
-Searches GitHub Search API across LLM/agent/inference topics and keywords,
-filters to >100 stars, deduplicates, then diffs against repos.json.
+Searches the GitHub Search API across LLM/agent/inference topics and keywords,
+filters to >100 stars, deduplicates, drops repos already in repos.json, then
+upserts the rest into the candidates table.
 
-Output: discover_candidates.json  (sorted by stars desc)
+Repos already curated (in repos.json) are skipped. Repos already in the
+candidates table are refreshed in place via ON CONFLICT — crucially this does
+NOT reset their status, so anything previously reviewed and marked 'rejected'
+stays rejected and never re-surfaces as new.
+
+Output: rows in the Turso `candidates` table (status='new' for genuinely new repos).
 
 Usage:
     python discover.py [--min-stars N]  (default 100)
+
+Environment variables:
+    STATS_GH_PAT / GITHUB_TOKEN / GITHUB_API_TOKEN  — GitHub token (search)
+    TURSO_DATABASE_URL, TURSO_AUTH_TOKEN            — Turso database
 """
 
 import json
@@ -19,18 +30,17 @@ from datetime import datetime
 
 import requests
 
+from turso import TursoClient
+
 
 SEARCH_URL = "https://api.github.com/search/repositories"
 MAX_PAGES = 3       # up to 300 results per query (100/page)
 REQUEST_DELAY = 2.5 # seconds between requests (search rate limit: 30/min)
 
-# This script lives in scraper/; data sits in scraper/data/ and the raw
-# candidate dump is written to the repo root (the parent directory).
+# This script lives in scraper/; data sits in scraper/data/.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 REPOS_FILE = os.path.join(DATA_DIR, "repos.json")
-CANDIDATES_FILE = os.path.join(REPO_ROOT, "discover_candidates.json")
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +95,25 @@ KEYWORD_SEARCHES = [
     "rag framework in:name,description stars:>200 is:public",
     "document qa in:name,description stars:>100 is:public",
 ]
+
+
+# ---------------------------------------------------------------------------
+# Candidate upsert
+# ---------------------------------------------------------------------------
+
+# Refreshes an existing candidate's stats without touching status/classification,
+# so a rejected repo stays rejected and a classified one keeps its category.
+_UPSERT_CANDIDATE_SQL = """
+INSERT INTO candidates (full_name, description, topics, language, stars, archived, url)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(full_name) DO UPDATE SET
+  stars       = excluded.stars,
+  description = excluded.description,
+  topics      = excluded.topics,
+  language    = excluded.language,
+  archived    = excluded.archived,
+  url         = excluded.url
+"""
 
 
 # ---------------------------------------------------------------------------
@@ -176,9 +205,22 @@ def main():
     if not token:
         sys.exit("Error: set STATS_GH_PAT, GITHUB_TOKEN, or GITHUB_API_TOKEN")
 
+    turso_url = os.getenv("TURSO_DATABASE_URL")
+    turso_token = os.getenv("TURSO_AUTH_TOKEN")
+    if not (turso_url and turso_token):
+        sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
+    db = TursoClient(turso_url, turso_token)
+
+    # Repos already curated — never surface these as candidates.
     with open(REPOS_FILE, encoding="utf-8") as f:
-        existing = json.load(f)
-    existing_names = {e["repo"].lower() for e in existing}
+        curated = json.load(f)
+    curated_names = {e["repo"].lower() for e in curated}
+
+    # Candidates already tracked (any status) — used only to report which repos
+    # are genuinely new this run; the upsert refreshes the rest in place.
+    existing_cand_names = {
+        row[0].lower() for row in db.query("SELECT full_name FROM candidates")
+    }
 
     session = make_session(token)
     all_items: dict[str, dict] = {}  # full_name → item
@@ -193,10 +235,12 @@ def main():
         new_count = 0
         for item in items:
             name = item["full_name"]
-            if name.lower() not in existing_names and name not in all_items:
+            if name.lower() in curated_names:
+                continue  # already in the curated list
+            if name not in all_items:
                 all_items[name] = item
                 new_count += 1
-        print(f"    → {len(items)} results, {new_count} new candidates")
+        print(f"    → {len(items)} results, {new_count} not-yet-curated")
         time.sleep(REQUEST_DELAY)
 
     # Filter and shape candidates
@@ -217,17 +261,25 @@ def main():
 
     candidates.sort(key=lambda x: x["stars"], reverse=True)
 
-    out_path = CANDIDATES_FILE
-    with open(out_path, "w", encoding="utf-8") as f:
-        json.dump(candidates, f, indent=2, ensure_ascii=False)
+    # Upsert into the candidates table.
+    stmts = [
+        (_UPSERT_CANDIDATE_SQL, [
+            c["repo"], c["description"], json.dumps(c["topics"]),
+            c["language"], c["stars"], int(c["archived"]), c["url"],
+        ])
+        for c in candidates
+    ]
+    for i in range(0, len(stmts), 50):
+        db.executemany(stmts[i:i + 50])
+
+    new_candidates = [c for c in candidates if c["repo"].lower() not in existing_cand_names]
 
     print(f"\n{'='*60}")
-    print(f"Found {len(candidates)} candidates not in repos.json")
-    print(f"Saved to {out_path}")
+    print(f"Upserted {len(candidates)} candidates ({len(new_candidates)} new this run)")
     print(f"{'='*60}")
     print(f"\n{'Stars':>7}  {'Archived':>8}  Repo")
     print("-" * 70)
-    for c in candidates[:80]:
+    for c in new_candidates[:80]:
         archived = "[archived]" if c["archived"] else ""
         print(f"{c['stars']:>7,}  {archived:>10}  {c['repo']}")
         if c["description"]:
@@ -237,10 +289,11 @@ def main():
             print(f"           {'':>10}  topics: {', '.join(c['topics'][:6])}")
         print()
 
-    if len(candidates) > 80:
-        print(f"... and {len(candidates) - 80} more in {out_path}")
+    if len(new_candidates) > 80:
+        print(f"... and {len(new_candidates) - 80} more new candidates in the DB")
 
-    print(f"\nDiscovery complete: {len(candidates)} candidates, {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    print(f"\nDiscovery complete: {len(new_candidates)} new, "
+          f"{len(candidates)} total upserted, {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
 
 if __name__ == "__main__":
