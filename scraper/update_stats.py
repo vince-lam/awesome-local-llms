@@ -89,7 +89,8 @@ def _arg(v) -> dict:
     if isinstance(v, int):
         return {"type": "integer", "value": str(v)}
     if isinstance(v, float):
-        return {"type": "float", "value": str(v)}
+        # Turso expects f64 as a JSON number, not a string (unlike integers).
+        return {"type": "float", "value": v}
     return {"type": "text", "value": str(v)}
 
 

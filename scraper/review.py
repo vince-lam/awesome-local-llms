@@ -116,8 +116,11 @@ def cmd_accept(db: TursoClient, args) -> None:
     if bad:
         sys.exit(f"Error: invalid subcategory slug(s): {', '.join(bad)}")
 
-    # Derive the category from the (first) subcategory so it always matches.
-    category = tax.sub_to_cat[subcategories[0]]
+    # Use the stored primary category (subcategories may span categories, so we
+    # can't derive it from the first subcategory). Fall back to the first
+    # subcategory's parent only if the stored category is missing/invalid.
+    category = sug_category if sug_category in set(tax.category_slugs) \
+        else tax.sub_to_cat[subcategories[0]]
     keywords = [k for k in _parse_json_list(sug_keywords) if k in tax._keyword_set]
 
     repos = load_repos()

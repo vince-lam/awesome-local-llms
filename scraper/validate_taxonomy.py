@@ -59,13 +59,12 @@ def main() -> None:
                 errors.append(f"{repo}: unknown category '{category}'")
             if not subs:
                 errors.append(f"{repo}: no subcategories")
+            # Subcategories may span categories (a repo can wear more than one
+            # hat), so we only check the slug is real — not that it belongs to
+            # the primary category.
             for s in subs:
                 if s not in sub_set:
                     errors.append(f"{repo}: unknown subcategory '{s}'")
-                elif category in cat_set and tax.sub_to_cat[s] != category:
-                    errors.append(
-                        f"{repo}: subcategory '{s}' does not belong to category '{category}'"
-                    )
             for k in keywords:
                 if k not in tax._keyword_set:
                     errors.append(f"{repo}: unknown keyword '{k}'")
