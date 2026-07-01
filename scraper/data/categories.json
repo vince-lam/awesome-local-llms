@@ -1,202 +1,120 @@
 [
   {
-    "category": "Inference & Runtime",
-    "slug": "inference-runtime",
+    "category": "AI Engineering",
+    "slug": "ai-engineering",
+    "description": "Building agents and LLM-powered apps on top of models.",
     "subcategories": [
-      {
-        "name": "Local Runtime",
-        "slug": "local-runtime"
-      },
-      {
-        "name": "Fine-Tuning",
-        "slug": "fine-tuning"
-      },
-      {
-        "name": "Production Serving",
-        "slug": "production-serving"
-      },
-      {
-        "name": "Distributed Inference",
-        "slug": "distributed-inference"
-      },
-      {
-        "name": "Web / Edge Runtime",
-        "slug": "web-edge-runtime"
-      },
-      {
-        "name": "Bindings & SDKs",
-        "slug": "bindings-sdks"
-      }
+      { "name": "Agent SDK / Framework", "slug": "agent-sdk" },
+      { "name": "Multi-Agent Orchestration", "slug": "orchestration" },
+      { "name": "Visual / Low-Code Builder", "slug": "visual-builder" },
+      { "name": "Prompting & Scaffolding", "slug": "prompting-scaffolding" },
+      { "name": "Memory & Knowledge (RAG)", "slug": "memory-knowledge" },
+      { "name": "Tools & Integrations", "slug": "tools-integrations" },
+      { "name": "Protocols (MCP / A2A)", "slug": "protocols" },
+      { "name": "Voice / Vision I/O", "slug": "multimodal-io" },
+      { "name": "Computer & Browser Use", "slug": "computer-use" },
+      { "name": "Agent Frontends / Chat UI", "slug": "agent-ui" },
+      { "name": "Ship to Users", "slug": "deploy-to-users" },
+      { "name": "Evaluation & Guardrails", "slug": "eval-guardrails" },
+      { "name": "API Wrappers & Clients", "slug": "wrappers" }
     ]
   },
   {
-    "category": "Chat Interface",
-    "slug": "chat-interface",
+    "category": "Applications",
+    "slug": "applications",
+    "description": "End-use tools built with LLMs.",
     "subcategories": [
-      {
-        "name": "Desktop App",
-        "slug": "desktop-app"
-      },
-      {
-        "name": "Web App",
-        "slug": "web-app"
-      },
-      {
-        "name": "Mobile App",
-        "slug": "mobile-app"
-      },
-      {
-        "name": "CLI / Terminal",
-        "slug": "cli-terminal"
-      },
-      {
-        "name": "Browser Extension",
-        "slug": "browser-extension"
-      }
+      { "name": "Coding Agents & Assistants", "slug": "coding" },
+      { "name": "Personal Assistants / Agent Platforms", "slug": "personal" },
+      { "name": "Productivity", "slug": "productivity" },
+      { "name": "Content Creation", "slug": "content-creation" },
+      { "name": "Research & Deep Research", "slug": "research-assistant" },
+      { "name": "Data & Analytics", "slug": "data-analysis" },
+      { "name": "Workflow & Task Automation", "slug": "automation" },
+      { "name": "Domain-Specific Apps", "slug": "domain-specific" },
+      { "name": "Gaming & Simulation", "slug": "gaming-simulation" }
     ]
   },
   {
-    "category": "Agentic Framework",
-    "slug": "agentic-framework",
+    "category": "Infrastructure",
+    "slug": "infrastructure",
+    "description": "Running, serving and optimizing models.",
     "subcategories": [
-      {
-        "name": "Orchestration",
-        "slug": "orchestration"
-      },
-      {
-        "name": "Multi-Agent System",
-        "slug": "multi-agent-system"
-      },
-      {
-        "name": "Workflow / Low-code",
-        "slug": "workflow-low-code"
-      },
-      {
-        "name": "Memory & State",
-        "slug": "memory-state"
-      },
-      {
-        "name": "MCP Server / Tool",
-        "slug": "mcp-server"
-      },
-      {
-        "name": "Vector Database",
-        "slug": "vector-database"
-      },
-      {
-        "name": "Tool Integration",
-        "slug": "tool-integration"
-      }
+      { "name": "Local Runtime / Inference Engine", "slug": "local-runtime" },
+      { "name": "Production Serving & Deployment", "slug": "serving" },
+      { "name": "Distributed Inference", "slug": "distributed-inference" },
+      { "name": "Web / Edge / On-Device Runtime", "slug": "edge-runtime" },
+      { "name": "Inference Optimization", "slug": "inference-optimization" },
+      { "name": "Model Optimization", "slug": "model-optimization" },
+      { "name": "LLM Gateway & Routing", "slug": "gateway" },
+      { "name": "Observability & Tracing", "slug": "observability" },
+      { "name": "Vector DB / Index & Search", "slug": "vector-search" },
+      { "name": "Data Pipelines & Systems", "slug": "data-systems" },
+      { "name": "Language Bindings", "slug": "bindings-sdks" }
     ]
   },
   {
-    "category": "Coding Assistant",
-    "slug": "coding-assistant",
+    "category": "Model Development",
+    "slug": "model-development",
+    "description": "Training, fine-tuning and research.",
     "subcategories": [
-      {
-        "name": "IDE Extension",
-        "slug": "ide-extension"
-      },
-      {
-        "name": "Terminal Agent",
-        "slug": "terminal-agent"
-      },
-      {
-        "name": "Code Generation",
-        "slug": "code-generation"
-      },
-      {
-        "name": "Repo & PR Automation",
-        "slug": "repo-pr-automation"
-      }
+      { "name": "Fine-Tuning (LoRA / PEFT)", "slug": "fine-tuning" },
+      { "name": "Pretraining & Training", "slug": "training" },
+      { "name": "Training Toolkits", "slug": "training-toolkits" },
+      { "name": "Reinforcement Learning / RLHF", "slug": "rlhf" },
+      { "name": "Deep Learning Frameworks", "slug": "dl-frameworks" },
+      { "name": "Dataset Engineering", "slug": "dataset-engineering" },
+      { "name": "Interpretability & Alignment", "slug": "interpretability" },
+      { "name": "GPU Kernels", "slug": "kernels" },
+      { "name": "RL Environments", "slug": "rl-environments" },
+      { "name": "Classical ML", "slug": "classical-ml" }
     ]
   },
   {
-    "category": "Research & Knowledge",
-    "slug": "research-knowledge",
+    "category": "Models",
+    "slug": "models",
+    "description": "Model weights and collections.",
     "subcategories": [
-      {
-        "name": "Research Agent",
-        "slug": "research-agent"
-      },
-      {
-        "name": "Document Q&A / RAG",
-        "slug": "document-qa-rag"
-      },
-      {
-        "name": "Prompting & Optimization",
-        "slug": "prompting-optimization"
-      }
+      { "name": "Foundation / LLM Models", "slug": "foundation-models" },
+      { "name": "Vision & Multimodal Models", "slug": "vision-models" },
+      { "name": "Audio / Speech Models", "slug": "audio-speech-models" },
+      { "name": "Embedding & Reranker Models", "slug": "embedding-models" },
+      { "name": "On-Device / Small Models", "slug": "on-device-models" },
+      { "name": "Domain-Specific Models", "slug": "domain-models" },
+      { "name": "Language-Specific / Multilingual Models", "slug": "multilingual-models" },
+      { "name": "Robotics / Physical AI Models", "slug": "physical-ai" }
     ]
   },
   {
-    "category": "Data & Analytics",
-    "slug": "data-analytics",
+    "category": "Lists",
+    "slug": "lists",
+    "description": "Curated awesome-lists and collections.",
     "subcategories": [
-      {
-        "name": "Text-to-SQL",
-        "slug": "text-to-sql"
-      },
-      {
-        "name": "Data Analysis Agent",
-        "slug": "data-analysis-agent"
-      }
+      { "name": "Prompt Collections", "slug": "prompt-collections" },
+      { "name": "Tool & Framework Collections", "slug": "tool-collections" },
+      { "name": "Model Collections", "slug": "model-collections" },
+      { "name": "Paper Collections", "slug": "paper-collections" },
+      { "name": "Dataset Collections", "slug": "dataset-collections" }
     ]
   },
   {
-    "category": "Web & Browser Agent",
-    "slug": "web-browser-agent",
+    "category": "Tutorials",
+    "slug": "tutorials",
+    "description": "Learning resources and guides.",
     "subcategories": [
-      {
-        "name": "Browser Automation",
-        "slug": "browser-automation"
-      },
-      {
-        "name": "API / REST Agent",
-        "slug": "api-rest-agent"
-      }
+      { "name": "Getting Started / Hands-On", "slug": "getting-started" },
+      { "name": "Courses & Fundamentals", "slug": "courses-fundamentals" },
+      { "name": "Roadmaps", "slug": "roadmaps" },
+      { "name": "Tool-Specific Tutorials", "slug": "tool-tutorials" },
+      { "name": "Interview Prep", "slug": "interview-prep" }
     ]
   },
   {
-    "category": "General Autonomous Agent",
-    "slug": "general-autonomous-agent",
+    "category": "Misc",
+    "slug": "misc",
+    "description": "Everything else.",
     "subcategories": [
-      {
-        "name": "Task Automation",
-        "slug": "task-automation"
-      },
-      {
-        "name": "Desktop / GUI Control",
-        "slug": "desktop-gui-control"
-      }
-    ]
-  },
-  {
-    "category": "Gaming & Simulation",
-    "slug": "gaming-simulation",
-    "subcategories": [
-      {
-        "name": "Game Agent",
-        "slug": "game-agent"
-      },
-      {
-        "name": "Social Simulation",
-        "slug": "social-simulation"
-      }
-    ]
-  },
-  {
-    "category": "LLM Ops & Evaluation",
-    "slug": "llm-ops-evaluation",
-    "subcategories": [
-      {
-        "name": "Observability & Tracing",
-        "slug": "llm-ops"
-      },
-      {
-        "name": "Evaluation & Testing",
-        "slug": "evaluation"
-      }
+      { "name": "Other", "slug": "other" }
     ]
   }
 ]

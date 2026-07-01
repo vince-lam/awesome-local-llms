@@ -1,14 +1,15 @@
 """
 LLM categorisation of discovered candidates.
 
-For every candidate with status='new', asks Claude to pick the best-fitting
-subcategory from the taxonomy in data/categories.json, then writes the
-suggestion (category, subcategory, confidence, one-line reason) back to the
-candidates table and flips status to 'classified'.
+For every candidate with status='new', asks Claude to classify it into the
+3-tier taxonomy (data/categories.json + data/keywords.json): one category,
+one-or-more subcategories, and zero-or-more keywords. The suggestion (category,
+subcategories JSON, keywords JSON, confidence, one-line reason) is written back
+to the candidates table and status is flipped to 'classified'.
 
-The model is constrained via a strict tool whose `subcategory_slug` is an enum
-of the real taxonomy slugs — it cannot invent a category. Suggestions are
-proposals only; a human accepts/rejects via review.py before promotion.
+The model is constrained via a strict tool whose slugs are enums of the real
+taxonomy — it cannot invent a category. Suggestions are proposals only; a human
+accepts/rejects via review.py before promotion.
 
 Usage:
     python classify.py [--limit N]   (default: all status='new')
@@ -26,13 +27,11 @@ import sys
 import anthropic
 
 from turso import TursoClient
-
-
-MODEL = "claude-haiku-4-5"   # cheap + fast; classification is an easy task
-
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-CATEGORIES_FILE = os.path.join(DATA_DIR, "categories.json")
+from classifier import (
+    MODEL, load_taxonomy, build_system_prompt, build_tool,
+    classify_one, normalise_result,
+    github_token, make_github_session, fetch_readme,
+)
 
 
 _SELECT_NEW_SQL = """
@@ -45,98 +44,9 @@ ORDER BY stars DESC
 _UPDATE_CLASSIFICATION_SQL = """
 UPDATE candidates
 SET    suggested_category = ?, suggested_subcategory = ?,
-       confidence = ?, reason = ?, status = 'classified'
+       suggested_keywords = ?, confidence = ?, reason = ?, status = 'classified'
 WHERE  full_name = ?
 """
-
-
-def load_taxonomy() -> tuple[list[dict], dict[str, str]]:
-    """Return (subcategories, subcategory_slug → category_slug)."""
-    with open(CATEGORIES_FILE, encoding="utf-8") as f:
-        categories = json.load(f)
-
-    subcats = []          # {category, category_slug, name, slug}
-    sub_to_cat = {}       # subcategory slug → category slug
-    for cat in categories:
-        for sub in cat["subcategories"]:
-            subcats.append({
-                "category": cat["category"],
-                "category_slug": cat["slug"],
-                "name": sub["name"],
-                "slug": sub["slug"],
-            })
-            sub_to_cat[sub["slug"]] = cat["slug"]
-    return subcats, sub_to_cat
-
-
-def build_system_prompt(subcats: list[dict]) -> str:
-    lines = [
-        "You classify open-source LLM/AI GitHub repositories into a fixed taxonomy.",
-        "Pick the single best-fitting subcategory for the repo described by the user.",
-        "Use the repo's name, description, and topics. If genuinely unsure, still pick",
-        "the closest fit but lower your confidence. Valid subcategories:",
-        "",
-    ]
-    current = None
-    for s in subcats:
-        if s["category"] != current:
-            current = s["category"]
-            lines.append(f"{s['category']}:")
-        lines.append(f"  - {s['name']} (slug: {s['slug']})")
-    return "\n".join(lines)
-
-
-def build_tool(subcats: list[dict]) -> dict:
-    slugs = [s["slug"] for s in subcats]
-    return {
-        "name": "classify_repo",
-        "description": "Record the best-fitting subcategory for this repository.",
-        "strict": True,
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "subcategory_slug": {
-                    "type": "string",
-                    "enum": slugs,
-                    "description": "Slug of the single best-fitting subcategory.",
-                },
-                "confidence": {
-                    "type": "number",
-                    "description": "Confidence in this classification, 0.0 to 1.0.",
-                },
-                "reason": {
-                    "type": "string",
-                    "description": "One-line justification (<= 120 characters).",
-                },
-            },
-            "required": ["subcategory_slug", "confidence", "reason"],
-            "additionalProperties": False,
-        },
-    }
-
-
-def classify_one(client, tool, system, cand: dict) -> dict | None:
-    """Return {subcategory_slug, confidence, reason} or None on failure."""
-    topics = ", ".join(cand["topics"]) if cand["topics"] else "(none)"
-    user = (
-        f"Repository: {cand['full_name']}\n"
-        f"Description: {cand['description'] or '(none)'}\n"
-        f"Primary language: {cand['language'] or '(unknown)'}\n"
-        f"GitHub topics: {topics}\n"
-        f"Stars: {cand['stars']:,}"
-    )
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=512,
-        system=system,
-        tools=[tool],
-        tool_choice={"type": "tool", "name": "classify_repo"},
-        messages=[{"role": "user", "content": user}],
-    )
-    for block in resp.content:
-        if block.type == "tool_use" and block.name == "classify_repo":
-            return block.input
-    return None
 
 
 def main():
@@ -160,10 +70,15 @@ def main():
         sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
     db = TursoClient(turso_url, turso_token)
 
-    subcats, sub_to_cat = load_taxonomy()
-    system = build_system_prompt(subcats)
-    tool = build_tool(subcats)
+    tax = load_taxonomy()
+    system = build_system_prompt(tax)
+    tool = build_tool(tax)
     client = anthropic.Anthropic()
+
+    gh_token = github_token()
+    if not gh_token:
+        print("Warning: no GitHub token — classifying without README context.")
+    session = make_github_session(gh_token)
 
     sql = _SELECT_NEW_SQL
     if args.limit:
@@ -183,9 +98,10 @@ def main():
             "topics": json.loads(topics_json) if topics_json else [],
             "language": language,
             "stars": stars or 0,
+            "readme": fetch_readme(session, full_name) if gh_token else None,
         }
         try:
-            result = classify_one(client, tool, system, cand)
+            raw = classify_one(client, tool, system, cand)
         except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
             # Bad/expired key or exhausted credit — every remaining call would
             # fail the same way. Stop now; candidates stay 'new' for next run.
@@ -201,20 +117,27 @@ def main():
             print(f"  API error on {full_name}: {e}")
             continue
 
-        if not result:
+        if not raw:
             print(f"  No classification returned for {full_name} — skipping")
             continue
 
-        sub_slug = result["subcategory_slug"]
-        cat_slug = sub_to_cat.get(sub_slug, "")
-        confidence = float(result["confidence"])
-        reason = result["reason"]
+        result = normalise_result(raw, tax)
+        if not result["subcategories"]:
+            print(f"  No valid subcategory for {full_name} — skipping")
+            continue
 
         # Checkpoint per row so a crash resumes cleanly.
-        db.execute(_UPDATE_CLASSIFICATION_SQL,
-                   [cat_slug, sub_slug, confidence, reason, full_name])
+        db.execute(_UPDATE_CLASSIFICATION_SQL, [
+            result["category"],
+            json.dumps(result["subcategories"]),
+            json.dumps(result["keywords"]),
+            result["confidence"],
+            result["reason"],
+            full_name,
+        ])
         done += 1
-        print(f"  [{confidence:.2f}] {sub_slug:<22} {full_name}")
+        subs = ",".join(result["subcategories"])
+        print(f"  [{result['confidence']:.2f}] {result['category']:<18} {subs:<28} {full_name}")
 
     print(f"\nClassified {done}/{len(rows)} candidates → status='classified'")
 

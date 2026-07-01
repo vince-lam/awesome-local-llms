@@ -49,51 +49,105 @@ REPOS_FILE = os.path.join(DATA_DIR, "repos.json")
 
 # Topic searches are low-noise: repos self-identify with these tags.
 TOPIC_SEARCHES = [
-    "topic:local-llm",
-    "topic:llm-inference",
-    "topic:llm-framework",
+    # AI Engineering / agents
     "topic:llm-agent",
     "topic:ai-agent",
-    "topic:llm-observability",
-    "topic:llmops",
     "topic:autonomous-agent",
     "topic:agentic-ai",
-    "topic:local-inference",
+    "topic:llm-framework",
+    "topic:multi-agent",
+    "topic:mcp",
+    "topic:mcp-server",
+    "topic:model-context-protocol",
     "topic:retrieval-augmented-generation",
     "topic:rag",
     "topic:vector-database",
+    "topic:llm-observability",
+    "topic:llmops",
     "topic:code-assistant",
     "topic:coding-assistant",
     "topic:ai-coding-assistant",
+    # Infrastructure / runtime
+    "topic:local-llm",
+    "topic:llm-inference",
+    "topic:local-inference",
+    "topic:llm-serving",
+    "topic:llm-gateway",
+    # Model Development
+    "topic:fine-tuning",
+    "topic:llm-training",
+    "topic:reinforcement-learning-from-human-feedback",
+    "topic:llm-evaluation",
+    # Models
     "topic:llm stars:>500",           # broad tag, raise star floor
     "topic:large-language-model stars:>500",
     "topic:generative-ai stars:>500",
+    "topic:text-to-image stars:>500",
+    "topic:text-to-speech stars:>500",
+    "topic:embeddings stars:>300",
+    # Lists / awesome (AI-qualified only — bare topic:awesome-list is too noisy)
+    "topic:awesome-llm",
+    "topic:awesome-ai",
+    # Prompts
+    "topic:prompt-engineering stars:>500",
+    "topic:system-prompts",
+    "topic:awesome-chatgpt-prompts",
+    "topic:chatgpt-prompts",
+    # Tutorials / learning
+    "topic:llm-course",
+    "topic:generative-ai-course",
+    "topic:machine-learning-roadmap",
 ]
 
 # Name/description keyword searches for known gap areas.
 KEYWORD_SEARCHES = [
+    # AI Engineering / agents
+    "ai agent framework in:name,description stars:>300 is:public",
+    "multi agent in:name stars:>300 is:public",
+    "agentic workflow in:name,description stars:>100 is:public",
+    "agent harness in:name,description stars:>100 is:public",
+    "context engineering in:name,description stars:>100 is:public",
+    "model context protocol in:name,description stars:>100 is:public",
+    "mcp server in:name,description stars:>200 is:public",
+    "function calling llm in:name,description stars:>100 is:public",
+    "rag framework in:name,description stars:>200 is:public",
+    "document qa in:name,description stars:>100 is:public",
+    "personal ai assistant in:name,description stars:>200 is:public",
+    "open source claude in:name stars:>100 is:public",
+    # Applications
+    "ai coding agent in:name,description stars:>200 is:public",
+    "code interpreter llm in:name,description stars:>100 is:public",
+    "deep research in:name,description stars:>200 is:public",
+    "text to sql in:name,description stars:>200 is:public",
+    # Infrastructure
     "llm inference server in:name,description stars:>200 is:public",
     "local llm in:name stars:>200 is:public",
     "llm observability in:name,description stars:>100 is:public",
     "llm tracing in:name,description stars:>100 is:public",
-    "llm evaluation in:name,description stars:>200 is:public",
-    "llm benchmark in:name,description stars:>200 is:public",
     "llm router in:name,description stars:>100 is:public",
     "llm gateway in:name,description stars:>100 is:public",
-    "ai coding agent in:name,description stars:>200 is:public",
-    "code interpreter llm in:name,description stars:>100 is:public",
-    "open source claude in:name stars:>100 is:public",
-    "model context protocol in:name,description stars:>100 is:public",
-    "mcp server in:name,description stars:>200 is:public",
-    "function calling llm in:name,description stars:>100 is:public",
+    # Model Development
     "llm fine tuning in:name,description stars:>300 is:public",
     "llm finetuning in:name,description stars:>300 is:public",
+    "llm evaluation in:name,description stars:>200 is:public",
+    "llm benchmark in:name,description stars:>200 is:public",
+    "training toolkit llm in:name,description stars:>100 is:public",
+    "synthetic data generation in:name,description stars:>200 is:public",
+    # Lists
+    "awesome llm in:name stars:>500 is:public",
+    "awesome generative ai in:name stars:>300 is:public",
+    "awesome mcp in:name stars:>300 is:public",
+    "awesome agents in:name stars:>300 is:public",
+    # Prompts
     "prompt engineering in:name,description stars:>500 is:public",
-    "ai agent framework in:name,description stars:>300 is:public",
-    "multi agent in:name stars:>300 is:public",
-    "agentic workflow in:name,description stars:>100 is:public",
-    "rag framework in:name,description stars:>200 is:public",
-    "document qa in:name,description stars:>100 is:public",
+    "system prompts in:name,description stars:>300 is:public",
+    "prompt collection in:name,description stars:>300 is:public",
+    # Tutorials
+    "llm course in:name,description stars:>300 is:public",
+    "generative ai course in:name,description stars:>300 is:public",
+    "llm tutorial in:name,description stars:>300 is:public",
+    "llm roadmap in:name,description stars:>300 is:public",
+    "llm from scratch in:name,description stars:>500 is:public",
 ]
 
 

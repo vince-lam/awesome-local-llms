@@ -41,6 +41,7 @@ DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
 CONFIG_FILE = os.path.join(DATA_DIR, "repos.json")
 TAXONOMY_FILE = os.path.join(DATA_DIR, "categories.json")
+KEYWORDS_FILE = os.path.join(DATA_DIR, "keywords.json")
 README_FILE = os.path.join(REPO_ROOT, "README.md")
 OUTPUT_DIR = os.path.join(REPO_ROOT, "outputs")
 
@@ -50,13 +51,13 @@ MAX_DAYS_SINCE_COMMIT = 60
 README_TOP_N = 100
 
 FULL_COLUMNS = [
-    "Owner", "Repository Name", "Categories", "Tags", "Platforms",
+    "Owner", "Repository Name", "Category", "Tags", "Keywords", "Platforms",
     "GPU Backends", "About", "Stars", "Forks", "Issues", "Contributors",
     "Releases", "Watchers", "Time Since Last Commit", "License", "Languages", "URL",
 ]
 
 README_COLUMNS = [
-    "#", "Repo", "Tags", "About", "Stars", "Forks", "Issues",
+    "#", "Repo", "Category", "Tags", "About", "Stars", "Forks", "Issues",
     "Contributors", "Releases", "License", "Time Since Last Commit",
 ]
 
@@ -145,10 +146,12 @@ class TursoClient:
 
 
 _INIT_REPO_SQL = """
-INSERT INTO repos (full_name, owner, name, url, tags, platforms, backends)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO repos (full_name, owner, name, url, category, tags, keywords, platforms, backends)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ON CONFLICT(full_name) DO UPDATE SET
+  category  = excluded.category,
   tags      = excluded.tags,
+  keywords  = excluded.keywords,
   platforms = excluded.platforms,
   backends  = excluded.backends
 """
@@ -186,10 +189,13 @@ def init_repos(db: TursoClient, entries: List[Dict]) -> None:
     stmts = []
     for e in entries:
         owner, name = e["repo"].split("/", 1)
+        subcats = e.get("subcategories") or e.get("tags", [])
         stmts.append((_INIT_REPO_SQL, [
             e["repo"], owner, name,
             f"https://github.com/{e['repo']}",
-            json.dumps(e.get("tags", [])),
+            e.get("category"),
+            json.dumps(subcats),
+            json.dumps(e.get("keywords", [])),
             json.dumps(e.get("platforms", [])),
             json.dumps(e.get("backends", [])),
         ]))
@@ -314,14 +320,24 @@ def fetch_all_contributor_counts(
 # Config / auth
 # ---------------------------------------------------------------------------
 
-def load_taxonomy() -> Dict[str, Dict[str, str]]:
+def load_taxonomy() -> Dict[str, Dict[str, Dict]]:
+    """Return slug→display-name lookups for categories, subcategories, keywords."""
     with open(TAXONOMY_FILE, "r", encoding="utf-8") as f:
         data = json.load(f)
-    lookup: Dict[str, Dict[str, str]] = {}
+    subcategories: Dict[str, Dict[str, str]] = {}
+    categories: Dict[str, str] = {}
     for cat in data:
+        categories[cat["slug"]] = cat["category"]
         for sub in cat["subcategories"]:
-            lookup[sub["slug"]] = {"name": sub["name"], "category": cat["category"]}
-    return lookup
+            subcategories[sub["slug"]] = {"name": sub["name"], "category": cat["category"]}
+
+    keywords: Dict[str, str] = {}
+    if os.path.exists(KEYWORDS_FILE):
+        with open(KEYWORDS_FILE, "r", encoding="utf-8") as f:
+            for kw in json.load(f):
+                keywords[kw["slug"]] = kw["name"]
+
+    return {"categories": categories, "subcategories": subcategories, "keywords": keywords}
 
 
 def get_token() -> str:
@@ -387,7 +403,7 @@ def build_query(batch: List[Dict]) -> str:
 def fetch_batch(
     session: requests.Session,
     batch: List[Dict],
-    taxonomy: Dict[str, Dict[str, str]],
+    taxonomy: Dict[str, Dict],
 ) -> Optional[List[Dict]]:
     """Returns a list of rows on success, or None if the API was unreachable."""
     query = build_query(batch)
@@ -426,11 +442,26 @@ def fetch_batch(
             continue
 
         repo = entry["repo"]
-        slugs: List[str] = entry.get("tags", [])
-        tag_names = [taxonomy[s]["name"] for s in slugs if s in taxonomy]
-        cat_names = list(dict.fromkeys(
-            taxonomy[s]["category"] for s in slugs if s in taxonomy
-        ))
+        sub_lookup = taxonomy["subcategories"]
+        cat_lookup = taxonomy["categories"]
+        kw_lookup = taxonomy["keywords"]
+
+        # Subcategories: new `subcategories` field, falling back to legacy `tags`.
+        slugs: List[str] = entry.get("subcategories") or entry.get("tags", [])
+        tag_names = [sub_lookup[s]["name"] for s in slugs if s in sub_lookup]
+
+        # Category: explicit `category` slug; else derive from the subcategories.
+        cat_slug = entry.get("category")
+        if cat_slug and cat_slug in cat_lookup:
+            cat_names = [cat_lookup[cat_slug]]
+        else:
+            cat_names = list(dict.fromkeys(
+                sub_lookup[s]["category"] for s in slugs if s in sub_lookup
+            ))
+
+        keyword_slugs: List[str] = entry.get("keywords", [])
+        keyword_names = [kw_lookup.get(k, k) for k in keyword_slugs]
+
         platforms: List[str] = entry.get("platforms", [])
         backends: List[str] = entry.get("backends", [])
 
@@ -451,8 +482,9 @@ def fetch_batch(
             "Repository Name": repo.split("/")[1],
             "owner_type": (node.get("owner") or {}).get("__typename"),
             "repo_created_at": repo_created_at,
-            "Categories": ", ".join(cat_names),
+            "Category": cat_names[0] if cat_names else "",
             "Tags": ", ".join(tag_names),
+            "Keywords": ", ".join(keyword_names),
             "Platforms": ", ".join(platforms),
             "GPU Backends": ", ".join(backends),
             "About": node.get("description") or "No description available",
@@ -491,7 +523,7 @@ def fetch_batch(
 def fetch_all(
     session: requests.Session,
     entries: List[Dict],
-    taxonomy: Dict[str, Dict[str, str]],
+    taxonomy: Dict[str, Dict],
 ) -> pd.DataFrame:
     # Reverse so low-star repos are processed first; high-star repos land at the
     # end and benefit from any mid-run recovery from GitHub 502 storms.
