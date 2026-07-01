@@ -4,3 +4,4 @@ pandas>=2.2
 tabulate>=0.9
 python-dotenv>=1.0
 pycountry>=22.3
+anthropic>=0.40
