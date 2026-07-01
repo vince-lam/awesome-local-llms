@@ -1,20 +1,19 @@
 # 👋 Awesome Local LLMs
 
-A curated list of open-source projects covering all things local LLMs and generative AI — from running models locally to building production applications and autonomous agents. GitHub metrics (stars, forks, issues, contributors, releases, time since last commit) are refreshed automatically every week.
+A curated list of open-source projects for building with LLMs — spanning the whole stack, from model weights and training code to inference runtimes, agent frameworks, end-user apps, and the lists and tutorials that help you learn. GitHub metrics (stars, forks, issues, contributors, releases, time since last commit) are refreshed automatically every week.
 
-Projects span the full stack:
+Projects are organised into eight categories:
 
-- **Inference & Runtime** — local engines, production serving, distributed inference, web/edge runtimes, and language bindings
-- **Chat Interfaces** — desktop apps, web UIs, mobile apps, CLI tools, and browser extensions
-- **Agentic Frameworks** — orchestration libraries, multi-agent systems, workflow builders, and memory/tool layers
-- **Coding Assistants** — IDE extensions, terminal agents, code generation tools, and repo automation
-- **Research & Knowledge** — research agents, RAG / document Q&A, and prompting optimisation
-- **Data & Analytics** — text-to-SQL and data analysis agents
-- **Web & Browser Agents** — browser automation and API/REST agents
-- **General Autonomous Agents** — task automation and desktop/GUI control
-- **Gaming & Simulation** — game agents and social simulations
+- **AI Engineering** — agent SDKs, orchestration, prompting & scaffolding, memory/RAG, tools & integrations, MCP, evaluation, and guardrails
+- **Applications** — coding assistants, personal agents, productivity, content creation, research, data analytics, and automation
+- **Infrastructure** — local runtimes, production serving, distributed & edge inference, optimisation, gateways, observability, and vector search
+- **Model Development** — fine-tuning, training, RLHF, deep learning frameworks, dataset engineering, and interpretability
+- **Models** — foundation, vision, audio/speech, embedding, on-device, and domain-specific model releases
+- **Lists** — curated collections of prompts, tools, models, papers, and datasets
+- **Tutorials** — getting-started guides, courses, roadmaps, and interview prep
+- **Misc** — everything else
 
-Each repo carries one or more **tags** mapping to the subcategories above. GitHub metrics are refreshed automatically every week.
+Each repo is tagged with one **category**, one or more **subcategories**, and a set of cross-cutting **keywords** (techniques, integrations, modalities, and domains such as `RAG`, `MCP`, or `Context engineering`).
 
 **Contributions are welcome!** Suggest a repo I've missed by opening an issue.
 

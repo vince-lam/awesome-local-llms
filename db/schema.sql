@@ -11,7 +11,9 @@ CREATE TABLE IF NOT EXISTS repos (
   name        TEXT    NOT NULL,
   description TEXT,
   url         TEXT    NOT NULL,
-  tags        TEXT    NOT NULL DEFAULT '[]',    -- JSON array of tag slugs
+  category    TEXT,                             -- single category slug (see scraper/data/categories.json)
+  tags        TEXT    NOT NULL DEFAULT '[]',    -- JSON array of subcategory slugs (1+)
+  keywords    TEXT    NOT NULL DEFAULT '[]',    -- JSON array of keyword slugs (see scraper/data/keywords.json)
   platforms   TEXT    NOT NULL DEFAULT '[]',    -- JSON array
   backends    TEXT    NOT NULL DEFAULT '[]',    -- JSON array
   owner_type    TEXT,                           -- "User" or "Organization" (from GitHub API)
@@ -55,7 +57,8 @@ CREATE TABLE IF NOT EXISTS candidates (
 
   -- classification (filled by classify.py)
   suggested_category    TEXT,                          -- category slug
-  suggested_subcategory TEXT,                          -- subcategory slug = a repos.tags value
+  suggested_subcategory TEXT,                          -- JSON array of subcategory slugs (= repos.tags values)
+  suggested_keywords    TEXT,                          -- JSON array of keyword slugs (= repos.keywords values)
   confidence            REAL,                          -- 0.0–1.0
   reason                TEXT,                          -- one-line LLM justification
 
@@ -72,4 +75,8 @@ CREATE INDEX IF NOT EXISTS idx_cand_stars  ON candidates(stars DESC);
 -- ALTER TABLE snapshots ADD COLUMN contributors INTEGER;
 -- ALTER TABLE repos ADD COLUMN owner_country TEXT;
 -- ALTER TABLE repos ADD COLUMN repo_created_at TEXT;
+-- 3-tier taxonomy migration:
+-- ALTER TABLE repos ADD COLUMN category TEXT;
+-- ALTER TABLE repos ADD COLUMN keywords TEXT NOT NULL DEFAULT '[]';
+-- ALTER TABLE candidates ADD COLUMN suggested_keywords TEXT;
 -- (candidates table is new — CREATE TABLE IF NOT EXISTS above is safe to re-run)

@@ -12,6 +12,9 @@ __pycache__/
 # Generated outputs (timestamped CSVs)
 outputs/
 
+# reclassify.py backup of the pre-reclassification repos.json
+scraper/data/repos.json.bak
+
 # macOS
 .DS_Store
 
