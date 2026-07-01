@@ -26,7 +26,7 @@ DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 CATEGORIES_FILE = os.path.join(DATA_DIR, "categories.json")
 KEYWORDS_FILE = os.path.join(DATA_DIR, "keywords.json")
 
-MAX_SUBCATEGORIES = 2
+MAX_SUBCATEGORIES = 5
 MAX_KEYWORDS = 6
 
 
@@ -55,6 +55,8 @@ class Taxonomy:
         self.category_slugs = [c["slug"] for c in categories]
         self.subcategory_slugs = [s["slug"] for s in self.subcats]
         self.keyword_slugs = [k["slug"] for k in keywords]
+        self._cat_set = set(self.category_slugs)
+        self._sub_set = set(self.subcategory_slugs)
         self._keyword_set = set(self.keyword_slugs)
 
 
@@ -71,7 +73,10 @@ def build_system_prompt(tax: Taxonomy) -> str:
         "You classify open-source LLM/AI GitHub repositories into a fixed taxonomy.",
         "The taxonomy is three tiers:",
         "  1. category      — one broad bucket (what kind of thing the repo is).",
-        "  2. subcategories — one or two specific roles WITHIN that category.",
+        "  2. subcategories — one or more specific roles (up to 5). Assign every",
+        "     subcategory that genuinely applies; they MAY span categories when a",
+        "     repo wears more than one hat (e.g. a model that ships a training",
+        "     toolkit). Pick the single best-fitting category above as primary.",
         "  3. keywords      — cross-cutting facets (techniques, integrations,",
         "     modalities, domains) that need not match the category. Pick only",
         "     keywords the repo is clearly about; an empty list is fine.",
@@ -109,7 +114,9 @@ def build_tool(tax: Taxonomy) -> dict:
                     "minItems": 1,
                     "maxItems": MAX_SUBCATEGORIES,
                     "description": (
-                        "One or two subcategory slugs, all belonging to the chosen category."
+                        "One to five subcategory slugs — every role that genuinely "
+                        "applies. May span categories; the primary category is chosen "
+                        "separately."
                     ),
                 },
                 "keyword_slugs": {
@@ -222,27 +229,25 @@ def normalise_result(result: dict, tax: Taxonomy) -> dict:
     """
     Reconcile the model output into a consistent classification:
 
-      - keep only subcategories that belong to the chosen category;
-      - if that leaves none (model mixed categories), re-derive the category
-        from the first returned subcategory so we never lose the label;
-      - drop any keyword not in the vocabulary.
+      - keep the chosen primary category (one only); if it isn't a valid
+        category slug, derive it from the first valid subcategory's parent;
+      - keep every valid subcategory, which MAY span categories (a repo can
+        wear more than one hat) — capped at MAX_SUBCATEGORIES;
+      - drop any keyword not in the vocabulary — capped at MAX_KEYWORDS.
 
     Returns {category, subcategories, keywords, confidence, reason}.
     """
-    category = result["category_slug"]
-    subs = list(dict.fromkeys(result.get("subcategory_slugs") or []))
+    category = result.get("category_slug")
+    subs = [s for s in dict.fromkeys(result.get("subcategory_slugs") or [])
+            if s in tax._sub_set][:MAX_SUBCATEGORIES]
 
-    in_category = [s for s in subs if tax.sub_to_cat.get(s) == category]
-    if in_category:
-        subs = in_category
-    elif subs:
-        # Model's subcategories disagree with its category — trust the first
-        # subcategory and correct the category to match it.
-        category = tax.sub_to_cat.get(subs[0], category)
-        subs = [s for s in subs if tax.sub_to_cat.get(s) == category]
+    # Primary category: trust the explicit choice if valid, else fall back to
+    # the parent of the first subcategory so we never lose the label.
+    if category not in tax._cat_set:
+        category = tax.sub_to_cat.get(subs[0]) if subs else None
 
     keywords = [k for k in dict.fromkeys(result.get("keyword_slugs") or [])
-                if k in tax._keyword_set]
+                if k in tax._keyword_set][:MAX_KEYWORDS]
 
     return {
         "category": category,
