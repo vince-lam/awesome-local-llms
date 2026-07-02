@@ -1,26 +1,55 @@
 """
-Validate the taxonomy files and repos.json against them.
+Validate the taxonomy files and the tracked repos (Turso) against them.
 
 Checks:
   - categories.json and keywords.json parse and have unique slugs;
-  - every repos.json entry has a valid category, at least one valid
-    subcategory, each subcategory belongs to its category, and every keyword
-    is in the vocabulary.
+  - every repo in the Turso `repos` table has a valid category, at least one
+    valid subcategory, and every keyword is in the vocabulary.
 
 Exits non-zero if anything is wrong, so it can gate CI / pre-commit.
 
 Usage:
     python validate_taxonomy.py
+
+Environment variables:
+    TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — Turso database
 """
 
 import json
 import os
 import sys
 
+from turso import TursoClient
 from classifier import load_taxonomy
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-REPOS_FILE = os.path.join(SCRIPT_DIR, "data", "repos.json")
+
+def _json_list(value) -> list[str]:
+    if not value:
+        return []
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else [parsed]
+    except (json.JSONDecodeError, TypeError):
+        return [value]
+
+
+def load_tracked_repos() -> list[dict]:
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
+    url = os.getenv("TURSO_DATABASE_URL")
+    token = os.getenv("TURSO_AUTH_TOKEN")
+    if not (url and token):
+        sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
+    db = TursoClient(url, token)
+    rows = db.query("SELECT full_name, category, tags, keywords FROM repos")
+    return [
+        {"repo": fn, "category": cat,
+         "subcategories": _json_list(tags), "keywords": _json_list(kw)}
+        for fn, cat, tags, kw in rows
+    ]
 
 
 def main() -> None:
@@ -40,9 +69,8 @@ def main() -> None:
     cat_set = set(tax.category_slugs)
     sub_set = set(tax.subcategory_slugs)
 
-    # 2. Every repos.json entry validates against the taxonomy.
-    with open(REPOS_FILE, encoding="utf-8") as f:
-        repos = json.load(f)
+    # 2. Every tracked repo validates against the taxonomy.
+    repos = load_tracked_repos()
 
     checked = 0
     for e in repos:

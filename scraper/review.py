@@ -1,17 +1,18 @@
 """
-Triage classified candidates: list them, then accept or reject.
+Triage classified candidates: list them, then accept or reject. Turso only —
+there is no repos.json; the `repos` table is the single source of truth.
 
 - list                       Show classified candidates (highest stars first).
-- accept <repo> [slug ...]   Add repo to repos.json with the given (or suggested)
-                             subcategory slug(s); mark candidate 'accepted'.
+- accept <repo> [slug ...]   Mark candidate 'accepted' (with the given or
+                             suggested subcategory slug(s)). update_stats.py
+                             promotes accepted candidates into the repos table on
+                             its next run, so the repo starts getting snapshots.
 - reject <repo> ...          Mark candidate(s) 'rejected' so discovery never
-                             re-surfaces them.
+                             re-surfaces them, and remove them from the tracked
+                             `repos` table (and their snapshots) if present.
 
-Accepting appends to data/repos.json (the curated source update_stats.py scrapes
-from) in the 3-tier shape { repo, category, subcategories, keywords }, so the
-repo starts getting daily snapshots on the next scrape run. The category is
-derived from the subcategory; keywords come from the LLM suggestion. platforms /
-backends are left for you to fill in manually.
+The category is derived from the subcategory; keywords come from the LLM
+suggestion. platforms / backends default to empty and can be set in Turso.
 
 Usage:
     python review.py list [--min-confidence F]
@@ -31,28 +32,12 @@ from turso import TursoClient
 from classifier import load_taxonomy
 
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-REPOS_FILE = os.path.join(DATA_DIR, "repos.json")
-
-
 def get_db() -> TursoClient:
     url = os.getenv("TURSO_DATABASE_URL")
     token = os.getenv("TURSO_AUTH_TOKEN")
     if not (url and token):
         sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
     return TursoClient(url, token)
-
-
-def load_repos() -> list[dict]:
-    with open(REPOS_FILE, encoding="utf-8") as f:
-        return json.load(f)
-
-
-def save_repos(repos: list[dict]) -> None:
-    with open(REPOS_FILE, "w", encoding="utf-8") as f:
-        json.dump(repos, f, indent=2, ensure_ascii=False)
-        f.write("\n")
 
 
 def _parse_json_list(value) -> list[str]:
@@ -121,41 +106,36 @@ def cmd_accept(db: TursoClient, args) -> None:
     # subcategory's parent only if the stored category is missing/invalid.
     category = sug_category if sug_category in set(tax.category_slugs) \
         else tax.sub_to_cat[subcategories[0]]
-    keywords = [k for k in _parse_json_list(sug_keywords) if k in tax._keyword_set]
 
-    repos = load_repos()
-    if any(r["repo"].lower() == full_name.lower() for r in repos):
-        print(f"{full_name} already in repos.json — marking accepted only.")
-    else:
-        repos.append({
-            "repo": full_name,
-            "category": category,
-            "subcategories": subcategories,
-            "keywords": keywords,
-        })
-        save_repos(repos)
-        print(f"Added {full_name} to repos.json "
-              f"[{category}] {', '.join(subcategories)}"
-              + (f" · keywords: {', '.join(keywords)}" if keywords else ""))
-
+    # Persist any slug override on the candidate so update_stats.py promotes the
+    # repo with the accepted taxonomy, then flip it to 'accepted'.
     db.execute(
-        "UPDATE candidates SET status='accepted', decided_at=date('now') WHERE full_name = ?",
-        [full_name],
+        "UPDATE candidates SET suggested_category = ?, suggested_subcategory = ?, "
+        "status = 'accepted', decided_at = date('now') WHERE full_name = ?",
+        [category, json.dumps(subcategories), full_name],
     )
-    print(f"Marked {full_name} accepted. It will be scraped on the next run.")
+    print(f"Accepted {full_name} [{category}] {', '.join(subcategories)}. "
+          f"update_stats.py will promote it into the repos table on its next run.")
 
 
 def cmd_reject(db: TursoClient, args) -> None:
     for full_name in args.repos:
+        # Remove from the tracked list (and its snapshots) if present, then mark
+        # the candidate rejected so discovery never re-surfaces it.
+        db.executemany([
+            ("DELETE FROM snapshots WHERE repo_id IN "
+             "(SELECT id FROM repos WHERE full_name = ?)", [full_name]),
+            ("DELETE FROM repos WHERE full_name = ?", [full_name]),
+        ])
         res = db.execute(
             "UPDATE candidates SET status='rejected', decided_at=date('now') WHERE full_name = ?",
             [full_name],
         )
         affected = res.get("response", {}).get("result", {}).get("affected_row_count", 0)
         if affected:
-            print(f"Rejected {full_name}.")
+            print(f"Rejected {full_name} (removed from tracked list).")
         else:
-            print(f"Not a candidate: {full_name}")
+            print(f"Not a candidate: {full_name} (also removed from repos table if it was there).")
 
 
 def main() -> None:
@@ -171,7 +151,7 @@ def main() -> None:
     p_list = sub.add_parser("list", help="Show classified candidates")
     p_list.add_argument("--min-confidence", type=float, default=None)
 
-    p_accept = sub.add_parser("accept", help="Accept a candidate into repos.json")
+    p_accept = sub.add_parser("accept", help="Accept a candidate (mark 'accepted' in Turso)")
     p_accept.add_argument("repo", help="owner/name")
     p_accept.add_argument("slugs", nargs="*", default=None,
                           help="Subcategory slug(s) (defaults to the LLM suggestion)")
