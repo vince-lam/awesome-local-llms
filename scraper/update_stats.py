@@ -1,8 +1,14 @@
-"""Fetch GitHub metrics for curated repos → Turso database + README + CSV.
+"""Fetch GitHub metrics for tracked repos → Turso database + README + CSV.
 
-Reads ``data/repos.json`` and ``data/categories.json``, fetches metrics via
-the GitHub GraphQL API (batches of 50 repos per request), then:
+Turso is the single source of truth. The ``repos`` table IS the tracked list —
+including each repo's category / subcategories / keywords and, for local-runtime
+tools, its curated ``platforms`` / ``backends``. There is no repos.json.
 
+Each run:
+  • Promotes auto-accepted candidates (status='accepted') into the repos table,
+    preserving any platforms/backends already stored (ON CONFLICT DO NOTHING)
+  • Reads the tracked list from the repos table
+  • Fetches metrics via the GitHub GraphQL API (batches of 50 repos per request)
   • Upserts daily snapshots into Turso (always)
   • Refreshes the README table between <!-- BEGIN_TABLE --> markers (always)
   • Writes a timestamped CSV to outputs/ (local runs only — skipped in CI)
@@ -39,7 +45,6 @@ BATCH_SIZE = 50
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
 REPO_ROOT = os.path.dirname(SCRIPT_DIR)
-CONFIG_FILE = os.path.join(DATA_DIR, "repos.json")
 TAXONOMY_FILE = os.path.join(DATA_DIR, "categories.json")
 KEYWORDS_FILE = os.path.join(DATA_DIR, "keywords.json")
 README_FILE = os.path.join(REPO_ROOT, "README.md")
@@ -146,15 +151,21 @@ class TursoClient:
         return [[_val(cell) for cell in row] for row in raw_rows]
 
 
-_INIT_REPO_SQL = """
-INSERT INTO repos (full_name, owner, name, url, category, tags, keywords, platforms, backends)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-ON CONFLICT(full_name) DO UPDATE SET
-  category  = excluded.category,
-  tags      = excluded.tags,
-  keywords  = excluded.keywords,
-  platforms = excluded.platforms,
-  backends  = excluded.backends
+# Promote auto-accepted candidates into the repos registry. New rows take
+# platforms/backends from their column defaults ('[]'); existing rows are left
+# untouched (DO NOTHING) so curated platforms/backends are never clobbered.
+_PROMOTE_ACCEPTED_SQL = """
+INSERT INTO repos (full_name, owner, name, url, category, tags, keywords)
+SELECT full_name,
+       substr(full_name, 1, instr(full_name, '/') - 1),
+       substr(full_name, instr(full_name, '/') + 1),
+       'https://github.com/' || full_name,
+       suggested_category,
+       COALESCE(suggested_subcategory, '[]'),
+       COALESCE(suggested_keywords, '[]')
+FROM   candidates
+WHERE  status = 'accepted'
+ON CONFLICT(full_name) DO NOTHING
 """
 
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
@@ -186,24 +197,46 @@ def _flush(db: TursoClient, stmts: list) -> list:
     return []
 
 
-def init_repos(db: TursoClient, entries: List[Dict]) -> None:
-    stmts = []
-    for e in entries:
-        owner, name = e["repo"].split("/", 1)
-        subcats = e.get("subcategories") or e.get("tags", [])
-        stmts.append((_INIT_REPO_SQL, [
-            e["repo"], owner, name,
-            f"https://github.com/{e['repo']}",
-            e.get("category"),
-            json.dumps(subcats),
-            json.dumps(e.get("keywords", [])),
-            json.dumps(e.get("platforms", [])),
-            json.dumps(e.get("backends", [])),
-        ]))
-        if len(stmts) >= 50:
-            stmts = _flush(db, stmts)
-    _flush(db, stmts)
-    print(f"Initialised {len(entries)} repos in Turso")
+def _json_list(value) -> List[str]:
+    """Parse a JSON-array TEXT column into a list (tolerates a bare slug)."""
+    if not value:
+        return []
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else [parsed]
+    except (json.JSONDecodeError, TypeError):
+        return [value]
+
+
+def promote_accepted_candidates(db: TursoClient) -> None:
+    """Insert any status='accepted' candidates missing from the repos registry.
+
+    Curated platforms/backends on existing rows are preserved (DO NOTHING);
+    freshly-promoted rows start with empty platforms/backends.
+    """
+    before = db.query("SELECT COUNT(*) FROM repos")[0][0]
+    db.execute(_PROMOTE_ACCEPTED_SQL)
+    after = db.query("SELECT COUNT(*) FROM repos")[0][0]
+    print(f"Promoted {after - before} newly-accepted candidate(s) into repos "
+          f"({after} tracked). platforms/backends preserved.")
+
+
+def load_repo_entries(db: TursoClient) -> List[Dict]:
+    """The tracked list, read straight from the Turso repos table."""
+    rows = db.query(
+        "SELECT full_name, category, tags, keywords, platforms, backends FROM repos"
+    )
+    entries = []
+    for full_name, category, tags, keywords, platforms, backends in rows:
+        entries.append({
+            "repo": full_name,
+            "category": category,
+            "subcategories": _json_list(tags),
+            "keywords": _json_list(keywords),
+            "platforms": _json_list(platforms),
+            "backends": _json_list(backends),
+        })
+    return entries
 
 
 def write_snapshots_to_db(
@@ -785,15 +818,17 @@ def main() -> None:
 
     turso_url = os.getenv("TURSO_DATABASE_URL")
     turso_token = os.getenv("TURSO_AUTH_TOKEN")
-    use_db = bool(turso_url and turso_token)
-    db = TursoClient(turso_url, turso_token) if use_db else None  # type: ignore[arg-type]
-    if not use_db:
-        print("Warning: TURSO_DATABASE_URL / TURSO_AUTH_TOKEN not set — skipping DB writes")
+    if not (turso_url and turso_token):
+        sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN — "
+                 "Turso is the source of truth for the tracked repo list.")
+    db = TursoClient(turso_url, turso_token)
 
     taxonomy = load_taxonomy()
 
-    with open(CONFIG_FILE, "r", encoding="utf-8") as f:
-        entries = json.load(f)
+    # Turso is the single source of truth: fold in newly auto-accepted candidates,
+    # then read the tracked list (incl. platforms/backends) from the repos table.
+    promote_accepted_candidates(db)
+    entries = load_repo_entries(db)
 
     print(f"Fetching {len(entries)} repos in batches of {BATCH_SIZE} "
           f"({-(-len(entries) // BATCH_SIZE)} GraphQL requests)...")
@@ -804,10 +839,8 @@ def main() -> None:
         session, [e["repo"] for e in entries]
     )
 
-    if db:
-        init_repos(db, entries)
-        write_snapshots_to_db(db, df, contributor_counts)
-        owner_country_pass(db, session)
+    write_snapshots_to_db(db, df, contributor_counts)
+    owner_country_pass(db, session)
 
     # Skip CSV in CI — it's gitignored and not useful in the action runner
     if not os.getenv("CI"):

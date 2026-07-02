@@ -1,9 +1,9 @@
 """
 Shared LLM classification core for the 3-tier taxonomy.
 
-Both classify.py (new discovered candidates) and reclassify.py (batch re-tag of
-the curated repos.json) import from here so the taxonomy, the constrained tool,
-and the validation logic live in exactly one place.
+classify.py (new discovered candidates) and triage_batch.py import from here so
+the taxonomy, the constrained tool, and the validation logic live in exactly one
+place.
 
 A classification is: one category, one-or-more subcategories (each belonging to
 that category), and zero-or-more cross-cutting keywords — all drawn from the
@@ -111,8 +111,6 @@ def build_tool(tax: Taxonomy) -> dict:
                 "subcategory_slugs": {
                     "type": "array",
                     "items": {"type": "string", "enum": tax.subcategory_slugs},
-                    "minItems": 1,
-                    "maxItems": MAX_SUBCATEGORIES,
                     "description": (
                         "One to five subcategory slugs — every role that genuinely "
                         "applies. May span categories; the primary category is chosen "
@@ -122,7 +120,6 @@ def build_tool(tax: Taxonomy) -> dict:
                 "keyword_slugs": {
                     "type": "array",
                     "items": {"type": "string", "enum": tax.keyword_slugs},
-                    "maxItems": MAX_KEYWORDS,
                     "description": "Zero to six cross-cutting keyword slugs. Empty if none clearly apply.",
                 },
                 "confidence": {

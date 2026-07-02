@@ -3,10 +3,10 @@ GitHub repo discovery — finds candidates not yet in the curated list and write
 them to the Turso `candidates` table for triage.
 
 Searches the GitHub Search API across LLM/agent/inference topics and keywords,
-filters to >100 stars, deduplicates, drops repos already in repos.json, then
-upserts the rest into the candidates table.
+filters to >100 stars, deduplicates, drops repos already tracked (in the Turso
+`repos` table), then upserts the rest into the candidates table.
 
-Repos already curated (in repos.json) are skipped. Repos already in the
+Repos already tracked in the `repos` table are skipped. Repos already in the
 candidates table are refreshed in place via ON CONFLICT — crucially this does
 NOT reset their status, so anything previously reviewed and marked 'rejected'
 stays rejected and never re-surfaces as new.
@@ -40,7 +40,6 @@ REQUEST_DELAY = 2.5 # seconds between requests (search rate limit: 30/min)
 # This script lives in scraper/; data sits in scraper/data/.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(SCRIPT_DIR, "data")
-REPOS_FILE = os.path.join(DATA_DIR, "repos.json")
 
 
 # ---------------------------------------------------------------------------
@@ -265,10 +264,10 @@ def main():
         sys.exit("Error: set TURSO_DATABASE_URL and TURSO_AUTH_TOKEN")
     db = TursoClient(turso_url, turso_token)
 
-    # Repos already curated — never surface these as candidates.
-    with open(REPOS_FILE, encoding="utf-8") as f:
-        curated = json.load(f)
-    curated_names = {e["repo"].lower() for e in curated}
+    # Repos already tracked (in the repos table) — never surface these as candidates.
+    curated_names = {
+        row[0].lower() for row in db.query("SELECT full_name FROM repos")
+    }
 
     # Candidates already tracked (any status) — used only to report which repos
     # are genuinely new this run; the upsert refreshes the rest in place.
