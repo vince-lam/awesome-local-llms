@@ -23,6 +23,7 @@ Environment variables:
 
 import json
 import os
+import re
 import sys
 import time
 import argparse
@@ -36,6 +37,38 @@ from turso import TursoClient
 SEARCH_URL = "https://api.github.com/search/repositories"
 MAX_PAGES = 3       # up to 300 results per query (100/page)
 REQUEST_DELAY = 2.5 # seconds between requests (search rate limit: 30/min)
+
+# GitHub Search returns at most ~1000 results per query and we only page the top
+# 300, so a crowded topic (e.g. topic:llm has 4000+ repos >100 stars) is
+# truncated to its highest-starred 300. To page past that, each base query is
+# fanned out into star bands — each band returns its own top slice, so the
+# mid-tail becomes reachable. Bands are contiguous and non-overlapping.
+STAR_BAND_EDGES = [250, 500, 1000, 2500]
+
+_STARS_RE = re.compile(r"\s*stars:(?:>=|>|<=|<)?(\d+)(?:\.\.(?:\d+|\*))?")
+
+
+def expand_star_bands(query: str, floor: int) -> list[str]:
+    """Fan one query out into per-star-band queries.
+
+    If the query already carries a stars: clause, its lower bound is used as the
+    band floor (preserving intentionally higher floors on noisy broad topics) and
+    that clause is stripped before the band clause is appended.
+    """
+    m = _STARS_RE.search(query)
+    base = query
+    if m:
+        base = _STARS_RE.sub("", query, count=1).strip()
+        floor = max(floor, int(m.group(1)))
+
+    edges = [floor] + [e for e in STAR_BAND_EDGES if e > floor]
+    bands = []
+    for i, lo in enumerate(edges):
+        if i + 1 < len(edges):
+            bands.append(f"{base} stars:{lo}..{edges[i + 1] - 1}".strip())
+        else:
+            bands.append(f"{base} stars:>={lo}".strip())
+    return bands
 
 # This script lives in scraper/; data sits in scraper/data/.
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -241,6 +274,10 @@ def search_repos(session: requests.Session, query: str, min_stars: int, max_page
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--min-stars", type=int, default=100)
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Search and report new candidates without writing to Turso")
+    parser.add_argument("--max-base", type=int, default=None,
+                        help="Only process the first N base queries (for a quick dry run)")
     args = parser.parse_args()
     min_stars = args.min_stars
 
@@ -280,10 +317,16 @@ def main():
 
     all_queries = [(q, "topic") for q in TOPIC_SEARCHES] + \
                   [(q, "keyword") for q in KEYWORD_SEARCHES]
+    if args.max_base:
+        all_queries = all_queries[:args.max_base]
 
-    for i, (query, qtype) in enumerate(all_queries, 1):
+    # Fan each base query out into star bands to page past the per-query cap.
+    banded = [(bq, qtype) for q, qtype in all_queries
+              for bq in expand_star_bands(q, min_stars)]
+
+    for i, (query, qtype) in enumerate(banded, 1):
         label = query[:70]
-        print(f"[{i}/{len(all_queries)}] {qtype}: {label}")
+        print(f"[{i}/{len(banded)}] {qtype}: {label}")
         items = search_repos(session, query, min_stars, MAX_PAGES)
         new_count = 0
         for item in items:
@@ -314,22 +357,28 @@ def main():
 
     candidates.sort(key=lambda x: x["stars"], reverse=True)
 
-    # Upsert into the candidates table.
-    stmts = [
-        (_UPSERT_CANDIDATE_SQL, [
-            c["repo"], c["description"], json.dumps(c["topics"]),
-            c["language"], c["stars"], int(c["archived"]), c["url"],
-        ])
-        for c in candidates
-    ]
-    for i in range(0, len(stmts), 50):
-        db.executemany(stmts[i:i + 50])
-
     new_candidates = [c for c in candidates if c["repo"].lower() not in existing_cand_names]
 
-    print(f"\n{'='*60}")
-    print(f"Upserted {len(candidates)} candidates ({len(new_candidates)} new this run)")
-    print(f"{'='*60}")
+    if args.dry_run:
+        print(f"\n{'='*60}")
+        print(f"DRY RUN — no writes. {len(candidates)} not-yet-tracked repos found, "
+              f"{len(new_candidates)} of them NEW (not already candidates)")
+        print(f"{'='*60}")
+    else:
+        # Upsert into the candidates table.
+        stmts = [
+            (_UPSERT_CANDIDATE_SQL, [
+                c["repo"], c["description"], json.dumps(c["topics"]),
+                c["language"], c["stars"], int(c["archived"]), c["url"],
+            ])
+            for c in candidates
+        ]
+        for i in range(0, len(stmts), 50):
+            db.executemany(stmts[i:i + 50])
+
+        print(f"\n{'='*60}")
+        print(f"Upserted {len(candidates)} candidates ({len(new_candidates)} new this run)")
+        print(f"{'='*60}")
     print(f"\n{'Stars':>7}  {'Archived':>8}  Repo")
     print("-" * 70)
     for c in new_candidates[:80]:
@@ -345,8 +394,9 @@ def main():
     if len(new_candidates) > 80:
         print(f"... and {len(new_candidates) - 80} more new candidates in the DB")
 
+    verb = "would upsert" if args.dry_run else "upserted"
     print(f"\nDiscovery complete: {len(new_candidates)} new, "
-          f"{len(candidates)} total upserted, {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+          f"{len(candidates)} total {verb}, {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
 
 if __name__ == "__main__":
