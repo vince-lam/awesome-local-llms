@@ -1,29 +1,68 @@
+<div align="center">
+
 # 👋 Awesome Local LLMs
 
-A curated list of open-source projects for building with LLMs — spanning the whole stack, from model weights and training code to inference runtimes, agent frameworks, end-user apps, and the lists and tutorials that help you learn. GitHub metrics (stars, forks, issues, contributors, releases, time since last commit) are refreshed automatically every week.
+### 8,600+ open-source LLM, agent, and local inference repos, tracked daily
+
+[**llmrepos.com**](https://llmrepos.com) sorts them by how fast they are gaining stars, not by how many they have.
+
+[![Browse llmrepos.com](https://img.shields.io/badge/browse-llmrepos.com-2ea44f?style=for-the-badge)](https://llmrepos.com)
+[![Stars](https://img.shields.io/github/stars/vince-lam/awesome-local-llms?style=for-the-badge)](https://github.com/vince-lam/awesome-local-llms/stargazers)
+[![Daily refresh](https://img.shields.io/github/actions/workflow/status/vince-lam/awesome-local-llms/update-stats.yml?style=for-the-badge&label=daily%20refresh)](https://github.com/vince-lam/awesome-local-llms/actions/workflows/update-stats.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
+
+<a href="https://llmrepos.com"><img src="assets/llmrepos-demo.gif" alt="llmrepos.com: a searchable, sortable table of 8,600+ open-source LLM and AI agent repos with 1d/7d/30d star growth and category, subcategory, language and license filters" width="100%"></a>
+
+</div>
+
+---
+
+## What this is
+
+A curated list of open-source projects for building with LLMs, covering the whole stack: model weights, training code, inference runtimes, agent frameworks, end-user apps, and the lists and tutorials that help you learn.
+
+Each repo is checked once a day for stars, 1d/7d/30d star growth, forks, contributors, open issues, language, license, creation date, and time since last commit.
+
+Two ways to use it:
+
+- [**llmrepos.com**](https://llmrepos.com) has all 8,600+ repos, with search, growth sorting, and filters by category, subcategory, language, and license.
+- **This README** has the top 100 by stars, rewritten weekly.
 
 Projects are organised into eight categories:
 
-- **AI Engineering** — agent SDKs, orchestration, prompting & scaffolding, memory/RAG, tools & integrations, MCP, evaluation, and guardrails
-- **Applications** — coding assistants, personal agents, productivity, content creation, research, data analytics, and automation
-- **Infrastructure** — local runtimes, production serving, distributed & edge inference, optimisation, gateways, observability, and vector search
-- **Model Development** — fine-tuning, training, RLHF, deep learning frameworks, dataset engineering, and interpretability
-- **Models** — foundation, vision, audio/speech, embedding, on-device, and domain-specific model releases
-- **Lists** — curated collections of prompts, tools, models, papers, and datasets
-- **Tutorials** — getting-started guides, courses, roadmaps, and interview prep
-- **Misc** — everything else
+- **AI Engineering**: agent SDKs, orchestration, prompting & scaffolding, memory/RAG, tools & integrations, MCP, evaluation, and guardrails
+- **Applications**: coding assistants, personal agents, productivity, content creation, research, data analytics, and automation
+- **Infrastructure**: local runtimes, production serving, distributed & edge inference, optimisation, gateways, observability, and vector search
+- **Model Development**: fine-tuning, training, RLHF, deep learning frameworks, dataset engineering, and interpretability
+- **Models**: foundation, vision, audio/speech, embedding, on-device, and domain-specific model releases
+- **Lists**: curated collections of prompts, tools, models, papers, and datasets
+- **Tutorials**: getting-started guides, courses, roadmaps, and interview prep
+- **Misc**: everything else
 
 Each repo is tagged with one **category**, one or more **subcategories**, and a set of cross-cutting **keywords** (techniques, integrations, modalities, and domains such as `RAG`, `MCP`, or `Context engineering`).
 
-**Contributions are welcome!** Suggest a repo I've missed by opening an issue.
+**Contributions are welcome!** Suggest a repo I've missed by [opening an issue](https://github.com/vince-lam/awesome-local-llms/issues/new).
 
-There is also a fuller table of metrics in this [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing) and [Airtable](https://airtable.com/apparaKqezkq2LECD/shrE26kWFaVU1cvgb) _(no longer updated — kept for reference)_.
+## How the project has changed
 
-For my thoughts on local LLM tooling: <https://vinlam.com/posts/local-llm-options/>
+This started in 2024 as a markdown list of local LLM tools that I edited by hand and kept in sync with a Google Sheet. It went out of date faster than I could edit it, so it became a pipeline instead.
 
-Note the condensed table below shows the **top 100 projects by stars**, filtered to repos with a commit within the last 60 days.
+| | 2024 | 2026 |
+|---|---|---|
+| Repos tracked | ~40, picked by hand | 8,600+, found via the GitHub API and classified automatically |
+| Refresh | Manual, later weekly | Daily, via GitHub Actions into a [Turso](https://turso.tech) (libSQL) database |
+| Ranking | Total stars | 1d/7d/30d star growth, so a repo shows up within days of taking off |
+| Scope | Local inference and chat UIs | Agents, RAG, coding assistants, serving, model development, evals |
+| Surface | This README | [llmrepos.com](https://llmrepos.com), plus this README |
 
-## Open-Source LLM & Agent Projects
+## Elsewhere
+
+- My write-up on local LLM tooling: <https://vinlam.com/posts/local-llm-options/>
+- Older exports, no longer updated: [Google Sheet](https://docs.google.com/spreadsheets/d/1Xv38p90V3GiJXjq0a3qc24056Vicn1I5MG6QiFE6nVE/edit?usp=sharing) and [Airtable](https://airtable.com/apparaKqezkq2LECD/shrE26kWFaVU1cvgb)
+
+## Top 100 Open-Source LLM & Agent Projects
+
+The table below shows the top 100 projects by stars, limited to repos with a commit in the last 60 days. It is rewritten weekly. The other 8,500 are on [llmrepos.com](https://llmrepos.com).
 
 *Last Updated: 10/08/2026*
 
@@ -132,7 +171,7 @@ Note the condensed table below shows the **top 100 projects by stars**, filtered
 | 100 | [Flowise](https://github.com/FlowiseAI/Flowise)  | AI Engineering  | Visual / Low-Code Builder  | Build AI Agents, Visually  |  55,292 |  24,870 |  700 |  0 |  85 | Other  | 0 days, 1 hrs, 10 mins  |
 <!-- END_TABLE -->
 
-The condensed table above is filtered to repos with **more than 100 stars** and a **commit within the last 60 days**. GitHub metrics are refreshed automatically each week.
+The table above is filtered to repos with more than 100 stars and a commit within the last 60 days, and is refreshed weekly. [llmrepos.com](https://llmrepos.com) has the full index, refreshed daily.
 
 ## Inspired By
 
