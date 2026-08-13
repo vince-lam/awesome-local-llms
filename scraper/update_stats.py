@@ -50,6 +50,9 @@ KEYWORDS_FILE = os.path.join(DATA_DIR, "keywords.json")
 README_FILE = os.path.join(REPO_ROOT, "README.md")
 OUTPUT_DIR = os.path.join(REPO_ROOT, "outputs")
 
+BEGIN_TABLE_MARKER = "<!-- BEGIN_TABLE -->"
+END_TABLE_MARKER = "<!-- END_TABLE -->"
+
 # README table filters
 MIN_STARS = 100
 MAX_DAYS_SINCE_COMMIT = 60
@@ -661,24 +664,33 @@ def update_readme(markdown_table: str) -> None:
         content = f.read()
 
     today = datetime.now().strftime("%d/%m/%Y")
-    content = re.sub(
+    content, replaced = re.subn(
         r"\*Last Updated:.*?\*",
         f"*Last Updated: {today}*",
         content,
         count=1,
     )
-
-    block = f"<!-- BEGIN_TABLE -->\n{markdown_table}\n<!-- END_TABLE -->"
-    if "<!-- BEGIN_TABLE -->" not in content:
+    if replaced != 1:
         sys.exit(
-            "Error: README.md is missing the <!-- BEGIN_TABLE --> / "
-            "<!-- END_TABLE --> markers."
+            "Error: README.md is missing the '*Last Updated: ...*' line that "
+            "sits directly above the table."
         )
-    content = re.sub(
-        r"<!-- BEGIN_TABLE -->.*?<!-- END_TABLE -->",
-        block,
-        content,
-        flags=re.DOTALL,
+
+    start = content.find(BEGIN_TABLE_MARKER)
+    end = content.find(END_TABLE_MARKER)
+    if start == -1 or end == -1 or end < start:
+        sys.exit(
+            f"Error: README.md is missing the {BEGIN_TABLE_MARKER} / "
+            f"{END_TABLE_MARKER} markers, or they are out of order."
+        )
+
+    # Splice by index rather than re.sub: the table carries repo descriptions
+    # verbatim, and a stray backslash in one of them is a replacement-string
+    # escape to re.sub (`\U...` raises, `\1` silently expands to a group).
+    content = (
+        content[:start]
+        + f"{BEGIN_TABLE_MARKER}\n{markdown_table}\n{END_TABLE_MARKER}"
+        + content[end + len(END_TABLE_MARKER):]
     )
 
     with open(README_FILE, "w", encoding="utf-8") as f:
