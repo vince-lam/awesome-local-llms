@@ -6,6 +6,10 @@ Searches the GitHub Search API across LLM/agent/inference topics and keywords,
 filters to >100 stars, deduplicates, drops repos already tracked (in the Turso
 `repos` table), then upserts the rest into the candidates table.
 
+A third pass adds a recency dimension: the same API restricted to a rolling
+created: window, at a lower star floor, so fast-rising new repos that carry
+none of the topics or keywords above still surface.
+
 Repos already tracked in the `repos` table are skipped. Repos already in the
 candidates table are refreshed in place via ON CONFLICT — crucially this does
 NOT reset their status, so anything previously reviewed and marked 'rejected'
@@ -14,7 +18,7 @@ stays rejected and never re-surfaces as new.
 Output: rows in the Turso `candidates` table (status='new' for genuinely new repos).
 
 Usage:
-    python discover.py [--min-stars N]  (default 100)
+    python discover.py [--min-stars N] [--recency-min-stars N] [--recency-days N]
 
 Environment variables:
     STATS_GH_PAT / GITHUB_TOKEN / GITHUB_API_TOKEN  — GitHub token (search)
@@ -27,7 +31,7 @@ import re
 import sys
 import time
 import argparse
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 import requests
 
@@ -44,6 +48,10 @@ REQUEST_DELAY = 2.5 # seconds between requests (search rate limit: 30/min)
 # fanned out into star bands — each band returns its own top slice, so the
 # mid-tail becomes reachable. Bands are contiguous and non-overlapping.
 STAR_BAND_EDGES = [250, 500, 1000, 2500]
+
+# Rolling window and star floor for the recency searches (see RECENCY_SEARCHES).
+RECENCY_DAYS = 120
+RECENCY_MIN_STARS = 50
 
 _STARS_RE = re.compile(r"\s*stars:(?:>=|>|<=|<)?(\d+)(?:\.\.(?:\d+|\*))?")
 
@@ -182,6 +190,30 @@ KEYWORD_SEARCHES = [
     "llm from scratch in:name,description stars:>500 is:public",
 ]
 
+# Recency searches close the one gap the topic/keyword sweep has: a repo that
+# blows up in a few weeks but carries no matching topic and whose description
+# misses every keyword phrase above stays invisible until someone tags it.
+# Narrowing to a rolling created: window lets the star floor drop well below
+# --min-stars without drowning the run in noise. {since} is filled at runtime.
+#
+# Two of them re-run sorted by updated: the window's top-300-by-stars slice is
+# all a stars-sorted query can reach, so a second ordering exposes the mid-tail
+# of the broad topics.
+RECENCY_SEARCHES = [
+    ("topic:llm created:>{since}", "stars"),
+    ("topic:llm created:>{since}", "updated"),
+    ("topic:ai-agent created:>{since}", "stars"),
+    ("topic:mcp created:>{since}", "stars"),
+    ("topic:agentic-ai created:>{since}", "stars"),
+    ("topic:generative-ai created:>{since}", "stars"),
+    ("ai agent in:name,description created:>{since} is:public", "stars"),
+    ("ai agent in:name,description created:>{since} is:public", "updated"),
+    ("llm in:name,description created:>{since} is:public", "stars"),
+    ("agentic in:name,description created:>{since} is:public", "stars"),
+    ("mcp server in:name,description created:>{since} is:public", "stars"),
+    ("coding agent in:name,description created:>{since} is:public", "stars"),
+]
+
 
 # ---------------------------------------------------------------------------
 # Candidate upsert
@@ -216,7 +248,25 @@ def make_session(token: str) -> requests.Session:
     return s
 
 
-def search_repos(session: requests.Session, query: str, min_stars: int, max_pages: int) -> list[dict]:
+def _get(session: requests.Session, params: dict):
+    """GET the search endpoint, retrying transient network failures.
+
+    A run issues hundreds of queries, so a single read timeout must not abort
+    the whole sweep. Returns None once the retries are exhausted, letting the
+    caller drop that query and carry on.
+    """
+    for attempt in range(3):
+        try:
+            return session.get(SEARCH_URL, params=params, timeout=30)
+        except requests.RequestException as e:
+            if attempt == 2:
+                print(f"    Network error after 3 attempts ({e.__class__.__name__}) — skipping")
+                return None
+            time.sleep(5 * (attempt + 1))
+
+
+def search_repos(session: requests.Session, query: str, min_stars: int, max_pages: int,
+                 sort: str = "stars") -> list[dict]:
     """Run one search query, paginate up to max_pages, return raw items."""
     # Inject star floor unless the query already has a stars: clause
     if "stars:" not in query:
@@ -226,12 +276,14 @@ def search_repos(session: requests.Session, query: str, min_stars: int, max_page
     for page in range(1, max_pages + 1):
         params = {
             "q": query,
-            "sort": "stars",
+            "sort": sort,
             "order": "desc",
             "per_page": 100,
             "page": page,
         }
-        resp = session.get(SEARCH_URL, params=params, timeout=30)
+        resp = _get(session, params)
+        if resp is None:
+            break
 
         if resp.status_code == 422:
             # Invalid query — skip silently
@@ -242,7 +294,9 @@ def search_repos(session: requests.Session, query: str, min_stars: int, max_page
             wait = max(0, reset - time.time()) + 5
             print(f"    Rate limited — sleeping {wait:.0f}s")
             time.sleep(wait)
-            resp = session.get(SEARCH_URL, params=params, timeout=30)
+            resp = _get(session, params)
+            if resp is None:
+                break
 
         if not resp.ok:
             print(f"    HTTP {resp.status_code} for query: {query[:60]}")
@@ -274,6 +328,12 @@ def search_repos(session: requests.Session, query: str, min_stars: int, max_page
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--min-stars", type=int, default=100)
+    parser.add_argument("--recency-min-stars", type=int, default=RECENCY_MIN_STARS,
+                        help="Star floor for the created:-window searches (default 50)")
+    parser.add_argument("--recency-days", type=int, default=RECENCY_DAYS,
+                        help="Width of the created: window in days (default 120)")
+    parser.add_argument("--skip-recency", action="store_true",
+                        help="Run only the topic/keyword sweep")
     parser.add_argument("--dry-run", action="store_true",
                         help="Search and report new candidates without writing to Turso")
     parser.add_argument("--max-base", type=int, default=None,
@@ -321,13 +381,23 @@ def main():
         all_queries = all_queries[:args.max_base]
 
     # Fan each base query out into star bands to page past the per-query cap.
-    banded = [(bq, qtype) for q, qtype in all_queries
+    banded = [(bq, qtype, "stars") for q, qtype in all_queries
               for bq in expand_star_bands(q, min_stars)]
 
-    for i, (query, qtype) in enumerate(banded, 1):
+    # Recency queries are not banded: a few months of new repos above a 50-star
+    # floor is nowhere near the per-query result cap, so bands would only burn
+    # rate limit. The window keeps them narrow instead.
+    if not args.skip_recency:
+        since = (datetime.now(timezone.utc) - timedelta(days=args.recency_days)).strftime("%Y-%m-%d")
+        banded += [
+            (f"{tmpl.format(since=since)} stars:>{args.recency_min_stars}", "recency", sort)
+            for tmpl, sort in RECENCY_SEARCHES
+        ]
+
+    for i, (query, qtype, sort) in enumerate(banded, 1):
         label = query[:70]
-        print(f"[{i}/{len(banded)}] {qtype}: {label}")
-        items = search_repos(session, query, min_stars, MAX_PAGES)
+        print(f"[{i}/{len(banded)}] {qtype}/{sort}: {label}")
+        items = search_repos(session, query, min_stars, MAX_PAGES, sort=sort)
         new_count = 0
         for item in items:
             name = item["full_name"]
@@ -339,11 +409,14 @@ def main():
         print(f"    → {len(items)} results, {new_count} not-yet-curated")
         time.sleep(REQUEST_DELAY)
 
-    # Filter and shape candidates
+    # Filter and shape candidates. Every query already enforces its own floor
+    # server-side, so this is only a backstop against stale star counts — it has
+    # to use the lowest floor in play or it would discard the recency hits.
+    floor = min_stars if args.skip_recency else min(min_stars, args.recency_min_stars)
     candidates = []
     for item in all_items.values():
         stars = item.get("stargazers_count", 0)
-        if stars < min_stars:
+        if stars < floor:
             continue
         candidates.append({
             "repo": item["full_name"],
