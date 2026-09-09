@@ -194,6 +194,52 @@ ON CONFLICT(repo_id, scraped_date) DO UPDATE SET
 """
 
 
+# Recompute the denormalized latest-snapshot cache on repos. Two passes so the
+# delta_* pass can read the latest_* columns the first pass just populated. This
+# runs once per daily scrape; the website reads these columns instead of scanning
+# the snapshots table with correlated subqueries on every request (see db/schema.sql).
+_REFRESH_LATEST_SQL = """
+UPDATE repos SET
+  snapshot_count = (SELECT COUNT(*) FROM snapshots WHERE repo_id = repos.id),
+  latest_scraped_date      = (SELECT scraped_date      FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_stars             = (SELECT stars             FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_forks             = (SELECT forks             FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_issues            = (SELECT issues            FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_watchers          = (SELECT watchers          FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_contributors      = (SELECT contributors      FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_days_since_commit = (SELECT days_since_commit FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_license           = (SELECT license           FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
+  latest_language          = (SELECT primary_language  FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1)
+"""
+
+# delta_* = latest_stars − stars at the newest snapshot on/before latest−N days.
+# A NULL subquery (no snapshot that far back) yields NULL, matching the website's
+# old LEFT JOIN semantics of "unknown delta".
+_REFRESH_DELTAS_SQL = """
+UPDATE repos SET
+  delta_1d = latest_stars - (
+    SELECT stars FROM snapshots
+    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-1 day')
+    ORDER BY scraped_date DESC LIMIT 1),
+  delta_7d = latest_stars - (
+    SELECT stars FROM snapshots
+    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-7 days')
+    ORDER BY scraped_date DESC LIMIT 1),
+  delta_30d = latest_stars - (
+    SELECT stars FROM snapshots
+    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-30 days')
+    ORDER BY scraped_date DESC LIMIT 1)
+WHERE latest_scraped_date IS NOT NULL
+"""
+
+
+def refresh_denormalized_columns(db: TursoClient) -> None:
+    """Rebuild repos' latest-snapshot cache from the snapshots table."""
+    db.execute(_REFRESH_LATEST_SQL)
+    db.execute(_REFRESH_DELTAS_SQL)
+    print("Refreshed denormalized latest-snapshot columns on repos")
+
+
 def _flush(db: TursoClient, stmts: list) -> list:
     if stmts:
         db.executemany(stmts)
@@ -852,6 +898,7 @@ def main() -> None:
     )
 
     write_snapshots_to_db(db, df, contributor_counts)
+    refresh_denormalized_columns(db)
     owner_country_pass(db, session)
 
     # Skip CSV in CI — it's gitignored and not useful in the action runner

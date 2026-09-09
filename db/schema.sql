@@ -19,8 +19,31 @@ CREATE TABLE IF NOT EXISTS repos (
   owner_type    TEXT,                           -- "User" or "Organization" (from GitHub API)
   owner_country    TEXT,                         -- ISO 3166-1 alpha-2 (e.g. "US"), "" = checked/no location, NULL = not yet fetched
   repo_created_at  TEXT,                         -- GitHub repo creation date (YYYY-MM-DD), NULL = not yet fetched
-  added_at         TEXT    NOT NULL DEFAULT (date('now'))
+  added_at         TEXT    NOT NULL DEFAULT (date('now')),
+
+  -- Denormalized latest-snapshot cache. Maintained by scraper/update_stats.py
+  -- (refresh_denormalized_columns) after each daily snapshot write. The website
+  -- reads these instead of recomputing "latest snapshot per repo" with correlated
+  -- subqueries over the snapshots table on every request — that pattern scans the
+  -- whole snapshots table per page load and is what drives Turso rows-read cost.
+  -- Per-repo history (getRepoPage's chart) still reads snapshots directly.
+  snapshot_count           INTEGER NOT NULL DEFAULT 0,  -- COUNT(*) of this repo's snapshots
+  latest_scraped_date      TEXT,                         -- newest snapshot's date; NULL = no snapshots yet
+  latest_stars             INTEGER,
+  latest_forks             INTEGER,
+  latest_issues            INTEGER,
+  latest_watchers          INTEGER,
+  latest_contributors      INTEGER,
+  latest_days_since_commit INTEGER,
+  latest_license           TEXT,
+  latest_language          TEXT,                         -- snapshots.primary_language
+  delta_1d                 INTEGER,                      -- latest_stars − stars ≤1d before; NULL if no such snapshot
+  delta_7d                 INTEGER,                      -- latest_stars − stars ≤7d before
+  delta_30d                INTEGER                       -- latest_stars − stars ≤30d before
 );
+
+-- The site orders every list by latest stars descending.
+CREATE INDEX IF NOT EXISTS idx_repos_latest_stars ON repos(latest_stars DESC);
 
 CREATE TABLE IF NOT EXISTS snapshots (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,3 +103,18 @@ CREATE INDEX IF NOT EXISTS idx_cand_stars  ON candidates(stars DESC);
 -- ALTER TABLE repos ADD COLUMN keywords TEXT NOT NULL DEFAULT '[]';
 -- ALTER TABLE candidates ADD COLUMN suggested_keywords TEXT;
 -- (candidates table is new — CREATE TABLE IF NOT EXISTS above is safe to re-run)
+-- Denormalized latest-snapshot cache migration (run once, then update_stats.py keeps it fresh):
+-- ALTER TABLE repos ADD COLUMN snapshot_count INTEGER NOT NULL DEFAULT 0;
+-- ALTER TABLE repos ADD COLUMN latest_scraped_date TEXT;
+-- ALTER TABLE repos ADD COLUMN latest_stars INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_forks INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_issues INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_watchers INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_contributors INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_days_since_commit INTEGER;
+-- ALTER TABLE repos ADD COLUMN latest_license TEXT;
+-- ALTER TABLE repos ADD COLUMN latest_language TEXT;
+-- ALTER TABLE repos ADD COLUMN delta_1d INTEGER;
+-- ALTER TABLE repos ADD COLUMN delta_7d INTEGER;
+-- ALTER TABLE repos ADD COLUMN delta_30d INTEGER;
+-- CREATE INDEX IF NOT EXISTS idx_repos_latest_stars ON repos(latest_stars DESC);
