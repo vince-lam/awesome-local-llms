@@ -2,7 +2,7 @@
 
 # 👋 Awesome Local LLMs
 
-### 8,600+ open-source LLM, agent, and local inference repos, tracked daily
+### 10,000+ open-source LLM, agent, and local inference repos, tracked daily
 
 [**llmrepos.com**](https://llmrepos.com) sorts them by how fast they are gaining stars, not by how many they have.
 
