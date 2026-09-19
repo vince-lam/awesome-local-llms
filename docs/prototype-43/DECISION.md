@@ -1,6 +1,12 @@
 # README funnel decision for [llmrepos-web #43](https://github.com/vince-lam/llmrepos-web/issues/43)
 
-Prototype only. Compare [A: site landing](README-a-landing.md), [B: weekly lead](README-b-weekly.md), and [C: directory first](README-c-directory.md). Each uses the same 7 September 2026 table snapshot so the top section can be judged in context. **Choose A.** It explains the current division of labor in one screen: GitHub holds a useful weekly top 100; LLMRepos has the full daily index, search and growth trends. B puts an unbuilt editorial feed first. C makes the visitor navigate before explaining the site's value. The existing README already has a large demo GIF and badges; A reduces that opening clutter without turning the open-source list into an ad.
+Prototype only. Compare [A: site landing](README-a-landing.md), [B: weekly lead](README-b-weekly.md), and [C: directory first](README-c-directory.md). Each uses the same 7 September 2026 table snapshot so the top section can be judged in context. **Choose A.** It explains the current division of labor in one screen: GitHub holds useful weekly rankings; LLMRepos has the full daily index, search and growth trends. B puts an unbuilt editorial feed first. C makes the visitor navigate before explaining the site's value. The existing README already has a large demo GIF and badges; A reduces that opening clutter without turning the open-source list into an ad.
+
+## Follow-up ranking decision, 19 September 2026
+
+Replace the single top-100 table with three generated views: 20 established leaders by total stars, 20 projects with the largest absolute seven-day star gains, then up to three additional movers from each of the eight categories. A project appears only once across all sections. All lists keep the existing 100-star floor and 60-day activity filter; trending lists also require a complete seven-day baseline and positive growth. Show percentage growth for context, but rank by absolute gain so tiny projects cannot dominate through a small denominator.
+
+This mix keeps a stable reference point, makes the Monday refresh visibly useful, and spreads discovery beyond categories that dominate total-star rankings. It also supplies a factual weekly-change surface without unreviewed editorial copy. Category headings link to their corresponding LLMRepos pages.
 
 ## Decisions
 

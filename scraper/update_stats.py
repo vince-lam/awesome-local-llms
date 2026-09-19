@@ -10,7 +10,7 @@ Each run:
   • Reads the tracked list from the repos table
   • Fetches metrics via the GitHub GraphQL API (batches of 50 repos per request)
   • Upserts daily snapshots into Turso (always)
-  • Refreshes the README table between <!-- BEGIN_TABLE --> markers (always)
+  • Refreshes the README rankings between <!-- BEGIN_TABLE --> markers (weekly/manual)
   • Writes a timestamped CSV to outputs/ (local runs only — skipped in CI)
 
 Environment variables:
@@ -53,10 +53,12 @@ OUTPUT_DIR = os.path.join(REPO_ROOT, "outputs")
 BEGIN_TABLE_MARKER = "<!-- BEGIN_TABLE -->"
 END_TABLE_MARKER = "<!-- END_TABLE -->"
 
-# README table filters
+# README ranking filters
 MIN_STARS = 100
 MAX_DAYS_SINCE_COMMIT = 60
-README_TOP_N = 100
+README_OVERALL_N = 20
+README_TRENDING_N = 20
+README_CATEGORY_N = 3
 
 FULL_COLUMNS = [
     "Owner", "Repository Name", "Category", "Tags", "Keywords", "Platforms",
@@ -64,10 +66,7 @@ FULL_COLUMNS = [
     "Releases", "Watchers", "Time Since Last Commit", "License", "Languages", "URL",
 ]
 
-README_COLUMNS = [
-    "#", "Repo", "Category", "Tags", "About", "Stars", "Forks", "Issues",
-    "Contributors", "Releases", "License", "Time Since Last Commit",
-]
+README_CAMPAIGN = "utm_source=github&utm_medium=readme&utm_campaign=readme_funnel"
 
 REPO_FIELDS = """{
   stargazerCount
@@ -691,15 +690,101 @@ def write_csv(df: pd.DataFrame) -> str:
     return path
 
 
-def build_markdown_table(df: pd.DataFrame) -> str:
-    table = df[(df["_stars"] > MIN_STARS) & (df["_days"] <= MAX_DAYS_SINCE_COMMIT)].copy()
-    table = table.head(README_TOP_N).reset_index(drop=True)
-    table["#"] = table.index + 1
-    table["Repo"] = table.apply(
-        lambda r: f'[{r["Repository Name"]}]({r["URL"]})', axis=1
+def attach_growth_metrics(db: TursoClient, df: pd.DataFrame) -> pd.DataFrame:
+    """Attach refreshed seven-day star deltas to the live GitHub rows."""
+    rows = db.query("SELECT full_name, delta_7d FROM repos")
+    deltas = {full_name: delta for full_name, delta in rows}
+    result = df.copy()
+    result["_delta_7d"] = result.apply(
+        lambda row: deltas.get(f'{row["Owner"]}/{row["Repository Name"]}'), axis=1
     )
-    table = format_numbers(table)[README_COLUMNS]
-    md = tabulate(table, headers="keys", tablefmt="github", showindex=False)
+    return result
+
+
+def _markdown_cell(value: object) -> str:
+    return re.sub(r"\s+", " ", str(value or "")).replace("|", r"\|").strip()
+
+
+def _growth_label(stars: int, delta: object) -> str:
+    if pd.isna(delta):
+        return "n/a"
+    delta = int(delta)
+    previous = stars - delta
+    percent = (delta / previous * 100) if previous > 0 else 0
+    return f"+{delta:,} (+{percent:.1f}%)"
+
+
+def _ranking_table(rows: pd.DataFrame, include_category: bool = True) -> str:
+    records = []
+    for rank, (_, row) in enumerate(rows.iterrows(), 1):
+        record = {
+            "#": rank,
+            "Repo": f'[{_markdown_cell(row["Repository Name"])}]({row["URL"]})',
+            "Stars": f'{int(row["_stars"]):,}',
+            "7d growth": _growth_label(int(row["_stars"]), row["_delta_7d"]),
+        }
+        if include_category:
+            record["Category"] = _markdown_cell(row["Category"])
+        record["About"] = _markdown_cell(row["About"])
+        records.append(record)
+    return tabulate(records, headers="keys", tablefmt="github", showindex=False)
+
+
+def build_markdown_table(df: pd.DataFrame) -> str:
+    """Build stable leaders plus globally and categorically diverse movers.
+
+    Every repo appears at most once. Weekly lists require a real seven-day
+    baseline; newly tracked repos with unknown growth remain eligible for the
+    established list but cannot appear as movers.
+    """
+    eligible = df[
+        (df["_stars"] > MIN_STARS) & (df["_days"] <= MAX_DAYS_SINCE_COMMIT)
+    ].copy()
+    eligible = eligible.drop_duplicates(subset=["URL"])
+
+    overall = eligible.sort_values(["_stars", "URL"], ascending=[False, True]).head(
+        README_OVERALL_N
+    )
+    used = set(overall["URL"])
+
+    movers = eligible[eligible["_delta_7d"].notna() & ~eligible["URL"].isin(used)].copy()
+    movers = movers[movers["_delta_7d"] > 0]
+    movers = movers.sort_values(
+        ["_delta_7d", "_stars", "URL"], ascending=[False, False, True]
+    )
+    trending = movers.head(README_TRENDING_N)
+    used.update(trending["URL"])
+
+    sections = [
+        "## Established leaders\n\n"
+        "The 20 most-starred active projects.\n\n"
+        + _ranking_table(overall),
+        "## Trending this week\n\n"
+        "The 20 largest seven-day star gains, excluding established leaders.\n\n"
+        + _ranking_table(trending),
+    ]
+
+    with open(TAXONOMY_FILE, "r", encoding="utf-8") as f:
+        categories = json.load(f)
+    category_sections = []
+    for category in categories:
+        name, slug = category["category"], category["slug"]
+        candidates = movers[(movers["Category"] == name) & ~movers["URL"].isin(used)]
+        selected = candidates.head(README_CATEGORY_N)
+        if selected.empty:
+            continue
+        used.update(selected["URL"])
+        url = f"https://llmrepos.com/categories/{slug}?{README_CAMPAIGN}"
+        category_sections.append(
+            f"### [{name}]({url})\n\n" + _ranking_table(selected, include_category=False)
+        )
+    sections.append(
+        "## Trending by category\n\n"
+        "Up to three more weekly movers from each category. Projects already shown above are omitted.\n\n"
+        + "\n\n".join(category_sections)
+    )
+
+    md = "\n\n".join(sections)
     md = re.sub(r" {3,}", "  ", md)
     md = re.sub(r"-{4,}", "----------", md)
     return md
@@ -719,7 +804,7 @@ def update_readme(markdown_table: str) -> None:
     if replaced != 1:
         sys.exit(
             "Error: README.md is missing the '*Last Updated: ...*' line that "
-            "sits directly above the table."
+            "sits directly above the generated rankings."
         )
 
     start = content.find(BEGIN_TABLE_MARKER)
@@ -899,6 +984,7 @@ def main() -> None:
 
     write_snapshots_to_db(db, df, contributor_counts)
     refresh_denormalized_columns(db)
+    df = attach_growth_metrics(db, df)
     owner_country_pass(db, session)
 
     # Skip CSV in CI — it's gitignored and not useful in the action runner
