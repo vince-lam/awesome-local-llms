@@ -11,7 +11,7 @@
 [![Daily refresh](https://img.shields.io/github/actions/workflow/status/vince-lam/awesome-local-llms/update-stats.yml?style=for-the-badge&label=daily%20refresh)](https://github.com/vince-lam/awesome-local-llms/actions/workflows/update-stats.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue?style=for-the-badge)](LICENSE)
 
-<a href="https://llmrepos.com"><img src="assets/llmrepos-demo.gif" alt="llmrepos.com: a searchable, sortable table of 8,600+ open-source LLM and AI agent repos with 1d/7d/30d star growth and category, subcategory, language and license filters" width="100%"></a>
+<a href="https://llmrepos.com"><img src="assets/llmrepos-demo.gif" alt="llmrepos.com: a searchable, sortable table of 11,000+ open-source LLM and AI agent repos with 1d/7d/30d star growth and category, subcategory, language and license filters" width="100%"></a>
 
 </div>
 
