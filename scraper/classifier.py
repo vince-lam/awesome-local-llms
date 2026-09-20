@@ -89,7 +89,9 @@ def build_system_prompt(tax: Taxonomy) -> str:
     for cat in tax.categories:
         lines.append(f"{cat['category']} (slug: {cat['slug']}):")
         for sub in cat["subcategories"]:
-            lines.append(f"  - {sub['name']} (slug: {sub['slug']})")
+            description = sub.get("description")
+            suffix = f" — {description}" if description else ""
+            lines.append(f"  - {sub['name']} (slug: {sub['slug']}){suffix}")
     lines.append("")
     lines.append("Available keywords (slugs): " + ", ".join(tax.keyword_slugs))
     return "\n".join(lines)

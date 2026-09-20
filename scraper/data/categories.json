@@ -11,6 +11,11 @@
       { "name": "Memory & Knowledge (RAG)", "slug": "memory-knowledge" },
       { "name": "Tools & Integrations", "slug": "tools-integrations" },
       { "name": "Protocols (MCP / A2A)", "slug": "protocols" },
+      {
+        "name": "Agent Skills",
+        "slug": "agent-skills",
+        "description": "Repositories primarily for publishing installable Agent Skills, authoring, packaging, installing, managing, or reviewing Agent Skills, or distributing reviewed collections of installable skills. Excludes tutorials and documentation about skills, link-only lists, compatibility claims, and general agents with only incidental skill support. This repository subcategory is distinct from the Skill artifact kind."
+      },
       { "name": "Voice / Vision I/O", "slug": "multimodal-io" },
       { "name": "Computer & Browser Use", "slug": "computer-use" },
       { "name": "Agent Frontends / Chat UI", "slug": "agent-ui" },
