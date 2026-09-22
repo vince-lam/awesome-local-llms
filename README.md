@@ -3,6 +3,7 @@
 # 👋 Awesome Local LLMs
 
 ### 10,000+ open-source LLM, agent, and local inference repos, tracked daily
+- [Continuum-AI-Corp/OrcaReplay](https://github.com/Continuum-AI-Corp/OrcaReplay) — drop-in recorder that sits between your agent and the model provider.
 
 [**llmrepos.com**](https://llmrepos.com) sorts them by how fast they are gaining stars, not by how many they have.
 
