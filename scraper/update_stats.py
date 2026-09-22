@@ -355,7 +355,10 @@ def _fetch_one_contributor_count(
             print(f"  Rate limit low ({remaining}) — sleeping {wait:.0f}s")
             time.sleep(wait)
 
-        if resp.status_code in (204, 404):
+        # 204 means the repo is genuinely empty, so zero is the real count.
+        # 404 (renamed, deleted, or gone private) tells us nothing about the
+        # contributor count, so leave it unknown rather than claiming zero.
+        if resp.status_code == 204:
             return full_name, 0
         if not resp.ok:
             return full_name, None
