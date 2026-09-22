@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS repos (
 
 -- The site orders every list by latest stars descending.
 CREATE INDEX IF NOT EXISTS idx_repos_latest_stars ON repos(latest_stars DESC);
+CREATE INDEX IF NOT EXISTS idx_repos_latest_scraped_date ON repos(latest_scraped_date DESC);
 
 CREATE TABLE IF NOT EXISTS snapshots (
   id                INTEGER PRIMARY KEY AUTOINCREMENT,
