@@ -170,6 +170,15 @@ WHERE  status = 'accepted'
 ON CONFLICT(full_name) DO NOTHING
 """
 
+_SELECT_MISSING_CATEGORY_SQL = """
+SELECT full_name, tags FROM repos WHERE category IS NULL OR category = ''
+"""
+
+_SET_CATEGORY_SQL = """
+UPDATE repos SET category = ?
+WHERE full_name = ? AND (category IS NULL OR category = '')
+"""
+
 _UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
 _UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ?"
 _UPDATE_CREATED_AT_SQL = "UPDATE repos SET repo_created_at = ? WHERE full_name = ? AND repo_created_at IS NULL"
@@ -267,6 +276,49 @@ def promote_accepted_candidates(db: TursoClient) -> None:
     after = db.query("SELECT COUNT(*) FROM repos")[0][0]
     print(f"Promoted {after - before} newly-accepted candidate(s) into repos "
           f"({after} tracked). platforms/backends preserved.")
+
+
+def backfill_missing_categories(db: TursoClient, taxonomy: Dict) -> None:
+    """Fill a missing primary category only when its tags agree on one parent.
+
+    A row can land without one (a candidate classified before the category
+    column existed, a hand-inserted row, a promotion whose suggested_category
+    was NULL). Cross-category or unknown tags require manual review; choosing
+    the first tag could silently assign the wrong primary category.
+    """
+    rows = db.query(_SELECT_MISSING_CATEGORY_SQL)
+    if not rows:
+        return
+
+    sub_to_cat = taxonomy["sub_to_category_slug"]
+    stmts, unresolved = [], []
+    for full_name, tags in rows:
+        subcategories = _json_list(tags)
+        if not subcategories or any(
+            not isinstance(sub, str) or sub not in sub_to_cat
+            for sub in subcategories
+        ):
+            unresolved.append(full_name)
+            continue
+
+        categories = {sub_to_cat[sub] for sub in subcategories}
+        if len(categories) != 1:
+            unresolved.append(full_name)
+            continue
+        stmts.append((_SET_CATEGORY_SQL, [categories.pop(), full_name]))
+
+    if unresolved:
+        shown = ", ".join(unresolved[:10])
+        more = f" ... and {len(unresolved) - 10} more" if len(unresolved) > 10 else ""
+        raise ValueError(
+            f"{len(unresolved)} repo(s) have no category and cannot be "
+            f"classified unambiguously from their tags: {shown}{more}"
+        )
+
+    for i in range(0, len(stmts), 100):
+        db.executemany(stmts[i:i + 100])
+    if stmts:
+        print(f"Backfilled category on {len(stmts)} repo(s) that had none.")
 
 
 def load_repo_entries(db: TursoClient) -> List[Dict]:
@@ -411,10 +463,12 @@ def load_taxonomy() -> Dict[str, Dict[str, Dict]]:
         data = json.load(f)
     subcategories: Dict[str, Dict[str, str]] = {}
     categories: Dict[str, str] = {}
+    sub_to_category_slug: Dict[str, str] = {}
     for cat in data:
         categories[cat["slug"]] = cat["category"]
         for sub in cat["subcategories"]:
             subcategories[sub["slug"]] = {"name": sub["name"], "category": cat["category"]}
+            sub_to_category_slug[sub["slug"]] = cat["slug"]
 
     keywords: Dict[str, str] = {}
     if os.path.exists(KEYWORDS_FILE):
@@ -422,7 +476,8 @@ def load_taxonomy() -> Dict[str, Dict[str, Dict]]:
             for kw in json.load(f):
                 keywords[kw["slug"]] = kw["name"]
 
-    return {"categories": categories, "subcategories": subcategories, "keywords": keywords}
+    return {"categories": categories, "subcategories": subcategories,
+            "keywords": keywords, "sub_to_category_slug": sub_to_category_slug}
 
 
 def get_token() -> str:
@@ -974,6 +1029,7 @@ def main() -> None:
     # Turso is the single source of truth: fold in newly auto-accepted candidates,
     # then read the tracked list (incl. platforms/backends) from the repos table.
     promote_accepted_candidates(db)
+    backfill_missing_categories(db, taxonomy)
     entries = load_repo_entries(db)
 
     print(f"Fetching {len(entries)} repos in batches of {BATCH_SIZE} "

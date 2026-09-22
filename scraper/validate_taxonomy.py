@@ -72,34 +72,30 @@ def main() -> None:
     # 2. Every tracked repo validates against the taxonomy.
     repos = load_tracked_repos()
 
-    checked = 0
     for e in repos:
         repo = e.get("repo", "?")
         category = e.get("category")
         subs = e.get("subcategories") or e.get("tags") or []
         keywords = e.get("keywords") or []
 
-        # Legacy entries (no category yet) are skipped from the strict check but
-        # still have their subcategory slugs validated.
-        if category is not None:
-            checked += 1
-            if category not in cat_set:
-                errors.append(f"{repo}: unknown category '{category}'")
-            if not subs:
-                errors.append(f"{repo}: no subcategories")
-            # Subcategories may span categories (a repo can wear more than one
-            # hat), so we only check the slug is real — not that it belongs to
-            # the primary category.
-            for s in subs:
-                if s not in sub_set:
-                    errors.append(f"{repo}: unknown subcategory '{s}'")
-            for k in keywords:
-                if k not in tax._keyword_set:
-                    errors.append(f"{repo}: unknown keyword '{k}'")
-        else:
-            for s in subs:
-                if s not in sub_set:
-                    errors.append(f"{repo}: unknown subcategory '{s}'")
+        # Every tracked repo must carry a primary category. update_stats.py
+        # backfills any row that arrives without one, so a repo reaching here
+        # uncategorised means that safety net failed.
+        if not category:
+            errors.append(f"{repo}: no category")
+        elif category not in cat_set:
+            errors.append(f"{repo}: unknown category '{category}'")
+        if not subs:
+            errors.append(f"{repo}: no subcategories")
+        # Subcategories may span categories (a repo can wear more than one
+        # hat), so we only check the slug is real — not that it belongs to
+        # the primary category.
+        for s in subs:
+            if s not in sub_set:
+                errors.append(f"{repo}: unknown subcategory '{s}'")
+        for k in keywords:
+            if k not in tax._keyword_set:
+                errors.append(f"{repo}: unknown keyword '{k}'")
 
     if errors:
         print(f"✗ {len(errors)} validation error(s):")
@@ -112,7 +108,7 @@ def main() -> None:
     print(
         f"✓ Taxonomy valid: {len(tax.category_slugs)} categories, "
         f"{len(tax.subcategory_slugs)} subcategories, {len(tax.keyword_slugs)} keywords. "
-        f"{len(repos)} repos checked ({checked} fully classified)."
+        f"{len(repos)} repos checked, all fully classified."
     )
 
 
