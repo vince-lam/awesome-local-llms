@@ -148,6 +148,7 @@ Up to three more weekly movers from each category. Projects already shown above 
 |  1 | [OmniRoute](https://github.com/diegosouzapw/OmniRoute) |  68,766 | +2,825 (+4.3%)  | Never stop coding. Free MIT AI gateway: one endpoint, 352 providers (150+ free), 1200+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 550+ contributors |
 |  2 | [utopia](https://github.com/deeplethe/utopia)  |  9,585 | +2,142 (+28.8%) | World's first open-source enterprise world model.  |
 |  3 | [ComfyUI](https://github.com/Comfy-Org/ComfyUI)  | 134,250 | +1,198 (+0.9%)  | The most powerful and modular diffusion model GUI, api and backend with a graph/nodes interface.  |
+|  — | [sunshine](https://github.com/jajmangold/sunshine)  |  — | —  | Model-agnostic substrate for small local LLMs with argmax scoring for structured decisions, memory recall, and kernel orchestration. Default Qwen3.5-4B + 0.8B, Docker Compose, MIT.  |
 
 ### [Model Development](https://llmrepos.com/categories/model-development?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
