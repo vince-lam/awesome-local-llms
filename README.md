@@ -25,7 +25,7 @@ Each repo is checked once a day for stars, 1d/7d/30d star growth, forks, contrib
 
 Two ways to use it:
 
-- [**llmrepos.com**](https://llmrepos.com) has all 8,600+ repos, with search, growth sorting, and filters by category, subcategory, language, and license.
+- [**llmrepos.com**](https://llmrepos.com) has all 11,000+ repos, with search, growth sorting, and filters by category, subcategory, language, and license.
 - **This README** mixes established leaders with projects gaining stars this week, regenerated every Monday.
 
 Projects are organised into eight categories:
