@@ -1,0 +1,25 @@
+name: Correct a listing
+description: Fix a category, subcategory, duplicate, or other repo detail.
+title: "Correct listing: "
+body:
+  - type: input
+    id: repo-url
+    attributes:
+      label: Repo URL
+      description: Link to the GitHub repo or its LLMRepos page.
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: What should change?
+      description: Include the current and suggested category or subcategory if relevant.
+      placeholder: This repo is listed under X, but Y fits better because...
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Supporting context
+      description: Optional. Add links or examples that help explain the correction.

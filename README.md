@@ -41,7 +41,7 @@ Projects are organised into eight categories:
 
 Each repo is tagged with one **category**, one or more **subcategories**, and a set of cross-cutting **keywords** (techniques, integrations, modalities, and domains such as `RAG`, `MCP`, or `Context engineering`).
 
-**Contributions are welcome!** Suggest a repo I've missed by [opening an issue](https://github.com/vince-lam/awesome-local-llms/issues/new).
+**Contributions are welcome!** [Open an issue](https://github.com/vince-lam/awesome-local-llms/issues/new) to suggest a missing repo, correct a listing, or improve the site.
 
 ## How the project has changed
 

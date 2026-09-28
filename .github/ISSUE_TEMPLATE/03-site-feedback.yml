@@ -1,0 +1,22 @@
+name: Improve the site
+description: Report a problem or suggest an improvement to llmrepos.com.
+title: "Site feedback: "
+body:
+  - type: input
+    id: page-url
+    attributes:
+      label: Page URL
+      description: Optional for a general suggestion.
+      placeholder: https://llmrepos.com/
+  - type: textarea
+    id: feedback
+    attributes:
+      label: What would you change?
+      description: For a problem, say what happened and what you expected. For an idea, say how it would help.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Screenshot or extra context
+      description: Optional. You can drag an image into this field.

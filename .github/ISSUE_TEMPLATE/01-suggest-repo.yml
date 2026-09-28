@@ -1,0 +1,32 @@
+name: Suggest a missing repo
+description: Suggest an open-source GitHub repo for LLMRepos.
+title: "Suggest repo: "
+body:
+  - type: markdown
+    attributes:
+      value: Search [LLMRepos](https://llmrepos.com) first to check whether the repo is already listed.
+  - type: input
+    id: repo-url
+    attributes:
+      label: GitHub repo URL
+      placeholder: https://github.com/owner/repo
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What does it do, and why should it be listed?
+      placeholder: A sentence or two is enough.
+    validations:
+      required: true
+  - type: input
+    id: category
+    attributes:
+      label: Suggested category or subcategory
+      description: Optional. See the current categories on LLMRepos.
+      placeholder: AI Engineering / Agent SDKs
+  - type: input
+    id: affiliation
+    attributes:
+      label: Your connection to the repo
+      description: Optional. Tell us if you maintain or contribute to it.
