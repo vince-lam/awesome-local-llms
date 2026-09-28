@@ -1,6 +1,7 @@
 name: Suggest a missing repo
 description: Suggest an open-source GitHub repo for LLMRepos.
 title: "Suggest repo: "
+labels: ["repo suggestion"]
 body:
   - type: markdown
     attributes:

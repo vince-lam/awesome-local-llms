@@ -1,6 +1,7 @@
 name: Improve the site
 description: Report a problem or suggest an improvement to llmrepos.com.
 title: "Site feedback: "
+labels: ["site feedback"]
 body:
   - type: input
     id: page-url

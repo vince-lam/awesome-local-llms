@@ -1,6 +1,7 @@
 name: Correct a listing
 description: Fix a category, subcategory, duplicate, or other repo detail.
 title: "Correct listing: "
+labels: ["listing correction"]
 body:
   - type: input
     id: repo-url
