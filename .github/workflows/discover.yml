@@ -6,6 +6,7 @@ on:
   workflow_dispatch: {}     # manual trigger
 
 permissions:
+  actions: read             # restore pending classifier batch state
   contents: read            # writes go to Turso, nothing is committed
 
 concurrency:
@@ -36,10 +37,32 @@ jobs:
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: python scraper/discover.py
 
+      - name: Restore classifier batch state
+        id: restore-state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p outputs/classifier-state
+          artifact_id=$(gh api --paginate --slurp "repos/$GITHUB_REPOSITORY/actions/artifacts?name=classifier-state&per_page=100" \
+            | jq -r --arg branch "$GITHUB_REF_NAME" '[.[].artifacts[] | select(.expired == false and .workflow_run.head_branch == $branch)] | sort_by(.created_at) | last | .id // empty')
+          if [ -n "$artifact_id" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$artifact_id/zip" > /tmp/classifier-state.zip
+            unzip -o /tmp/classifier-state.zip -d outputs/classifier-state
+          fi
+
       - name: Classify new candidates
         env:
           STATS_GH_PAT: ${{ secrets.STATS_GH_PAT }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
         run: python scraper/classify.py
+
+      - name: Save classifier batch state
+        if: always() && steps.restore-state.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: classifier-state
+          path: outputs/classifier-state/
+          include-hidden-files: true
+          retention-days: 90

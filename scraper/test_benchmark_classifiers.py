@@ -1,4 +1,3 @@
-import ast
 import argparse
 from pathlib import Path
 import tempfile
@@ -20,17 +19,13 @@ class BenchmarkTest(unittest.TestCase):
             answers["keyword_" + slug] = {"type": "noul", "noul": 0.01}
         return {"answers": answers, "usage": {"input_tokens": 6000, "output_tokens": 500, "cost": 0.000252}}
 
-    def test_haiku_request_matches_current_batch_builder(self):
-        # Read the production builder without importing its Anthropic SDK dependency.
-        path = Path(__file__).parent / "classify.py"
-        tree = ast.parse(path.read_text())
-        tree.body = [n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "_build_request"]
-        namespace = {"MODEL": benchmark.MODEL, "format_repo_prompt": benchmark.format_repo_prompt}
-        exec(compile(tree, str(path), "exec"), namespace)
-        repo = {"full_name": "example/repo", "topics": ["llm"], "readme": "README content"}
-        expected = namespace["_build_request"]("0", benchmark.build_tool(self.tax),
-                                             benchmark.build_system_prompt(self.tax), repo)["params"]
-        self.assertEqual(benchmark.haiku_params(repo, self.tax), expected)
+    def test_haiku_baseline_remains_pinned_after_production_migration(self):
+        repo = {"full_name": "example/repo", "readme": "README content"}
+        params = benchmark.haiku_params(repo, self.tax)
+        self.assertEqual(params["model"], "claude-haiku-4-5")
+        self.assertEqual(params["max_tokens"], 512)
+        self.assertEqual(params["tool_choice"], {"type": "tool", "name": "classify_repo"})
+        self.assertIn("README content", params["messages"][0]["content"])
 
     def test_all_taxonomy_decisions_included(self):
         questions = benchmark.jev_questions(self.tax)

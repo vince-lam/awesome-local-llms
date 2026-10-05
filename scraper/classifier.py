@@ -5,8 +5,8 @@ classify.py (new discovered candidates) and triage_batch.py import from here so
 the taxonomy, the constrained tool, and the validation logic live in exactly one
 place.
 
-A classification is: one category, one-or-more subcategories (each belonging to
-that category), and zero-or-more cross-cutting keywords — all drawn from the
+A classification is: one primary category, one-or-more subcategories that may
+span categories, and zero-or-more cross-cutting keywords - all drawn from the
 fixed vocabularies in data/categories.json and data/keywords.json. The model is
 constrained via enum'd tool inputs so it cannot invent slugs.
 """
@@ -17,7 +17,7 @@ import time
 
 import requests
 
-MODEL = "claude-haiku-4-5"   # cheap + fast; bump to claude-sonnet-4-6 if quality is weak
+MODEL = "gpt-6-luna"
 
 README_MAX_CHARS = 4000      # ~1k tokens of README context per repo
 
@@ -210,18 +210,55 @@ def format_repo_prompt(repo: dict) -> str:
 
 def classify_one(client, tool: dict, system: str, repo: dict) -> dict | None:
     """Call the model; return the raw tool input, or None if none returned."""
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=512,
-        system=system,
-        tools=[tool],
-        tool_choice={"type": "tool", "name": "classify_repo"},
-        messages=[{"role": "user", "content": format_repo_prompt(repo)}],
-    )
-    for block in resp.content:
-        if block.type == "tool_use" and block.name == "classify_repo":
-            return block.input
-    return None
+    resp = client.chat.completions.create(**build_luna_params(tool, system, repo))
+    return parse_luna_message(resp.model_dump())
+
+
+def build_luna_params(tool: dict, system: str, repo: dict) -> dict:
+    """Same taxonomy and repo context, forced strict tool, no reasoning tokens."""
+    return {
+        "model": MODEL,
+        "max_completion_tokens": 512,
+        "reasoning_effort": "none",
+        "messages": [{"role": "system", "content": system},
+                     {"role": "user", "content": format_repo_prompt(repo)}],
+        "tools": [{"type": "function", "function": {
+            "name": tool["name"], "description": tool["description"],
+            "strict": True, "parameters": tool["input_schema"],
+        }}],
+        "tool_choice": {"type": "function", "function": {"name": "classify_repo"}},
+        "parallel_tool_calls": False,
+    }
+
+
+def parse_luna_message(body: dict) -> dict | None:
+    """Reject refusals, truncation and malformed tool arguments."""
+    choices = body.get("choices") or []
+    if not choices or choices[0].get("finish_reason") != "tool_calls":
+        return None
+    message = choices[0].get("message") or {}
+    if message.get("refusal"):
+        return None
+    calls = message.get("tool_calls") or []
+    if len(calls) != 1 or calls[0].get("function", {}).get("name") != "classify_repo":
+        return None
+    try:
+        result = json.loads(calls[0]["function"]["arguments"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if not isinstance(result, dict):
+        return None
+    if not isinstance(result.get("category_slug"), str):
+        return None
+    for field in ("subcategory_slugs", "keyword_slugs"):
+        if not isinstance(result.get(field), list) or not all(isinstance(x, str) for x in result[field]):
+            return None
+    confidence = result.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)) or not 0 <= confidence <= 1:
+        return None
+    if not isinstance(result.get("reason"), str) or not result["reason"].strip():
+        return None
+    return result
 
 
 def normalise_result(result: dict, tax: Taxonomy) -> dict:

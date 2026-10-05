@@ -1,5 +1,5 @@
 """
-LLM categorisation of discovered candidates via Anthropic Batch API.
+LLM categorisation of discovered candidates via OpenAI Batch API.
 
 Processes candidates in chunks: fetches READMEs for CHUNK_SIZE repos, submits
 a batch, polls until done, writes results, then moves to the next chunk.
@@ -10,7 +10,7 @@ Usage:
     python classify.py [--limit N] [--chunk-size N]
 
 Environment variables:
-    ANTHROPIC_API_KEY                    — Claude API key
+    OPENAI_API_KEY                       — OpenAI API key
     TURSO_DATABASE_URL, TURSO_AUTH_TOKEN — Turso database
 """
 
@@ -18,17 +18,22 @@ import argparse
 import json
 import os
 import sys
-import time
 from datetime import date
 
-import anthropic
+from pathlib import Path
 
-from turso import TursoClient
-from classifier import (
-    MODEL, load_taxonomy, build_system_prompt, build_tool,
-    format_repo_prompt, normalise_result,
-    github_token, make_github_session, fetch_readme,
-)
+try:
+    from . import luna_batch
+    from .turso import TursoClient
+    from .classifier import (MODEL, load_taxonomy, build_system_prompt, build_tool,
+                             build_luna_params, parse_luna_message, normalise_result,
+                             github_token, make_github_session, fetch_readme)
+except ImportError:
+    import luna_batch
+    from turso import TursoClient
+    from classifier import (MODEL, load_taxonomy, build_system_prompt, build_tool,
+                            build_luna_params, parse_luna_message, normalise_result,
+                            github_token, make_github_session, fetch_readme)
 
 
 CHUNK_SIZE    = 300   # repos per batch submission
@@ -53,7 +58,7 @@ UPDATE candidates
 SET    suggested_category = ?, suggested_subcategory = ?,
        suggested_keywords = ?, confidence = ?, reason = ?,
        status = ?, decided_at = ?
-WHERE  full_name = ?
+WHERE  full_name = ? AND status = 'new'
 """
 
 
@@ -62,86 +67,44 @@ def _today() -> str:
 
 
 def _build_request(custom_id: str, tool: dict, system: str, repo: dict) -> dict:
-    # Anthropic custom_id: ^[a-zA-Z0-9_-]{1,64}$  — repo full_names contain
-    # "/" and "." so we use a plain integer index as the id instead.
-    return {
-        "custom_id": custom_id,
-        "params": {
-            "model": MODEL,
-            "max_tokens": 512,
-            "system": system,
-            "tools": [tool],
-            "tool_choice": {"type": "tool", "name": "classify_repo"},
-            "messages": [{"role": "user", "content": format_repo_prompt(repo)}],
-        },
-    }
+    return {"custom_id": custom_id, "method": "POST", "url": "/v1/chat/completions",
+            "body": build_luna_params(tool, system, repo)}
 
 
-def _run_chunk(chunk: list[dict], chunk_num: int, total_chunks: int,
-               tool: dict, system: str, tax, db, client) -> int:
-    """Fetch READMEs, submit batch, poll, write results. Returns count classified."""
-    n = len(chunk)
-    print(f"\n── Chunk {chunk_num}/{total_chunks}  ({n} repos) ──────────────────")
-
-    # Fetch READMEs for this chunk only.
-    session = make_github_session(github_token())
-    for cand in chunk:
-        if cand.get("_needs_readme"):
-            cand["readme"] = fetch_readme(session, cand["full_name"])
-
-    # Submit batch (retry up to 3 times on transient server errors).
-    idx_to_name = {str(i): c["full_name"] for i, c in enumerate(chunk)}
-    batch = None
-    for attempt in range(1, 4):
-        try:
-            batch = client.messages.batches.create(
-                requests=[_build_request(str(i), tool, system, c)
-                          for i, c in enumerate(chunk)]
-            )
-            break
-        except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
-            sys.exit(f"\nAborting: {e.__class__.__name__} — {e}")
-        except (anthropic.APIConnectionError, anthropic.InternalServerError) as e:
-            if attempt == 3:
-                sys.exit(f"\nAborting after 3 attempts: {e}")
-            wait = 30 * attempt
-            print(f"  Transient error (attempt {attempt}/3), retrying in {wait}s: {e}")
-            time.sleep(wait)
-
-    print(f"Submitted batch {batch.id}  requests={n}")
-
-    # Poll until done.
-    deadline = time.time() + POLL_TIMEOUT
-    while True:
-        batch = client.messages.batches.retrieve(batch.id)
-        c = batch.request_counts
-        print(f"  {batch.processing_status}  "
-              f"processing={c.processing}  succeeded={c.succeeded}  "
-              f"errored={c.errored}")
-        if batch.processing_status == "ended":
-            break
-        if time.time() > deadline:
-            print(f"\nTimed out waiting for batch {batch.id} — "
-                  f"chunk skipped, candidates remain 'new'.")
-            return 0
-        time.sleep(POLL_INTERVAL)
+def _run_chunk(chunk, chunk_num, total_chunks, tool, system, tax, db, client, state_path):
+    """Resume a saved batch before submitting new candidates. None means pending."""
+    if not state_path.exists():
+        session = make_github_session(github_token())
+        for cand in chunk:
+            if cand.get("_needs_readme"):
+                cand["readme"] = fetch_readme(session, cand["full_name"])
+        requests = [_build_request(c["full_name"], tool, system, c) for c in chunk]
+        state = luna_batch.submit(client, requests, state_path)
+    else:
+        state = json.loads(state_path.read_text())
+        if not state.get("id"):
+            raise RuntimeError("Ambiguous batch submission: inspect OpenAI Batches before retrying")
+    names = {r["custom_id"] for r in state["requests"]}
+    n = len(names)
+    print(f"Chunk {chunk_num}/{total_chunks}: {n} repos, batch={state['id']}")
+    items = luna_batch.collect(client, state, state_path, POLL_TIMEOUT, POLL_INTERVAL)
+    if items is None:
+        return None
 
     # Write results.
     done = 0
-    for item in client.messages.batches.results(batch.id):
-        full_name = idx_to_name.get(item.custom_id, item.custom_id)
-        if item.result.type != "succeeded":
-            print(f"  {full_name}: {item.result.type} — skipping")
+    for item in items:
+        full_name = item.get("custom_id")
+        if full_name not in names:
+            print("  Unknown response id - skipping")
             continue
-
-        raw = None
-        for block in item.result.message.content:
-            if block.type == "tool_use" and block.name == "classify_repo":
-                raw = block.input
-                break
-
-        if not raw:
-            print(f"  No classification returned for {full_name} — skipping")
+        response = item.get("response") or {}
+        if item.get("error") or response.get("status_code") != 200:
+            print(f"  {full_name}: provider error - skipping")
+            continue
+        raw = parse_luna_message(response.get("body") or {})
+        if raw is None:
+            print(f"  No complete classification for {full_name} - skipping")
             continue
 
         result = normalise_result(raw, tax)
@@ -171,6 +134,7 @@ def _run_chunk(chunk: list[dict], chunk_num: int, total_chunks: int,
         mark = "✓ accept" if accepted else "· park  "
         print(f"  {mark} [{result['confidence']:.2f}] {result['category']:<18} {subs:<28} {full_name}")
 
+    state_path.unlink()
     print(f"  → {done}/{n} classified")
     return done
 
@@ -181,16 +145,23 @@ def main():
                         help="Max candidates to classify this run")
     parser.add_argument("--chunk-size", type=int, default=CHUNK_SIZE,
                         help=f"Repos per batch (default {CHUNK_SIZE})")
+    parser.add_argument("--state-dir", type=Path, default=Path("outputs/classifier-state"),
+                        help="Saved batch state; retain between runs")
     args = parser.parse_args()
+    if args.chunk_size < 1 or (args.limit is not None and args.limit < 1):
+        parser.error("limit and chunk-size must be positive")
+    args.state_dir.mkdir(parents=True, exist_ok=True)
+    (args.state_dir / ".keep").touch()
+    state_path = args.state_dir / "batch.json"
 
     try:
         from dotenv import load_dotenv
-        load_dotenv()
+        load_dotenv(Path(__file__).parent / ".env")
     except ImportError:
         pass
 
-    if not os.getenv("ANTHROPIC_API_KEY"):
-        sys.exit("Error: set ANTHROPIC_API_KEY")
+    if not os.getenv("OPENAI_API_KEY"):
+        sys.exit("Error: set OPENAI_API_KEY")
 
     turso_url = os.getenv("TURSO_DATABASE_URL")
     turso_token = os.getenv("TURSO_AUTH_TOKEN")
@@ -201,7 +172,12 @@ def main():
     tax = load_taxonomy()
     system = build_system_prompt(tax)
     tool = build_tool(tax)
-    client = anthropic.Anthropic()
+    client = luna_batch.client()
+
+    if state_path.exists():
+        done = _run_chunk([], 1, 1, tool, system, tax, db, client, state_path)
+        if done is None:
+            return
 
     gh_token = github_token()
     if not gh_token:
@@ -238,7 +214,10 @@ def main():
 
     total_done = 0
     for i, chunk in enumerate(chunks, 1):
-        total_done += _run_chunk(chunk, i, total_chunks, tool, system, tax, db, client)
+        done = _run_chunk(chunk, i, total_chunks, tool, system, tax, db, client, state_path)
+        if done is None:
+            break
+        total_done += done
 
     print(f"\n{'═'*60}")
     print(f"Done. Classified {total_done}/{len(candidates)} candidates total.")

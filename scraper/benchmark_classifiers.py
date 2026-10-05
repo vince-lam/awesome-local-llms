@@ -22,16 +22,17 @@ import requests
 from dotenv import load_dotenv
 
 try:
-    from .classifier import (MODEL, build_system_prompt, build_tool, fetch_readme,
+    from .classifier import (build_system_prompt, build_tool, fetch_readme,
                              format_repo_prompt, github_token, load_taxonomy,
                              make_github_session, normalise_result)
     from .turso import TursoClient
 except ImportError:
-    from classifier import (MODEL, build_system_prompt, build_tool, fetch_readme,
+    from classifier import (build_system_prompt, build_tool, fetch_readme,
                             format_repo_prompt, github_token, load_taxonomy,
                             make_github_session, normalise_result)
     from turso import TursoClient
 
+MODEL = "claude-haiku-4-5"  # Historical baseline; independent of production model.
 JEV_MODEL = "typesafe/jev-1.13"
 ANTHROPIC_URL = "https://api.anthropic.com/v1/messages/batches"
 JEV_URL = "https://openrouter.ai/api/alpha/decisions"
@@ -48,7 +49,7 @@ def read(path):
 
 
 def haiku_params(repo, tax):
-    # Match classify.py:_build_request; transport only differs (HTTP vs SDK).
+    # Preserve the original Haiku baseline request.
     return {"model": MODEL, "max_tokens": 512,
             "system": build_system_prompt(tax), "tools": [build_tool(tax)],
             "tool_choice": {"type": "tool", "name": "classify_repo"},
