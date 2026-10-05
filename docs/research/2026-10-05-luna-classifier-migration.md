@@ -53,3 +53,18 @@ standard-rate smoke request is separate from benchmark Batch spend.
 
 Agreement with Haiku is not verified accuracy. Retaining the 0.6 threshold
 preserves the existing policy; this benchmark does not calibrate Luna confidence.
+
+## Verification and current benchmark status
+
+All 45 scraper tests pass. Workflow YAML and embedded shell syntax pass local
+checks. A live Luna request returned a valid classification with a written
+reason and zero reasoning tokens. No production database classifications were
+written during verification.
+
+The 100-repo benchmark is submitted as
+`batch_6ac3a811bbd48190b4c4614c0c905613`. At this update it is still processing,
+with 70 completed requests and zero reported failures. OpenAI has not released
+the output file yet, so final cost and label agreement remain unavailable. The
+runner saves them when the batch ends; the same command resumes collection if
+the local polling timeout is reached. Haiku results remain unchanged, SHA-256
+`90772c5945063d75994c0e4e030451bad514bec4ea23b319379158b4cd99dce1`.

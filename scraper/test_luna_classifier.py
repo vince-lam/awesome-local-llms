@@ -61,6 +61,24 @@ class LunaClassifierTest(unittest.TestCase):
         self.assertAlmostEqual(benchmark_luna.cost({"prompt_tokens": 1000, "completion_tokens": 100,
                                                   "prompt_tokens_details": {"cached_tokens": 400, "cache_write_tokens": 200}}), .0000595)
 
+    def test_comparison_separates_all_spend_from_valid_paired_spend(self):
+        classification = {"category": "ai-engineering", "subcategories": ["agent-sdk"], "keywords": []}
+        results = [{"full_name": "a/repo", "classification": classification, "cost": .0001},
+                   {"full_name": "b/repo", "classification": {**classification, "category": "applications"}, "cost": .0002},
+                   {"full_name": "c/repo", "cost": .00001}]
+        haiku = [{"full_name": name, "classification": classification, "cost": price}
+                 for name, price in [("a/repo", .001), ("b/repo", .002), ("c/repo", .003)]]
+        state = {"requests": [{}, {}, {}], "batch": {"status": "completed", "created_at": 100, "completed_at": 220}}
+        summary = benchmark_luna.compare(results, haiku, state)
+        self.assertEqual(summary["valid_results"], 2)
+        self.assertEqual(summary["paired_results"], 2)
+        self.assertEqual(summary["category_agreement"], .5)
+        self.assertEqual(summary["batch_completion_seconds"], 120)
+        self.assertAlmostEqual(summary["cost_usd_from_usage_at_batch_rates"], .00031)
+        self.assertAlmostEqual(summary["paired_costs"]["haiku_usd"], .003)
+        self.assertAlmostEqual(summary["paired_costs"]["savings_percent"], 90)
+        self.assertFalse(summary["haiku_rerun"])
+
     def test_resume_does_not_submit_and_writes_correct_repo(self):
         with TemporaryDirectory() as directory:
             path = Path(directory) / "batch.json"
