@@ -1,4 +1,6 @@
 import json
+import re
+import sqlite3
 import tempfile
 import unittest
 from pathlib import Path
@@ -49,6 +51,24 @@ class ReadmeRankingsTest(unittest.TestCase):
 
     def test_growth_label_uses_previous_star_count(self):
         self.assertEqual(update_stats._growth_label(1_100, 100), "+100 (+10.0%)")
+
+
+class StatsUpdatedAtTest(unittest.TestCase):
+    def test_records_and_overwrites_iso_utc_timestamp(self):
+        conn = sqlite3.connect(":memory:")
+
+        class FakeDb:
+            def execute(self, sql, args=None):
+                conn.execute(sql, args or [])
+
+        update_stats.record_stats_updated_at(FakeDb())
+        conn.execute("UPDATE site_meta SET value = 'old'")
+        update_stats.record_stats_updated_at(FakeDb())
+
+        rows = conn.execute("SELECT key, value FROM site_meta").fetchall()
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][0], "stats_updated_at")
+        self.assertRegex(rows[0][1], re.compile(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$"))
 
 
 if __name__ == "__main__":

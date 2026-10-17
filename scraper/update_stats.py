@@ -248,6 +248,23 @@ def refresh_denormalized_columns(db: TursoClient) -> None:
     print("Refreshed denormalized latest-snapshot columns on repos")
 
 
+# The website shows "Updated Xh ago" from this. Snapshot dates carry no time,
+# and runs finish hours after their cron slot, so record the real finish time.
+_CREATE_SITE_META_SQL = """
+CREATE TABLE IF NOT EXISTS site_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
+"""
+_UPSERT_STATS_UPDATED_AT_SQL = """
+INSERT INTO site_meta (key, value) VALUES ('stats_updated_at', strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+ON CONFLICT(key) DO UPDATE SET value = excluded.value
+"""
+
+
+def record_stats_updated_at(db: TursoClient) -> None:
+    db.execute(_CREATE_SITE_META_SQL)
+    db.execute(_UPSERT_STATS_UPDATED_AT_SQL)
+    print("Recorded stats_updated_at in site_meta")
+
+
 def _flush(db: TursoClient, stmts: list) -> list:
     if stmts:
         db.executemany(stmts)
@@ -1043,6 +1060,7 @@ def main() -> None:
 
     write_snapshots_to_db(db, df, contributor_counts)
     refresh_denormalized_columns(db)
+    record_stats_updated_at(db)
     df = attach_growth_metrics(db, df)
     owner_country_pass(db, session)
 

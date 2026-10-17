@@ -119,3 +119,10 @@ CREATE INDEX IF NOT EXISTS idx_cand_stars  ON candidates(stars DESC);
 -- ALTER TABLE repos ADD COLUMN delta_7d INTEGER;
 -- ALTER TABLE repos ADD COLUMN delta_30d INTEGER;
 -- CREATE INDEX IF NOT EXISTS idx_repos_latest_stars ON repos(latest_stars DESC);
+
+-- Site-wide key/value metadata. stats_updated_at: ISO UTC time the daily
+-- stats run finished refreshing repos (written by scraper/update_stats.py).
+CREATE TABLE IF NOT EXISTS site_meta (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+);
