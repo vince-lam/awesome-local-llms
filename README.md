@@ -64,7 +64,7 @@ This started in 2024 as a markdown list of local LLM tools that I edited by hand
 
 These generated rankings combine the 20 most-starred active projects, the 20 largest seven-day movers outside that group, and up to three more movers from each category. Each project appears once. For the complete daily index, search, filters, and longer growth windows, use [llmrepos.com](https://llmrepos.com/?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel).
 
-*Last Updated: 12/10/2026*
+*Last Updated: 19/10/2026*
 
 <!-- BEGIN_TABLE -->
 ## Established leaders
@@ -73,26 +73,26 @@ The 20 most-starred active projects.
 
 |  # | Repo  |  Stars | 7d growth  | Category  | About  |
 |----------|----------|----------|----------|----------|----------|
-|  1 | [openclaw](https://github.com/openclaw/openclaw)  | 391,774 | +369 (+0.1%)  | Applications  | The AI that really does things. Any OS. Any Platform. The lobster way. 🦞  |
-|  2 | [superpowers](https://github.com/obra/superpowers)  | 298,056 | +2,680 (+0.9%)  | AI Engineering | An agentic skills framework & software development methodology that works.  |
-|  3 | [skills](https://github.com/mattpocock/skills)  | 287,467 | +11,060 (+4.0%) | AI Engineering | Skills for Real Engineers. Straight from my .agents directory.  |
-|  4 | [ECC](https://github.com/affaan-m/ECC)  | 277,714 | +4,536 (+1.7%)  | AI Engineering | The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.  |
-|  5 | [hermes-agent](https://github.com/NousResearch/hermes-agent)  | 253,052 | +1,766 (+0.7%)  | AI Engineering | The agent that grows with you  |
-|  6 | [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) | 248,081 | +4,538 (+1.9%)  | AI Engineering | DeepSeek Harness: Everything is a Plugin.  |
-|  7 | [opencode](https://github.com/anomalyco/opencode)  | 212,905 | +1,111 (+0.5%)  | Applications  | The open source coding agent.  |
-|  8 | [n8n](https://github.com/n8n-io/n8n)  | 207,115 | +423 (+0.2%)  | AI Engineering | Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.  |
-|  9 | [firecrawl](https://github.com/firecrawl/firecrawl)  | 190,769 | +2,051 (+1.1%)  | AI Engineering | Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥  |
-|  10 | [markitdown](https://github.com/microsoft/markitdown)  | 189,752 | +1,233 (+0.7%)  | AI Engineering | Python tool for converting files and office documents to Markdown.  |
-|  11 | [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT)  | 187,532 | +-124 (+-0.1%)  | Applications  | AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters.  |
-|  12 | [ollama](https://github.com/ollama/ollama)  | 182,864 | +649 (+0.4%)  | Infrastructure | Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.  |
-|  13 | [skills](https://github.com/anthropics/skills)  | 180,679 | +987 (+0.5%)  | AI Engineering | Public repository for Agent Skills  |
-|  14 | [prompts.chat](https://github.com/f/prompts.chat)  | 172,710 | +657 (+0.4%)  | AI Engineering | f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source — self-host for your organization with complete privacy.  |
-|  15 | [transformers](https://github.com/huggingface/transformers)  | 167,585 | +622 (+0.4%)  | Infrastructure | 🤗 Transformers: the model-definition framework for state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training.  |
-|  16 | [ponytail](https://github.com/DietrichGebert/ponytail)  | 161,707 | +6,366 (+4.1%)  | AI Engineering | Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.  |
-|  17 | [agency-agents](https://github.com/msitarzewski/agency-agents)  | 159,381 | +2,497 (+1.6%)  | AI Engineering | A complete AI agency at your fingertips - From frontend wizards to Reddit community ninjas, from whimsy injectors to reality checkers. Each agent is a specialized expert with personality, processes, and proven deliverables. |
-|  18 | [dify](https://github.com/langgenius/dify)  | 158,260 | +395 (+0.3%)  | AI Engineering | Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. Deploy on cloud, VPC, or self-hosted, so teams move from prototype to production without rebuilding the stack.  |
-|  19 | [langflow](https://github.com/langflow-ai/langflow)  | 155,544 | +42 (+0.0%)  | AI Engineering | Langflow is a powerful tool for building and deploying AI-powered agents and workflows.  |
-|  20 | [open-webui](https://github.com/open-webui/open-webui)  | 154,712 | +733 (+0.5%)  | AI Engineering | User-friendly AI Interface (Supports Ollama, OpenAI API, ...)  |
+|  1 | [openclaw](https://github.com/openclaw/openclaw)  | 392,450 | +676 (+0.2%)  | Applications  | The AI that really does things. Any OS. Any Platform. The lobster way. 🦞  |
+|  2 | [rea](https://github.com/morluto/rea)  | 330,863 | +192,369 (+138.9%) | AI Engineering | Reverse engineer anything with agents, from app behavior down to native binaries.  |
+|  3 | [superpowers](https://github.com/obra/superpowers)  | 301,960 | +3,904 (+1.3%)  | AI Engineering | An agentic skills framework & software development methodology that works.  |
+|  4 | [skills](https://github.com/mattpocock/skills)  | 297,052 | +9,585 (+3.3%)  | AI Engineering | Skills for Real Engineers. Straight from my .agents directory.  |
+|  5 | [ECC](https://github.com/affaan-m/ECC)  | 283,782 | +6,068 (+2.2%)  | AI Engineering | The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.  |
+|  6 | [hermes-agent](https://github.com/NousResearch/hermes-agent)  | 255,182 | +2,130 (+0.8%)  | AI Engineering | The agent that grows with you  |
+|  7 | [deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) | 254,109 | +6,028 (+2.4%)  | AI Engineering | DeepSeek Harness: Everything is a Plugin.  |
+|  8 | [opencode](https://github.com/anomalyco/opencode)  | 217,321 | +4,416 (+2.1%)  | Applications  | The open source coding agent.  |
+|  9 | [n8n](https://github.com/n8n-io/n8n)  | 207,997 | +882 (+0.4%)  | AI Engineering | Fair-code workflow automation platform with native AI capabilities. Combine visual building with custom code, self-host or cloud, 400+ integrations.  |
+|  10 | [firecrawl](https://github.com/firecrawl/firecrawl)  | 192,994 | +2,225 (+1.2%)  | AI Engineering | Supercharge your AI agents with data from the web and beyond. Building the library for superintelligence. 🔥  |
+|  11 | [markitdown](https://github.com/microsoft/markitdown)  | 191,061 | +1,309 (+0.7%)  | AI Engineering | Python tool for converting files and office documents to Markdown.  |
+|  12 | [AutoGPT](https://github.com/Significant-Gravitas/AutoGPT)  | 187,655 | +123 (+0.1%)  | Applications  | AutoGPT is the vision of accessible AI for everyone, to use and to build on. Our mission is to provide the tools, so that you can focus on what matters.  |
+|  13 | [ollama](https://github.com/ollama/ollama)  | 183,817 | +953 (+0.5%)  | Infrastructure | Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.  |
+|  14 | [skills](https://github.com/anthropics/skills)  | 182,156 | +1,477 (+0.8%)  | AI Engineering | Public repository for Agent Skills  |
+|  15 | [prompts.chat](https://github.com/f/prompts.chat)  | 173,542 | +832 (+0.5%)  | AI Engineering | f.k.a. Awesome ChatGPT Prompts. Share, discover, and collect prompts from the community. Free and open source — self-host for your organization with complete privacy.  |
+|  16 | [transformers](https://github.com/huggingface/transformers)  | 167,852 | +267 (+0.2%)  | Infrastructure | 🤗 Transformers: the model-definition framework for state-of-the-art machine learning models in text, vision, audio, and multimodal models, for both inference and training.  |
+|  17 | [ponytail](https://github.com/DietrichGebert/ponytail)  | 167,689 | +5,982 (+3.7%)  | AI Engineering | Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.  |
+|  18 | [agency-agents](https://github.com/msitarzewski/agency-agents)  | 161,540 | +2,159 (+1.4%)  | AI Engineering | A complete AI agency at your fingertips - From frontend wizards to Reddit community ninjas, from whimsy injectors to reality checkers. Each agent is a specialized expert with personality, processes, and proven deliverables. |
+|  19 | [dify](https://github.com/langgenius/dify)  | 158,888 | +628 (+0.4%)  | AI Engineering | Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative workspace. Deploy on cloud, VPC, or self-hosted, so teams move from prototype to production without rebuilding the stack.  |
+|  20 | [open-webui](https://github.com/open-webui/open-webui)  | 156,153 | +1,441 (+0.9%)  | AI Engineering | User-friendly AI Interface (Supports Ollama, OpenAI API, ...)  |
 
 ## Trending this week
 
@@ -100,26 +100,26 @@ The 20 largest seven-day star gains, excluding established leaders.
 
 |  # | Repo  |  Stars | 7d growth  | Category  | About  |
 |----------|----------|----------|----------|----------|----------|
-|  1 | [rea](https://github.com/morluto/rea)  | 138,494 | +135,465 (+4472.3%) | AI Engineering | Reverse engineer anything with agents, from app behavior down to native binaries.  |
-|  2 | [dots](https://github.com/feder-cr/dots)  |  31,981 | +29,375 (+1127.2%)  | AI Engineering | Open-source, self-hosted alternative to OpenAI Dots, Grok Bot. Built to be undetectable by anti-bot systems.  |
-|  3 | [dsh-our-free-model](https://github.com/zouyuxuan122/dsh-our-free-model)  |  11,339 | +10,049 (+779.0%)  | AI Engineering | 在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap. |
-|  4 | [moli](https://github.com/lexmount/moli)  |  17,008 | +9,070 (+114.3%)  | Infrastructure | Best headless browser for AI agents. Lite, Fast, High-Compatibility. Built in Rust  |
-|  5 | [openGym](https://github.com/DuarteSantos8/openGym)  |  10,169 | +6,927 (+213.7%)  | Applications  | Self-hosted gym & body-weight tracker — plan routines, log workouts (supersets, warm-ups, cardio), see which muscles are trained, fatigued or detrained, import from FitNotes/Strong/Hevy, passkey login. Your data, your server.  |
-|  6 | [VoiceStudio](https://github.com/debpalash/VoiceStudio)  |  59,818 | +6,504 (+12.2%)  | Applications  | VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.  |
-|  7 | [magpie](https://github.com/yetone/magpie)  |  10,210 | +5,279 (+107.1%)  | Applications  | Every agent's model. One place. Codex on DeepSeek, Claude Code on Kimi, from the menu bar.  |
-|  8 | [Agent-Reach](https://github.com/Panniantong/Agent-Reach)  |  96,500 | +5,237 (+5.7%)  | Applications  | Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.  |
-|  9 | [orca](https://github.com/stablyai/orca)  |  90,494 | +5,217 (+6.1%)  | AI Engineering | Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.  |
-|  10 | [archify](https://github.com/tt-a1i/archify)  |  82,455 | +4,789 (+6.2%)  | AI Engineering | Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.  |
-|  11 | [security-audit-skill](https://github.com/cloudflare/security-audit-skill)  |  28,603 | +4,161 (+17.0%)  | AI Engineering | A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings  |
-|  12 | [agent-skills](https://github.com/addyosmani/agent-skills)  | 105,467 | +4,128 (+4.1%)  | Applications  | Production-grade engineering skills for AI coding agents.  |
-|  13 | [OpenMontage](https://github.com/calesthio/OpenMontage)  |  67,431 | +3,996 (+6.3%)  | Applications  | World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio.  |
-|  14 | [ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch) |  67,958 | +3,823 (+6.0%)  | AI Engineering | Learn AI Engineering! Learn it. Build it. Ship it for others.  |
-|  15 | [claude-mem](https://github.com/thedotmack/claude-mem)  | 100,017 | +3,721 (+3.9%)  | AI Engineering | Persistent Context Across Sessions for Every Agent – Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More  |
-|  16 | [universal-modder](https://github.com/rehan-remade/universal-modder)  |  6,924 | +3,558 (+105.7%)  | Applications  | Point Claude at any game. Skills, tools and the fal MCP that let Claude Code mod almost any PC game you own: recon, reverse engineering, fal-generated art/3D/audio, in-game testing, showcase videos.  |
-|  17 | [paperclip](https://github.com/paperclipai/paperclip)  | 100,764 | +3,443 (+3.5%)  | AI Engineering | The open-source app everyone uses to manage agents at work  |
-|  18 | [iFixAi](https://github.com/ifixai-ai/iFixAi)  |  24,053 | +3,443 (+16.7%)  | AI Engineering | Independent Auditing of AI Agents. Run by human or the agent itself, to answer the most crucial question in the AI Agent Economy. Is the agent doing what is supposed to do? With iFixAi you can have this answer in less than 120 seconds.  |
-|  19 | [ppt-master](https://github.com/hugohe3/ppt-master)  |  61,019 | +3,357 (+5.8%)  | Applications  | AI turns documents or topics into real, native PowerPoint decks—with native shapes, transitions and animations, data-backed charts and tables on demand, audio narration from speaker notes, and support for your own .pptx templates. · by Hugo He  |
-|  20 | [autoharness](https://github.com/tigerless-labs/autoharness)  |  11,018 | +3,195 (+40.8%)  | AI Engineering | Autoharness — a self-learning skill layer for Claude Code — distills skills from your real sessions, updates them as you work, and prunes the ones that stop getting used. No daemon, no benchmark.  |
+|  1 | [VoiceStudio](https://github.com/debpalash/VoiceStudio)  |  76,698 | +16,880 (+28.2%)  | Applications  | VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.  |
+|  2 | [dsh-our-free-model](https://github.com/zouyuxuan122/dsh-our-free-model)  |  27,138 | +15,799 (+139.3%) | AI Engineering | 在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap.  |
+|  3 | [dsh-our-free-model](https://github.com/Ebony-Vinyl/dsh-our-free-model)  |  27,038 | +15,702 (+138.5%) | AI Engineering | 在 dsh 里装上这个插件即可，无需登录、注册或填 API Key，就能使用包括 DeepSeek V4.1 Flash、Kimi K3 在内的前沿模型——完全免费，不限量。 All you do is install this plugin in dsh: no login, no sign-up, no API key — the frontier models are just there, DeepSeek V4.1 Flash and Kimi K3 among them. Completely free, with no usage cap.  |
+|  4 | [anatomy](https://github.com/wheresryan22/anatomy)  |  16,529 | +11,457 (+225.9%) | AI Engineering | An agent skill for creating detailed, interactive isometric illustrations of real-world machines and complex systems. Generates polished SVGs with optional WebGL shaders and 3D effects.  |
+|  5 | [orca](https://github.com/stablyai/orca)  |  97,780 | +7,286 (+8.1%)  | AI Engineering | Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.  |
+|  6 | [magpie](https://github.com/yetone/magpie)  |  16,713 | +6,503 (+63.7%)  | Applications  | Every agent's model. One place. Codex on DeepSeek, Claude Code on Kimi, from the menu bar.  |
+|  7 | [iFixAi](https://github.com/ifixai-ai/iFixAi)  |  29,871 | +5,818 (+24.2%)  | AI Engineering | Independent Auditing of AI Agents. Run by human or the agent itself, to answer the most crucial question in the AI Agent Economy. Is the agent doing what is supposed to do? With iFixAi you can have this answer in less than 120 seconds.  |
+|  8 | [solidcraft](https://github.com/bherbruck/solidcraft)  |  6,469 | +5,590 (+635.9%)  | Applications  | SolidCraft: an open-source parametric 3D CAD application built in pure Rust. Desktop, web, and automation through MCP.  |
+|  9 | [solvecraft](https://github.com/bherbruck/solvecraft)  |  6,469 | +5,590 (+635.9%)  | Applications  | SolidCraft: an open-source parametric 3D CAD application built in pure Rust. Desktop, web, and automation through MCP.  |
+|  10 | [claude-plugins-official](https://github.com/anthropics/claude-plugins-official)  |  43,076 | +5,352 (+14.2%)  | AI Engineering | Official, Anthropic-managed directory of high quality Claude Code Plugins.  |
+|  11 | [xerj](https://github.com/xerj-org/xerj)  |  8,861 | +5,203 (+142.2%)  | Infrastructure | XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep (1974 tool). One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. It’s durable and can replace ElasticSearch saving you x10 infra costs. |
+|  12 | [Concat](https://github.com/jub0t/Concat)  |  9,287 | +4,311 (+86.6%)  | Applications  | The truly free, open-source, local-first, cross-platform CapCut replacement. Scriptable through a JSON-RPC API & MCP.  |
+|  13 | [scientific-agent-skills](https://github.com/K-Dense-AI/scientific-agent-skills)  |  52,841 | +4,294 (+8.8%)  | Applications  | Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.  |
+|  14 | [taste-skill](https://github.com/Leonxlnx/taste-skill)  |  99,187 | +4,167 (+4.4%)  | AI Engineering | Agent skills that give coding agents taste: art direction, reference images and a browser check instead of generic AI pages  |
+|  15 | [context-mode](https://github.com/mksglu/context-mode)  |  30,952 | +3,975 (+14.7%)  | Applications  | Context window optimization for AI coding agents. Sandboxes tool output (98% reduction), persists session memory, and enforces routing across 17 platforms via MCP + hooks.  |
+|  16 | [paperclip](https://github.com/paperclipai/paperclip)  | 104,519 | +3,755 (+3.7%)  | AI Engineering | The open-source app everyone uses to manage agents at work  |
+|  17 | [freellmapi](https://github.com/tashfeenahmed/freellmapi)  |  37,405 | +3,615 (+10.7%)  | AI Engineering | 7.4 billion tokens per month. 34 free LLM providers. 635 free model endpoints. All behind one /v1 endpoint, plus any custom OpenAI-compatible endpoint. Smart routing, automatic failover, encrypted keys. Personal experimentation only.  |
+|  18 | [openGym](https://github.com/DuarteSantos8/openGym)  |  13,753 | +3,584 (+35.2%)  | Applications  | Self-hosted gym & body-weight tracker — plan routines, log workouts (supersets, warm-ups, cardio), see which muscles are trained, fatigued or detrained, import from FitNotes/Strong/Hevy, passkey login. Your data, your server.  |
+|  19 | [ai-engineering-from-scratch](https://github.com/rohitg00/ai-engineering-from-scratch) |  71,333 | +3,375 (+5.0%)  | AI Engineering | Learn AI Engineering! Learn it. Build it. Ship it for others.  |
+|  20 | [DigUp](https://github.com/ARahim3/DigUp)  |  4,902 | +3,265 (+199.5%)  | Applications  | Search your computer by what's in your files: photos, PDFs, documents, recordings, videos and code. On-device on Mac, Windows and Linux, built on Google DeepMind's EmbeddingGemma 2.  |
 
 ## Trending by category
 
@@ -129,65 +129,65 @@ Up to three more weekly movers from each category. Projects already shown above 
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [cc-switch](https://github.com/farion1231/cc-switch)  | 143,241 | +3,137 (+2.2%) | A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Build & Hermes Agent. Only official website: ccswitch.io  |
-|  2 | [hindsight](https://github.com/vectorize-io/hindsight)  |  48,736 | +3,092 (+6.8%) | Hindsight: Agent Memory That Learns  |
-|  3 | [freellmapi](https://github.com/tashfeenahmed/freellmapi) |  33,790 | +3,049 (+9.9%) | 7.4 billion tokens per month. 34 free LLM providers. 635 free model endpoints. All behind one /v1 endpoint, plus any custom OpenAI-compatible endpoint. Smart routing, automatic failover, encrypted keys. Personal experimentation only. |
+|  1 | [archify](https://github.com/tt-a1i/archify)  |  85,673 | +3,218 (+3.9%) | Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.  |
+|  2 | [graphify](https://github.com/Graphify-Labs/graphify) | 128,834 | +3,056 (+2.4%) | Turn any codebase, with its docs, SQL schemas, configs, and PDFs, into a queryable knowledge graph. A /graphify skill for Claude Code, Cursor, Codex, and Gemini CLI: local deterministic AST parsing, every edge explained, no vector store. |
+|  3 | [cc-switch](https://github.com/farion1231/cc-switch)  | 146,272 | +3,031 (+2.1%) | A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Build & Hermes Agent. Only official website: ccswitch.io  |
 
 ### [Applications](https://llmrepos.com/categories/applications?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [open-code-review](https://github.com/alibaba/open-code-review)  |  46,467 | +2,689 (+6.1%)  | Secure, fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.  |
-|  2 | [hypit](https://github.com/hypit-ai/hypit)  |  21,504 | +2,200 (+11.4%) | Clone any viral video with AI agents. Not just a script, the whole workflow: swap the face, the words, the B-roll, ship 100 variants in one command, and get your 100M views.  |
-|  3 | [free-claude-code](https://github.com/Alishahryar1/free-claude-code) |  58,683 | +1,996 (+3.5%)  | Use Claude Code, Codex, VSCode, Pi, and OpenCode (and 6 other harnesses) for free (1.3B+ free tokens) from your terminal, app, IDE, or phone, and now from the browser with native browser sessions (multi-harness + multi-model) like OpenClaw (voice supported + ToS friendly) |
+|  1 | [free-claude-code](https://github.com/Alishahryar1/free-claude-code)  |  61,807 | +3,124 (+5.3%)  | Use Claude Code, Codex, VSCode, Pi, and OpenCode (and 6 other harnesses) for free (1.3B+ free tokens) from your terminal, app, IDE, or phone, and now from the browser with native browser sessions (multi-harness + multi-model) like OpenClaw (voice supported + ToS friendly) |
+|  2 | [esp32-iphone-agent](https://github.com/onehumanbeing/esp32-iphone-agent) |  3,239 | +3,067 (+1783.1%) | Let an AI model use a real iPhone with a $7 ESP32: AirPlay eyes, USB HID hands, any OpenAI-compatible vision model. No Mac, no developer account, no jailbreak.  |
+|  3 | [agent-skills](https://github.com/addyosmani/agent-skills)  | 108,485 | +3,018 (+2.9%)  | Production-grade engineering skills for AI coding agents.  |
 
 ### [Infrastructure](https://llmrepos.com/categories/infrastructure?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [OmniRoute](https://github.com/diegosouzapw/OmniRoute) |  75,574 | +2,486 (+3.4%)  | Never stop coding. Free MIT AI gateway: one endpoint, 359 providers (150+ free), 1200+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by hundreds of contributors |
-|  2 | [airllm](https://github.com/lyogavin/airllm)  |  37,280 | +1,880 (+5.3%)  | AirLLM 70B inference with single 4GB GPU  |
-|  3 | [xerj](https://github.com/xerj-org/xerj)  |  3,658 | +1,015 (+38.4%) | XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep and sed. One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. Elasticsearch compatible, so existing clients just work.  |
+|  1 | [OmniRoute](https://github.com/diegosouzapw/OmniRoute) |  78,337 | +2,763 (+3.7%)  | Never stop coding. Free MIT AI gateway: one endpoint, 375 providers (150+ free), 1,400+ models Kimi, Claude, GPT, Gemini, GLM, DeepSeek, MiniMax. Works with Claude Code, Codex, Cursor, OpenCode, Cline & Copilot. Quota-aware auto-fallback, RTK+Caveman compression saves 15-95% tokens, MCP/A2A, Desktop/PWA. Built by 900+ contributors |
+|  2 | [moli](https://github.com/lexmount/moli)  |  19,594 | +2,586 (+15.2%) | Best headless browser for AI agents. Lite, Fast, High-Compatibility. Built in Rust  |
+|  3 | [ComfyUI](https://github.com/Comfy-Org/ComfyUI)  | 139,320 | +2,194 (+1.6%)  | The most powerful and modular diffusion model GUI, api and backend with a graph/nodes interface. The fastest local inference engine in the world.  |
 
 ### [Model Development](https://llmrepos.com/categories/model-development?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [unsloth](https://github.com/unslothai/unsloth)  |  77,870 | +662 (+0.9%) | Local UI to run and train LLMs and diffusion models. Supports GGUF, MLX, Qwen3.8, DeepSeek-V4, MiniMax-H3, Gemma 4, FLUX and more. |
-|  2 | [Soup](https://github.com/MakazhanAlpamys/Soup)  |  8,606 | +459 (+5.6%) | Fine-tune LLMs from one YAML. Layer streaming trains an 8B model on a 4 GB laptop GPU.  |
-|  3 | [LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) | 106,421 | +393 (+0.4%) | Implement a ChatGPT-like LLM in PyTorch from scratch, step by step  |
+|  1 | [Soup](https://github.com/MakazhanAlpamys/Soup)  |  9,405 | +799 (+9.3%) | Fine-tune LLMs from one YAML. Layer streaming trains an 8B model on a 4 GB laptop GPU.  |
+|  2 | [LLMs-from-scratch](https://github.com/rasbt/LLMs-from-scratch) | 106,857 | +436 (+0.4%) | Implement a ChatGPT-like LLM in PyTorch from scratch, step by step  |
+|  3 | [unsloth](https://github.com/unslothai/unsloth)  |  78,254 | +384 (+0.5%) | Local UI to run and train LLMs and diffusion models. Supports GGUF, MLX, Qwen3.8, DeepSeek-V4, MiniMax-H3, Gemma 4, FLUX and more. |
 
 ### [Models](https://llmrepos.com/categories/models?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [Index-Translate](https://github.com/bilibili/Index-Translate) |  1,407 | +775 (+122.6%) | A Multilingual, Multimodal Translation Model Family  |
-|  2 | [needle](https://github.com/cactus-compute/needle)  |  13,876 | +637 (+4.8%)  | Automation foundation model for tiny devices: 2-bit, 8-29 MB, tool calls, ASR, structured extraction and embeddings on phones, wearables, smart homes, robots, cars and microcontrollers. |
-|  3 | [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)  |  62,723 | +364 (+0.6%)  | 1 min voice data can also be used to train a good TTS model! (few shot voice cloning)  |
+|  1 | [GPT-SoVITS](https://github.com/RVC-Boss/GPT-SoVITS)  |  63,191 | +468 (+0.7%)  | 1 min voice data can also be used to train a good TTS model! (few shot voice cloning)  |
+|  2 | [Index-Translate](https://github.com/bilibili/Index-Translate) |  1,695 | +288 (+20.5%) | A Multilingual, Multimodal Translation Model Family  |
+|  3 | [needle](https://github.com/cactus-compute/needle)  |  14,100 | +224 (+1.6%)  | Automation foundation model for tiny devices: 2-bit, 8-29 MB, tool calls, ASR, structured extraction and embeddings on phones, wearables, smart homes, robots, cars and microcontrollers. |
 
 ### [Lists](https://llmrepos.com/categories/lists?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [awesome-opus5-5-videos](https://github.com/yihui-dev/awesome-opus5-5-videos) |  4,476 | +2,498 (+126.3%) | A growing collection of viral videos made with Claude Opus 5.5 and the prompts behind them. Watch each original next to a live remake on Skillry. Updated regularly.  |
-|  2 | [AISafetyHot-Hub](https://github.com/wuyoscar/AISafetyHot-Hub)  |  1,045 | +895 (+596.7%)  | 每天的 AI 安全精选和论文清单（md / bib / json），附 Agent 接入说明 · AI Safety HOT  |
-|  3 | [marketing-skills](https://github.com/irinabuht12-oss/marketing-skills)  |  4,293 | +856 (+24.9%)  | Claude skills for marketing: 49 free marketing skills for Claude Code and claude.ai (Google Ads, Meta Ads, SEO, AI visibility) + the Ryze Google Ads MCP / Meta Ads MCP: claude mcp add ryze --transport http https://connector.get-ryze.ai/mcp |
+|  1 | [awesome-opus5-5-videos](https://github.com/yihui-dev/awesome-opus5-5-videos) |  6,450 | +1,974 (+44.1%)  | A growing collection of viral videos made with Claude Opus 5.5 and the prompts behind them. Watch each original next to a live remake on Skillry. Updated regularly.  |
+|  2 | [awesome-agent-apis](https://github.com/Anil-matcha/awesome-agent-apis)  |  1,056 | +1,049 (+14985.7%) | 660+ muapi-hosted generative-media models plus community-submitted third-party API tools (SEO, enrichment, social, scraping) — one YAML file per entry, browsable by capability. |
+|  3 | [awesome-free-llm-apis](https://github.com/mnfst/awesome-free-llm-apis)  |  10,672 | +719 (+7.2%)  | List of Permanent Free LLM API (API Keys)  |
 
 ### [Tutorials](https://llmrepos.com/categories/tutorials?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [ai-agent-book](https://github.com/bojieli/ai-agent-book)  |  53,700 | +1,298 (+2.5%) | 《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码  |
-|  2 | [ai-infra-book](https://github.com/bojieli/ai-infra-book)  |  6,292 | +409 (+7.0%)  | 《深入理解 AI Infra：量化分析与系统设计》（李博杰 著）开源书稿：从硬件约束和模型架构出发，量化推导 LLM 推理与训练系统设计。含全书正文、PDF、配套计算工具与实验  |
-|  3 | [figures4papers](https://github.com/ChenLiu-1996/figures4papers) |  8,413 | +385 (+4.8%)  | My Python scripts to make high-quality figures for publications in top AI conferences and journals. |
+|  1 | [ai-agent-book](https://github.com/bojieli/ai-agent-book)  |  54,934 | +1,234 (+2.3%) | 《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码  |
+|  2 | [ai-agent-handbook](https://github.com/aliyun/ai-agent-handbook) |  2,159 | +752 (+53.4%)  | A practical guide to building enterprise AI agents across their full lifecycle.  |
+|  3 | [ai-infra-book](https://github.com/bojieli/ai-infra-book)  |  6,723 | +431 (+6.8%)  | 《深入理解 AI Infra：量化分析与系统设计》（李博杰 著）开源书稿：从硬件约束和模型架构出发，量化推导 LLM 推理与训练系统设计。含全书正文、PDF、配套计算工具与实验 |
 
 ### [Misc](https://llmrepos.com/categories/misc?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel)
 
 |  # | Repo  |  Stars | 7d growth  | About  |
 |----------|----------|----------|----------|----------|
-|  1 | [OB1](https://github.com/NateBJones-Projects/OB1)  |  4,719 | +41 (+0.9%) | Open Brain — The infrastructure layer for your thinking. One database, one AI gateway, one chat channel — any AI plugs in. No middleware, no SaaS. |
-|  2 | [keyline-icons](https://github.com/keyline-icons/keyline-icons) |  160 | +14 (+9.6%) | 1,435 free MIT icons in stroke, two-tone, duotone and fill, rounded or sharp: 11,480 SVGs on one 24×24 grid. Built for shadcn/ui.  |
-|  3 | [WhisperLive](https://github.com/collabora/WhisperLive)  |  4,318 | +12 (+0.3%) | A nearly-live implementation of OpenAI's Whisper.  |
+|  1 | [specification.website](https://github.com/jdevalk/specification.website) |  912 | +34 (+3.9%) | Website specification — HTML, accessibility, security, SEO, agent-readiness. Platform-agnostic, sourced, MIT.  |
+|  2 | [OB1](https://github.com/NateBJones-Projects/OB1)  |  4,736 | +17 (+0.4%) | Open Brain — The infrastructure layer for your thinking. One database, one AI gateway, one chat channel — any AI plugs in. No middleware, no SaaS. |
+|  3 | [keyline-icons](https://github.com/keyline-icons/keyline-icons)  |  171 | +11 (+6.9%) | 1,507 free MIT icons in stroke, two-tone, duotone and fill, rounded or sharp: 12,056 SVGs on one 24×24 grid. Built for shadcn/ui.  |
 <!-- END_TABLE -->
 
 The rankings above require more than 100 stars and a commit within the last 60 days. Weekly movers need a complete seven-day history. [llmrepos.com](https://llmrepos.com/?utm_source=github&utm_medium=readme&utm_campaign=readme_funnel) has the full index, refreshed daily.
