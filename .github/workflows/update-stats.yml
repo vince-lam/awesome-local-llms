@@ -35,6 +35,8 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.STATS_GH_PAT }}
           TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
           TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          WEB_REVALIDATE_URL: ${{ vars.WEB_REVALIDATE_URL }}
+          WEB_REVALIDATE_SECRET: ${{ secrets.WEB_REVALIDATE_SECRET }}
           # Set on the weekly cron and manual triggers; unset on daily cron
           UPDATE_README: ${{ (github.event.schedule == '0 6 * * 1' || github.event_name == 'workflow_dispatch') && 'true' || '' }}
         run: python scraper/update_stats.py
