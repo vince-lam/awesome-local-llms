@@ -205,8 +205,8 @@ UPDATE repos SET category = ?
 WHERE full_name = ? AND (category IS NULL OR category = '')
 """
 
-_UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ?"
-_UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ?"
+_UPDATE_DESC_SQL = "UPDATE repos SET description = ? WHERE full_name = ? AND description IS NOT ?"
+_UPDATE_OWNER_TYPE_SQL = "UPDATE repos SET owner_type = ? WHERE full_name = ? AND owner_type IS NOT ?"
 _UPDATE_CREATED_AT_SQL = "UPDATE repos SET repo_created_at = ? WHERE full_name = ? AND repo_created_at IS NULL"
 
 _UPSERT_SNAPSHOT_SQL = """
@@ -225,53 +225,66 @@ ON CONFLICT(repo_id, scraped_date) DO UPDATE SET
   license           = excluded.license,
   primary_language  = excluded.primary_language,
   contributors      = excluded.contributors
+WHERE snapshots.stars IS NOT excluded.stars
+   OR snapshots.forks IS NOT excluded.forks
+   OR snapshots.issues IS NOT excluded.issues
+   OR snapshots.releases IS NOT excluded.releases
+   OR snapshots.watchers IS NOT excluded.watchers
+   OR snapshots.days_since_commit IS NOT excluded.days_since_commit
+   OR snapshots.license IS NOT excluded.license
+   OR snapshots.primary_language IS NOT excluded.primary_language
+   OR snapshots.contributors IS NOT excluded.contributors
 """
 
 
-# Recompute the denormalized latest-snapshot cache on repos. Two passes so the
-# delta_* pass can read the latest_* columns the first pass just populated. This
-# runs once per daily scrape; the website reads these columns instead of scanning
-# the snapshots table with correlated subqueries on every request (see db/schema.sql).
-_REFRESH_LATEST_SQL = """
+# Compute from all stored history, including repos missed by a partial scrape.
+# Compare NULL safely and write each changed repo once; identical reruns write zero.
+_REFRESH_REPOS_SQL = """
+WITH latest AS MATERIALIZED (
+  SELECT r.id,
+         (SELECT COUNT(*) FROM snapshots WHERE repo_id = r.id) AS snapshot_count,
+         (SELECT scraped_date FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_scraped_date,
+         (SELECT stars FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_stars,
+         (SELECT forks FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_forks,
+         (SELECT issues FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_issues,
+         (SELECT watchers FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_watchers,
+         (SELECT contributors FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_contributors,
+         (SELECT days_since_commit FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_days_since_commit,
+         (SELECT license FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_license,
+         (SELECT primary_language FROM snapshots WHERE repo_id = r.id ORDER BY scraped_date DESC LIMIT 1) AS latest_language
+  FROM repos r
+), refreshed AS MATERIALIZED (
+  SELECT latest.*,
+    latest_stars - (SELECT stars FROM snapshots WHERE repo_id = latest.id AND scraped_date <= date(latest_scraped_date, '-1 days') ORDER BY scraped_date DESC LIMIT 1) AS delta_1d,
+    latest_stars - (SELECT stars FROM snapshots WHERE repo_id = latest.id AND scraped_date <= date(latest_scraped_date, '-7 days') ORDER BY scraped_date DESC LIMIT 1) AS delta_7d,
+    latest_stars - (SELECT stars FROM snapshots WHERE repo_id = latest.id AND scraped_date <= date(latest_scraped_date, '-30 days') ORDER BY scraped_date DESC LIMIT 1) AS delta_30d
+  FROM latest
+)
 UPDATE repos SET
-  snapshot_count = (SELECT COUNT(*) FROM snapshots WHERE repo_id = repos.id),
-  latest_scraped_date      = (SELECT scraped_date      FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_stars             = (SELECT stars             FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_forks             = (SELECT forks             FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_issues            = (SELECT issues            FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_watchers          = (SELECT watchers          FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_contributors      = (SELECT contributors      FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_days_since_commit = (SELECT days_since_commit FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_license           = (SELECT license           FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1),
-  latest_language          = (SELECT primary_language  FROM snapshots WHERE repo_id = repos.id ORDER BY scraped_date DESC LIMIT 1)
-"""
-
-# delta_* = latest_stars − stars at the newest snapshot on/before latest−N days.
-# A NULL subquery (no snapshot that far back) yields NULL, matching the website's
-# old LEFT JOIN semantics of "unknown delta".
-_REFRESH_DELTAS_SQL = """
-UPDATE repos SET
-  delta_1d = latest_stars - (
-    SELECT stars FROM snapshots
-    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-1 day')
-    ORDER BY scraped_date DESC LIMIT 1),
-  delta_7d = latest_stars - (
-    SELECT stars FROM snapshots
-    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-7 days')
-    ORDER BY scraped_date DESC LIMIT 1),
-  delta_30d = latest_stars - (
-    SELECT stars FROM snapshots
-    WHERE repo_id = repos.id AND scraped_date <= date(latest_scraped_date, '-30 days')
-    ORDER BY scraped_date DESC LIMIT 1)
-WHERE latest_scraped_date IS NOT NULL
+  snapshot_count = refreshed.snapshot_count,
+  latest_scraped_date = refreshed.latest_scraped_date,
+  latest_stars = refreshed.latest_stars,
+  latest_forks = refreshed.latest_forks,
+  latest_issues = refreshed.latest_issues,
+  latest_watchers = refreshed.latest_watchers,
+  latest_contributors = refreshed.latest_contributors,
+  latest_days_since_commit = refreshed.latest_days_since_commit,
+  latest_license = refreshed.latest_license,
+  latest_language = refreshed.latest_language,
+  delta_1d = refreshed.delta_1d,
+  delta_7d = refreshed.delta_7d,
+  delta_30d = refreshed.delta_30d
+FROM refreshed
+WHERE repos.id = refreshed.id
+  AND (repos.snapshot_count, repos.latest_scraped_date, repos.latest_stars, repos.latest_forks, repos.latest_issues, repos.latest_watchers, repos.latest_contributors, repos.latest_days_since_commit, repos.latest_license, repos.latest_language, repos.delta_1d, repos.delta_7d, repos.delta_30d)
+      IS NOT (refreshed.snapshot_count, refreshed.latest_scraped_date, refreshed.latest_stars, refreshed.latest_forks, refreshed.latest_issues, refreshed.latest_watchers, refreshed.latest_contributors, refreshed.latest_days_since_commit, refreshed.latest_license, refreshed.latest_language, refreshed.delta_1d, refreshed.delta_7d, refreshed.delta_30d)
 """
 
 
 def refresh_denormalized_columns(db: TursoClient) -> None:
-    """Rebuild repos' latest-snapshot cache from the snapshots table."""
-    db.execute(_REFRESH_LATEST_SQL)
-    db.execute(_REFRESH_DELTAS_SQL)
-    print("Refreshed denormalized latest-snapshot columns on repos")
+    """Refresh latest fields and rolling deltas without rewriting unchanged rows."""
+    db.execute(_REFRESH_REPOS_SQL)
+    print("Refreshed changed denormalized repository fields")
 
 
 # The website shows "Updated Xh ago" from this. Snapshot dates carry no time,
@@ -441,10 +454,10 @@ def write_snapshots_to_db(
         if license_val == "No license":
             license_val = None
 
-        desc_stmts.append((_UPDATE_DESC_SQL, [description, full_name]))
+        desc_stmts.append((_UPDATE_DESC_SQL, [description, full_name, description]))
         owner_type = row.get("owner_type")
         if owner_type:
-            desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [owner_type, full_name]))
+            desc_stmts.append((_UPDATE_OWNER_TYPE_SQL, [owner_type, full_name, owner_type]))
         repo_created_at = row.get("repo_created_at")
         if repo_created_at:
             desc_stmts.append((_UPDATE_CREATED_AT_SQL, [repo_created_at, full_name]))
@@ -1094,6 +1107,28 @@ def owner_country_pass(db: TursoClient, session: requests.Session) -> None:
     print(f"Owner country: processed {len(owners)} owners")
 
 
+def invalidate_website_cache() -> None:
+    """Optional, bounded callback. Cache expiry remains the fallback on failure."""
+    url = os.getenv("WEB_REVALIDATE_URL")
+    secret = os.getenv("WEB_REVALIDATE_SECRET")
+    if not url or not secret:
+        print("Website cache callback not configured; timed expiry remains active")
+        return
+    if not url.startswith("https://"):
+        print("Warning: website cache callback requires HTTPS; using timed expiry")
+        return
+    try:
+        response = requests.post(url, headers={"Authorization": f"Bearer {secret}"}, timeout=15, allow_redirects=False)
+        response.raise_for_status()
+        body = response.json()
+        if response.status_code != 200 or not isinstance(body, dict) or body.get("revalidated") is not True:
+            raise ValueError("Unexpected cache callback response")
+        print("Website cache invalidated")
+    except (requests.RequestException, ValueError):
+        # Do not log the request/response: they may contain credentials.
+        print("Warning: website cache callback failed; using timed expiry")
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -1144,6 +1179,8 @@ def main() -> None:
         update_readme(build_markdown_table(df))
     else:
         print("Skipping README update (daily CI run)")
+
+    invalidate_website_cache()
 
     mins, secs = divmod(time.time() - start, 60)
     print(f"\nDone: {len(df)} repos in {int(mins)}m {int(secs)}s")
