@@ -69,6 +69,7 @@ FULL_COLUMNS = [
 README_CAMPAIGN = "utm_source=github&utm_medium=readme&utm_campaign=readme_funnel"
 
 REPO_FIELDS = """{
+  nameWithOwner
   stargazerCount
   forkCount
   description
@@ -141,6 +142,31 @@ class TursoClient:
                 stmt["args"] = [_arg(a) for a in args]
             stmts.append(stmt)
         return self._pipeline(stmts)
+
+    def transaction(self, statements: list) -> None:
+        """Execute an atomic Hrana batch; rollback if any step fails."""
+        steps = [{"stmt": {"sql": "BEGIN IMMEDIATE"}}]
+        for sql, args in statements + [("COMMIT", [])]:
+            steps.append({
+                "condition": {"type": "ok", "step": len(steps) - 1},
+                "stmt": {"sql": sql, "args": [_arg(a) for a in args]},
+            })
+        steps.append({
+            "condition": {"type": "not", "cond": {"type": "ok", "step": len(steps) - 1}},
+            "stmt": {"sql": "ROLLBACK"},
+        })
+        response = requests.post(
+            f"{self.base_url}/v2/pipeline",
+            json={"requests": [{"type": "batch", "batch": {"steps": steps}}, {"type": "close"}]},
+            headers=self._headers, timeout=30,
+        )
+        response.raise_for_status()
+        result = response.json()["results"][0]
+        if result["type"] == "error":
+            raise RuntimeError(f"Turso: {result['error']['message']}")
+        for error in result["response"]["result"]["step_errors"]:
+            if error:
+                raise RuntimeError(f"Turso transaction: {error['message']}")
 
     def query(self, sql: str, args: Optional[list] = None) -> list:
         res = self.execute(sql, args)
@@ -354,6 +380,48 @@ def load_repo_entries(db: TursoClient) -> List[Dict]:
             "backends": _json_list(backends),
         })
     return entries
+
+
+def reconcile_repository_names(db: TursoClient, df: pd.DataFrame) -> pd.DataFrame:
+    """Merge only identities confirmed by GitHub, never name/star heuristics.
+
+    Keep the canonical row when present. Its snapshot wins on overlapping dates;
+    copy all other history and union curated tags before retiring the alias.
+    """
+    for _, row in df.iterrows():
+        old = row.get("_requested_repo")
+        canonical = f"{row['Owner']}/{row['Repository Name']}"
+        if not old or old == canonical:
+            continue
+        records = db.query(
+            "SELECT id, full_name, category, tags, keywords, platforms, backends FROM repos WHERE full_name IN (?, ?)",
+            [old, canonical],
+        )
+        source = next((r for r in records if r[1] == old), None)
+        target = next((r for r in records if r[1] == canonical), None)
+        if source is None:
+            continue
+        owner, name = canonical.split("/", 1)
+        statements = []
+        if target is None:
+            statements.append((
+                "UPDATE repos SET full_name = ?, owner = ?, name = ?, url = ?, owner_country = NULL WHERE id = ?",
+                [canonical, owner, name, f"https://github.com/{canonical}", source[0]],
+            ))
+        else:
+            merged = [json.dumps(list(dict.fromkeys(_json_list(target[i]) + _json_list(source[i])))) for i in range(3, 7)]
+            statements.extend([
+                ("UPDATE repos SET category = COALESCE(NULLIF(category, ''), ?), tags = ?, keywords = ?, platforms = ?, backends = ?, added_at = MIN(added_at, (SELECT added_at FROM repos WHERE id = ?)) WHERE id = ?",
+                 [source[2], *merged, source[0], target[0]]),
+                ("INSERT INTO snapshots (repo_id, scraped_date, stars, forks, issues, releases, watchers, days_since_commit, license, primary_language, contributors) SELECT ?, scraped_date, stars, forks, issues, releases, watchers, days_since_commit, license, primary_language, contributors FROM snapshots WHERE repo_id = ? AND true ON CONFLICT(repo_id, scraped_date) DO NOTHING", [target[0], source[0]]),
+                ("DELETE FROM snapshots WHERE repo_id = ?", [source[0]]),
+                ("DELETE FROM repos WHERE id = ?", [source[0]]),
+            ])
+        # Prevent accepted aliases being promoted again on tomorrow's run.
+        statements.append(("UPDATE candidates SET status = 'duplicate', decided_at = date('now') WHERE full_name = ?", [old]))
+        db.transaction(statements)
+        print(f"  reconciled: {old} -> {canonical}")
+    return df.drop_duplicates(subset=["Owner", "Repository Name"], keep="last")
 
 
 def write_snapshots_to_db(
@@ -598,7 +666,7 @@ def fetch_batch(
             print(f"  skip: {entry['repo']} — null (private/deleted/renamed?)")
             continue
 
-        repo = entry["repo"]
+        repo = node.get("nameWithOwner") or entry["repo"]
         sub_lookup = taxonomy["subcategories"]
         cat_lookup = taxonomy["categories"]
         kw_lookup = taxonomy["keywords"]
@@ -635,6 +703,7 @@ def fetch_batch(
         repo_created_at = created_raw[:10] if created_raw else None  # YYYY-MM-DD
 
         row = {
+            "_requested_repo": entry["repo"],
             "Owner": repo.split("/")[0],
             "Repository Name": repo.split("/")[1],
             "owner_type": (node.get("owner") or {}).get("__typename"),
@@ -740,7 +809,7 @@ def fetch_all(
     if not rows:
         sys.exit("Error: no repository data fetched.")
 
-    df = pd.DataFrame(rows).drop_duplicates(subset=["URL"])
+    df = pd.DataFrame(rows).drop_duplicates(subset=["_requested_repo"])
     df = df.sort_values(by="_stars", ascending=False).reset_index(drop=True)
     return df
 
@@ -1054,8 +1123,9 @@ def main() -> None:
 
     df = fetch_all(session, entries, taxonomy)
 
+    df = reconcile_repository_names(db, df)
     contributor_counts = fetch_all_contributor_counts(
-        session, [e["repo"] for e in entries]
+        session, [f"{r['Owner']}/{r['Repository Name']}" for _, r in df.iterrows()]
     )
 
     write_snapshots_to_db(db, df, contributor_counts)
